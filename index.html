@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEVEL UP: DAILY RUN</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+  :root{
+    --bg: #0f0e17;
+    --panel: #1a1826;
+    --panel-2: #241f38;
+    --border: #4a3f6b;
+    --text: #e8e6f0;
+    --text-dim: #9b93b8;
+    --accent: #ffd23f;
+    --accent-2: #4ecdc4;
+    --hp-red: #ff4d6d;
+    --hp-green: #58d68d;
+    --str: #ff6b6b;
+    --cre: #ffd23f;
+    --int: #4ecdc4;
+    --spi: #b892ff;
+    --will: #7fd1ae;
+    --rank-s: #ffd23f;
+    --rank-a: #58d68d;
+    --rank-b: #4ecdc4;
+    --rank-c: #b892ff;
+    --rank-d: #9b93b8;
+    --rank-f: #ff4d6d;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background: radial-gradient(ellipse at top, #1e1a30 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+    min-height:100vh;
+    padding-bottom: 40px;
+  }
+  .pixel{ font-family: 'Press Start 2P', monospace; }
+  .app{ max-width: 900px; margin: 0 auto; padding: 12px 14px 60px; }
+
+  /* Scanline / CRT toggle */
+  body.crt::before{
+    content:"";
+    position: fixed; inset:0; pointer-events:none; z-index: 999;
+    background: repeating-linear-gradient(rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.18) 3px);
+    mix-blend-mode: multiply;
+  }
+  body.crt{ text-shadow: 0 0 2px rgba(255,255,255,0.15); }
+
+  /* Top bar */
+  .topbar{
+    background: var(--panel);
+    border: 3px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    display:flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items:center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+  }
+  .lvl-block{ display:flex; align-items:center; gap:10px; }
+  .lvl-badge{
+    background: var(--accent);
+    color:#1a1305;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space:nowrap;
+  }
+  .xp-wrap{ min-width: 180px; }
+  .bar-track{
+    background:#000; border:2px solid var(--border); border-radius:3px;
+    height: 14px; overflow:hidden; position:relative;
+  }
+  .bar-fill{ height:100%; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width .4s ease; }
+  .bar-label{ font-size:10px; color:var(--text-dim); margin-top:3px; }
+
+  .score-block{ text-align:center; }
+  .score-num{ font-size: 20px; }
+  .score-num.neg{ color: var(--hp-red); }
+  .score-num.pos{ color: var(--hp-green); }
+  .score-sub{ font-size:9px; color:var(--text-dim); margin-top:2px; }
+
+  .streak-block{ display:flex; align-items:center; gap:6px; font-size:12px; }
+  .flame{ font-size:18px; }
+
+  .boss-mini{
+    font-size: 9px;
+    padding: 6px 8px;
+    border-radius:4px;
+    border: 2px solid var(--border);
+    background: var(--panel-2);
+    white-space:nowrap;
+  }
+  .boss-mini.cleared{ border-color: var(--rank-a); color: var(--rank-a); }
+  .boss-mini.progress{ border-color: var(--accent); color: var(--accent); }
+  .boss-mini.missed{ border-color: var(--hp-red); color: var(--hp-red); }
+
+  /* Tabs */
+  .tabs{ display:flex; gap:6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tab-btn{
+    background: var(--panel);
+    border: 2px solid var(--border);
+    color: var(--text-dim);
+    padding: 8px 10px;
+    border-radius: 4px;
+    cursor:pointer;
+    font-size: 10px;
+    font-family: 'Press Start 2P', monospace;
+  }
+  .tab-btn.active{ background: var(--accent); color:#1a1305; border-color: var(--accent); }
+  .tab-btn:hover:not(.active){ border-color: var(--accent-2); color:var(--text); }
+
+  .panel{
+    background: var(--panel);
+    border: 3px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+  }
+  .panel h2{ font-size:12px; margin: 0 0 12px; color: var(--accent); }
+  .panel h3{ font-size: 10px; color: var(--text-dim); margin: 16px 0 8px; text-transform:uppercase; letter-spacing:1px;}
+
+  /* Quest list */
+  .quest-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background: var(--panel-2);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .quest-row.done{ border-color: var(--rank-a); }
+  .quest-name{ font-weight:600; font-size:14px; }
+  .quest-tiers{ font-size: 11px; color: var(--text-dim); }
+  .quest-actions{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .stat-chip{
+    font-size: 9px; padding: 2px 6px; border-radius: 3px; background:#000;
+  }
+  .stat-chip.STRENGTH{ color: var(--str); }
+  .stat-chip.CREATIVITY{ color: var(--cre); }
+  .stat-chip.INTELLECT{ color: var(--int); }
+  .stat-chip.SPIRIT{ color: var(--spi); }
+
+  button{
+    font-family: inherit;
+    cursor:pointer;
+  }
+  .btn{
+    background: var(--accent-2);
+    color: #06222a;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .btn:hover{ filter:brightness(1.1); }
+  .btn.small{ padding: 5px 8px; font-size:11px; }
+  .btn.danger{ background: var(--hp-red); color:#2a0006; }
+  .btn.ghost{ background: transparent; border: 2px solid var(--border); color: var(--text); }
+  .btn.ghost:hover{ border-color: var(--accent-2); }
+  input[type=number]{
+    width: 64px; padding: 6px; border-radius:4px; border: 2px solid var(--border);
+    background:#000; color: var(--text); font-size: 13px;
+  }
+
+  .today-points{ font-size: 12px; color: var(--rank-a); min-width: 60px; text-align:right; }
+  .today-points.neg{ color: var(--hp-red); }
+
+  /* Deductions */
+  .ded-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background: #241016;
+    border: 2px solid #4a1f2b;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* Stats screen */
+  .stat-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 12px; }
+  .stat-card{
+    background: var(--panel-2); border: 2px solid var(--border); border-radius: 6px; padding: 12px;
+  }
+  .stat-card h4{ margin:0 0 8px; font-size: 11px; letter-spacing:1px; }
+  .stat-card.STRENGTH h4{ color: var(--str); }
+  .stat-card.CREATIVITY h4{ color: var(--cre); }
+  .stat-card.INTELLECT h4{ color: var(--int); }
+  .stat-card.SPIRIT h4{ color: var(--spi); }
+  .stat-lvl{ font-size: 18px; margin-bottom: 6px; }
+
+  .willpower-card{
+    background: linear-gradient(135deg, #12261d, var(--panel-2));
+    border: 2px solid var(--will); border-radius:6px; padding:12px;
+  }
+
+  /* History calendar */
+  .cal-grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal-day{
+    aspect-ratio: 1; border-radius: 4px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; font-size:11px; cursor:pointer;
+    border: 2px solid var(--border); background: var(--panel-2);
+  }
+  .cal-day .d{ font-size:10px; color: var(--text-dim); }
+  .cal-day .r{ font-size:14px; font-weight:800; }
+  .cal-day.rank-S{ background:#3a2f00; border-color: var(--rank-s); }
+  .cal-day.rank-A{ background:#0f2e1c; border-color: var(--rank-a); }
+  .cal-day.rank-B{ background:#0d2a2c; border-color: var(--rank-b); }
+  .cal-day.rank-C{ background:#241a3a; border-color: var(--rank-c); }
+  .cal-day.rank-D{ background:#1c1a26; border-color: var(--rank-d); }
+  .cal-day.rank-F{ background:#3a0f18; border-color: var(--rank-f); }
+  .cal-day.empty{ visibility:hidden; }
+  .cal-detail{ margin-top: 12px; font-size: 12px; background:#000; padding:10px; border-radius:4px; display:none; }
+
+  /* Achievements */
+  .ach-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 10px; }
+  .ach-card{
+    background: var(--panel-2); border: 2px solid var(--border); border-radius: 6px; padding: 12px; text-align:center;
+    opacity: 0.4;
+  }
+  .ach-card.unlocked{ opacity:1; border-color: var(--accent); }
+  .ach-icon{ font-size: 26px; margin-bottom:6px; }
+  .ach-name{ font-size: 11px; margin-bottom: 4px; }
+  .ach-desc{ font-size: 10px; color: var(--text-dim); }
+
+  /* Boss quest screen */
+  .boss-banner{
+    text-align:center; padding: 20px; background: linear-gradient(135deg,#2a1030,#120a20);
+    border: 3px solid var(--accent); border-radius:8px;
+  }
+  .boss-title{ font-size:14px; color: var(--accent); margin-bottom:10px; }
+  .boss-progress{ font-size: 28px; margin: 10px 0; }
+  .boss-days{ font-size: 11px; color: var(--text-dim); }
+
+  /* Floating point popup */
+  .pop{
+    position: fixed; left:50%; top:40%; transform: translate(-50%,-50%);
+    font-family:'Press Start 2P', monospace;
+    font-size: 22px; z-index: 1000; pointer-events:none;
+    animation: floatUp 1.1s ease-out forwards;
+  }
+  .pop.pos{ color: var(--rank-a); text-shadow: 0 0 8px rgba(88,214,141,.7); }
+  .pop.neg{ color: var(--hp-red); text-shadow: 0 0 8px rgba(255,77,109,.7); }
+  @keyframes floatUp{
+    0%{ opacity:0; transform: translate(-50%,-30%) scale(0.6); }
+    15%{ opacity:1; transform: translate(-50%,-50%) scale(1.15); }
+    30%{ transform: translate(-50%,-55%) scale(1); }
+    100%{ opacity:0; transform: translate(-50%,-110%) scale(1); }
+  }
+  .shake{ animation: shake .35s; }
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    20%{ transform: translateX(-6px); }
+    40%{ transform: translateX(6px); }
+    60%{ transform: translateX(-4px); }
+    80%{ transform: translateX(4px); }
+  }
+
+  .levelup-flash{
+    position:fixed; inset:0; z-index: 998; pointer-events:none;
+    background: var(--accent); opacity:0;
+    animation: flash 0.6s ease-out;
+  }
+  @keyframes flash{ 0%{opacity:0.55;} 100%{opacity:0;} }
+
+  .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .muted{ color:var(--text-dim); font-size:11px; }
+  hr.sep{ border:none; border-top:2px solid var(--border); margin: 14px 0; }
+
+  footer{ text-align:center; color:var(--text-dim); font-size:10px; margin-top: 20px; }
+
+  @media (max-width:520px){
+    .pixel{ font-size: 11px; }
+    .lvl-badge{ font-size:9px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="lvl-block">
+      <div class="lvl-badge pixel" id="charLevelBadge">LV 1</div>
+      <div class="xp-wrap">
+        <div class="bar-track"><div class="bar-fill" id="charXpFill" style="width:0%"></div></div>
+        <div class="bar-label" id="charXpLabel">0 / 1000 XP</div>
+      </div>
+    </div>
+    <div class="score-block">
+      <div class="score-num pixel" id="dailyScoreNum">0</div>
+      <div class="score-sub">TODAY'S SCORE &middot; RANK <span id="dailyRank">D</span></div>
+    </div>
+    <div class="streak-block">
+      <span class="flame">&#128293;</span>
+      <div><div id="streakCurrent">0</div><div class="muted">best <span id="streakLongest">0</span></div></div>
+    </div>
+    <div class="boss-mini progress" id="bossMini">BOSS: 0/1</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="board">QUEST BOARD</button>
+    <button class="tab-btn" data-tab="stats">CHARACTER</button>
+    <button class="tab-btn" data-tab="boss">BOSS QUEST</button>
+    <button class="tab-btn" data-tab="history">HISTORY</button>
+    <button class="tab-btn" data-tab="ach">ACHIEVEMENTS</button>
+    <button class="tab-btn" data-tab="settings">SETTINGS</button>
+  </div>
+
+  <!-- QUEST BOARD -->
+  <div class="tab-page" id="page-board">
+    <div class="panel">
+      <h2>&#9876;&#65039; TODAY'S QUESTS</h2>
+      <div id="habitList"></div>
+    </div>
+    <div class="panel">
+      <h2 style="color:var(--hp-red)">&#9760;&#65039; SETBACKS</h2>
+      <div id="deductionList"></div>
+    </div>
+  </div>
+
+  <!-- CHARACTER / STATS -->
+  <div class="tab-page" id="page-stats" style="display:none">
+    <div class="panel">
+      <h2>CHARACTER SHEET</h2>
+      <div class="stat-grid" id="statGrid"></div>
+      <hr class="sep">
+      <div class="willpower-card">
+        <h4 style="margin:0 0 8px;color:var(--will);font-size:11px;">WILLPOWER</h4>
+        <div class="bar-track"><div class="bar-fill" id="willFill" style="background:var(--will);width:100%"></div></div>
+        <div class="bar-label" id="willLabel">100 / 100</div>
+        <div class="muted" style="margin-top:6px;">Damaged by setbacks, restored by clean days. Never lowers your permanent level.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOSS QUEST -->
+  <div class="tab-page" id="page-boss" style="display:none">
+    <div class="panel">
+      <div class="boss-banner">
+        <div class="boss-title pixel">&#127908; BOSS QUEST: MAKE 1 SURFBOARD</div>
+        <div class="boss-progress" id="bossProgress">0 / 1</div>
+        <div class="boss-days" id="bossDays"></div>
+        <div style="margin-top:14px;">
+          <button class="btn" id="logSurfboardBtn">LOG SURFBOARD PROGRESS</button>
+        </div>
+        <div class="muted" style="margin-top:10px;" id="bossStatusMsg"></div>
+      </div>
+      <hr class="sep">
+      <div class="row">
+        <div class="muted">Consecutive boss quests cleared: <b id="bossStreak">0</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="tab-page" id="page-history" style="display:none">
+    <div class="panel">
+      <h2>HISTORY</h2>
+      <div class="row" style="justify-content:space-between;margin-bottom:10px;">
+        <button class="btn ghost small" id="prevMonth">&larr; PREV</button>
+        <div id="monthLabel" class="muted"></div>
+        <button class="btn ghost small" id="nextMonth">NEXT &rarr;</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-detail" id="calDetail"></div>
+    </div>
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div class="tab-page" id="page-ach" style="display:none">
+    <div class="panel">
+      <h2>ACHIEVEMENTS</h2>
+      <div class="ach-grid" id="achGrid"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="tab-page" id="page-settings" style="display:none">
+    <div class="panel">
+      <h2>SETTINGS</h2>
+      <div class="row" style="margin-bottom:10px;">
+        <label class="muted"><input type="checkbox" id="crtToggle"> CRT scanline filter</label>
+      </div>
+      <div class="row" style="margin-bottom:10px;">
+        <label class="muted"><input type="checkbox" id="soundToggle" checked> Sound effects</label>
+      </div>
+      <hr class="sep">
+      <h3>Weekly boss quest rewards (not specified in original point system — adjust freely)</h3>
+      <div class="row" style="margin-bottom:8px;">
+        <label class="muted">Completion bonus (XP to Creativity):</label>
+        <input type="number" id="bossBonusInput" step="50">
+      </div>
+      <div class="row">
+        <label class="muted">Missed-quest Willpower penalty:</label>
+        <input type="number" id="bossPenaltyInput" step="10">
+      </div>
+      <hr class="sep">
+      <h3>Data</h3>
+      <div class="row">
+        <button class="btn ghost small" id="exportBtn">EXPORT DATA (JSON)</button>
+        <button class="btn danger small" id="resetBtn">RESET ALL DATA</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>Retro Habit RPG &middot; data stored locally in this browser only &middot; based on your personal scoring model</footer>
+</div>
+
+<script>
+/* =========================================================
+   CONFIG — mirrors ../data/scoring-config.json exactly.
+   Point values are the user's own; do not alter without confirmation.
+   ========================================================= */
+const CONFIG = {
+  positiveHabits: [
+    { id:"lifting_workout", name:"Lifting Workout", category:"fitness", statMapping:"STRENGTH", type:"flat", points:250 },
+    { id:"cardio_workout", name:"Cardio Workout", category:"fitness", statMapping:"STRENGTH", type:"flat", points:250 },
+    { id:"video_creatives", name:"Video Creatives", category:"creative", statMapping:"CREATIVITY", type:"tiered_count", unit:"videos made today",
+      tiers:[{threshold:1,points:100},{threshold:2,points:250},{threshold:3,points:400},{threshold:5,points:750}] },
+    { id:"reading", name:"Read", category:"growth", statMapping:"INTELLECT", type:"tiered_duration", unit:"minutes today",
+      tiers:[{threshold:15,points:100},{threshold:30,points:200},{threshold:60,points:500}] },
+    { id:"journaling", name:"Journal", category:"growth", statMapping:"INTELLECT", type:"tiered_duration", unit:"minutes today",
+      tiers:[{threshold:15,points:100},{threshold:30,points:200},{threshold:60,points:500}] },
+    { id:"prayer", name:"Pray", category:"spiritual", statMapping:"SPIRIT", type:"tiered_duration", unit:"minutes today",
+      tiers:[{threshold:15,points:250},{threshold:30,points:500},{threshold:45,points:750},{threshold:60,points:1000}] },
+    { id:"guitar", name:"Play Guitar", category:"creative", statMapping:"CREATIVITY", type:"tiered_duration", unit:"minutes today",
+      tiers:[{threshold:15,points:100},{threshold:30,points:200},{threshold:45,points:300},{threshold:60,points:400}] },
+    { id:"duolingo", name:"Duolingo", category:"growth", statMapping:"INTELLECT", type:"tiered_duration", unit:"minutes today",
+      tiers:[{threshold:15,points:100},{threshold:30,points:200},{threshold:45,points:300},{threshold:60,points:400}] }
+  ],
+  deductions: [
+    { id:"smoking_marijuana", name:"Smoking Marijuana", type:"flat_stacking", points:-500 },
+    { id:"drinking_alcohol", name:"Drinking Alcohol", type:"flat_stacking", points:-500 },
+    { id:"masturbating", name:"Masturbating", type:"tiered_count", unit:"occurrences today",
+      tiers:[{threshold:1,points:-250},{threshold:2,points:-750},{threshold:3,points:-1000}] },
+    { id:"food_spending", name:"Spending Money on Food", type:"tiered_count", unit:"occurrences today",
+      tiers:[{threshold:1,points:-250},{threshold:2,points:-500},{threshold:3,points:-1000}] },
+    { id:"general_purchase", name:"Purchase (non-food)", type:"tiered_amount", unit:"USD",
+      tiers:[{min:0,max:25,points:-100},{min:25,max:75,points:-250},{min:75,max:150,points:-500},{min:150,max:null,points:-1000}] }
+  ],
+  weeklyQuest: { id:"surfboard", name:"Make 1 Surfboard", minimumCount:1, statMapping:"CREATIVITY" }
+};
+
+const STAT_KEYS = ["STRENGTH","CREATIVITY","INTELLECT","SPIRIT"];
+const STORAGE_KEY = "retroHabitRPG_v1";
+
+/* =========================================================
+   STATE
+   ========================================================= */
+function defaultState(){
+  return {
+    habitLogs: {},          // { date: { habitId: {rawValue, points} } }
+    deductionOccurrences: {}, // { date: { deductionId: count } }  (flat_stacking & tiered_count)
+    purchases: {},           // { date: [ {amount, points} ] }
+    xp: { STRENGTH:0, CREATIVITY:0, INTELLECT:0, SPIRIT:0 },
+    willpower: 100,
+    streak: { current:0, longest:0, lastQualifyingDate:null },
+    weeklyQuest: { weeks:{}, bossStreak:0, settings:{ completionPoints:500, missedPenalty:30 } },
+    achievements: {},
+    lastProcessedDate: null,
+    settings: { crt:false, sound:true }
+  };
+}
+let state = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return Object.assign(defaultState(), parsed, {
+      xp: Object.assign(defaultState().xp, parsed.xp),
+      streak: Object.assign(defaultState().streak, parsed.streak),
+      weeklyQuest: Object.assign(defaultState().weeklyQuest, parsed.weeklyQuest, {
+        settings: Object.assign(defaultState().weeklyQuest.settings, (parsed.weeklyQuest||{}).settings)
+      }),
+      settings: Object.assign(defaultState().settings, parsed.settings)
+    });
+  }catch(e){ console.error("Failed to load state, starting fresh", e); return defaultState(); }
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+/* =========================================================
+   DATE HELPERS (local time)
+   ========================================================= */
+function pad(n){ return String(n).padStart(2,"0"); }
+function dateStr(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function todayStr(){ return dateStr(new Date()); }
+function parseDate(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); }
+function addDays(s, n){ const d = parseDate(s); d.setDate(d.getDate()+n); return dateStr(d); }
+function weekStartOf(s){ // Monday-start week
+  const d = parseDate(s);
+  const day = d.getDay(); // 0=Sun..6=Sat
+  const diff = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diff);
+  return dateStr(d);
+}
+function weekEndOf(s){ return addDays(weekStartOf(s), 6); }
+
+/* =========================================================
+   SCORING ENGINE
+   ========================================================= */
+function highestTier(tiers, value){
+  let best = 0;
+  for(const t of tiers){ if(value >= t.threshold && t.points > best) best = t.points; }
+  // ensure we pick the tier with the highest threshold met, not just highest points (tables are monotonic anyway)
+  let bestThreshold = -1, bestPoints = 0;
+  for(const t of tiers){ if(value >= t.threshold && t.threshold > bestThreshold){ bestThreshold = t.threshold; bestPoints = t.points; } }
+  return bestPoints;
+}
+function amountTier(tiers, amount){
+  for(const t of tiers){ if(amount >= t.min && (t.max === null || amount < t.max)) return t.points; }
+  return tiers[tiers.length-1].points;
+}
+function habitDef(id){ return CONFIG.positiveHabits.find(h=>h.id===id); }
+function deductionDef(id){ return CONFIG.deductions.find(d=>d.id===id); }
+
+function pointsForHabitValue(h, value){
+  if(h.type === "flat") return value > 0 ? h.points : 0;
+  return highestTier(h.tiers, value);
+}
+function pointsForDeductionCount(d, count){
+  if(count <= 0) return 0;
+  if(d.type === "flat_stacking") return d.points * count;
+  return highestTier(d.tiers, count); // tiered_count: total-for-day, holds at highest listed tier beyond range
+}
+
+function dayPositiveTotal(date){
+  const logs = state.habitLogs[date] || {};
+  return Object.values(logs).reduce((s,l)=>s+l.points, 0);
+}
+function dayDeductionTotal(date){
+  let total = 0;
+  const occ = state.deductionOccurrences[date] || {};
+  for(const id in occ){ total += pointsForDeductionCount(deductionDef(id), occ[id]); }
+  const purch = state.purchases[date] || [];
+  for(const p of purch){ total += p.points; }
+  return total; // negative
+}
+function dailyScore(date){ return dayPositiveTotal(date) + dayDeductionTotal(date); }
+function rankForScore(score){
+  if(score >= 1500) return "S";
+  if(score >= 1000) return "A";
+  if(score >= 500) return "B";
+  if(score >= 1) return "C";
+  if(score === 0) return "D";
+  return "F";
+}
+
+/* Leveling curve: cumulative XP required to REACH level N = round(1000 * N^1.5) */
+function xpThresholdForLevel(n){ if(n<=0) return 0; return Math.round(1000 * Math.pow(n, 1.5)); }
+function levelFromXp(xp){
+  let lvl = 0;
+  while(xpThresholdForLevel(lvl+1) <= xp){ lvl++; if(lvl>999) break; }
+  return lvl;
+}
+function levelInfo(xp){
+  const level = levelFromXp(xp);
+  const floor = xpThresholdForLevel(level);
+  const ceil = xpThresholdForLevel(level+1);
+  return { level, xpIntoLevel: xp-floor, xpForNext: ceil-floor, floor, ceil };
+}
+function overallXp(){ return STAT_KEYS.reduce((s,k)=>s+state.xp[k],0); }
+
+/* =========================================================
+   LOGGING ACTIONS
+   ========================================================= */
+let pendingPopups = [];
+
+function popupAt(text, positive){
+  const el = document.createElement("div");
+  el.className = "pop " + (positive ? "pos":"neg");
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1200);
+  if(!positive){
+    document.querySelector(".topbar").classList.add("shake");
+    setTimeout(()=>document.querySelector(".topbar").classList.remove("shake"), 400);
+  }
+  playTone(positive);
+}
+
+function playTone(positive){
+  if(!state.settings.sound) return;
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "square";
+    o.frequency.value = positive ? 880 : 160;
+    g.gain.value = 0.05;
+    o.connect(g); g.connect(ctx.destination);
+    o.start();
+    o.frequency.exponentialRampToValueAtTime(positive?1400:90, ctx.currentTime+0.18);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.2);
+    o.stop(ctx.currentTime+0.22);
+  }catch(e){}
+}
+
+function setHabitValue(habitId, rawValue){
+  const h = habitDef(habitId);
+  const date = todayStr();
+  if(!state.habitLogs[date]) state.habitLogs[date] = {};
+  const prev = state.habitLogs[date][habitId] || {rawValue:0, points:0};
+  const points = pointsForHabitValue(h, rawValue);
+  const delta = points - prev.points;
+  state.habitLogs[date][habitId] = { rawValue, points };
+  if(delta > 0){ state.xp[h.statMapping] += delta; }
+  saveState();
+  if(delta !== 0) popupAt((delta>0?"+":"") + delta, delta>0);
+  checkLevelUps();
+  runAchievementChecks(date);
+  renderAll();
+}
+function toggleFlatHabit(habitId){
+  const h = habitDef(habitId);
+  const date = todayStr();
+  const logs = state.habitLogs[date] || {};
+  const currentlyOn = logs[habitId] && logs[habitId].rawValue > 0;
+  setHabitValue(habitId, currentlyOn ? 0 : 1);
+}
+
+function incDeductionOccurrence(deductionId, delta){
+  const date = todayStr();
+  if(!state.deductionOccurrences[date]) state.deductionOccurrences[date] = {};
+  const d = deductionDef(deductionId);
+  const prevCount = state.deductionOccurrences[date][deductionId] || 0;
+  const newCount = Math.max(0, prevCount + delta);
+  const prevPoints = pointsForDeductionCount(d, prevCount);
+  const newPoints = pointsForDeductionCount(d, newCount);
+  state.deductionOccurrences[date][deductionId] = newCount;
+  const pdelta = newPoints - prevPoints;
+  if(pdelta < 0){
+    state.willpower = Math.max(0, state.willpower - Math.min(40, Math.round(Math.abs(pdelta)/20)));
+  }
+  saveState();
+  if(pdelta !== 0) popupAt(String(pdelta), false);
+  runAchievementChecks(date);
+  renderAll();
+}
+
+function logPurchase(amount){
+  if(!amount || amount <= 0) return;
+  const date = todayStr();
+  const points = amountTier(deductionDef("general_purchase").tiers, amount);
+  if(!state.purchases[date]) state.purchases[date] = [];
+  state.purchases[date].push({ amount, points });
+  state.willpower = Math.max(0, state.willpower - Math.min(40, Math.round(Math.abs(points)/20)));
+  saveState();
+  popupAt(String(points), false);
+  renderAll();
+}
+function undoLastPurchase(){
+  const date = todayStr();
+  const arr = state.purchases[date] || [];
+  if(arr.length===0) return;
+  arr.pop();
+  saveState();
+  renderAll();
+}
+
+function logSurfboardProgress(){
+  const date = todayStr();
+  const wk = weekStartOf(date);
+  if(!state.weeklyQuest.weeks[wk]) state.weeklyQuest.weeks[wk] = { count:0, status:"in_progress" };
+  const w = state.weeklyQuest.weeks[wk];
+  w.count += 1;
+  if(w.status !== "cleared" && w.count >= CONFIG.weeklyQuest.minimumCount){
+    w.status = "cleared";
+    const bonus = state.weeklyQuest.settings.completionPoints;
+    state.xp.CREATIVITY += bonus;
+    state.weeklyQuest.bossStreak += 1;
+    popupAt("BOSS CLEARED! +"+bonus, true);
+    checkLevelUps();
+  } else {
+    popupAt("+1 PROGRESS", true);
+  }
+  saveState();
+  renderAll();
+}
+
+function checkLevelUps(){
+  // Simple flash if overall level increased since last render snapshot
+  const newOverall = levelFromXp(overallXp());
+  if(window._lastOverallLevel !== undefined && newOverall > window._lastOverallLevel){
+    triggerLevelUpFlash();
+  }
+  window._lastOverallLevel = newOverall;
+}
+function triggerLevelUpFlash(){
+  const f = document.createElement("div");
+  f.className = "levelup-flash";
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(), 650);
+  playTone(true);
+}
+
+/* =========================================================
+   DAY ROLLOVER / BACKFILL (streaks, willpower regen, boss-quest close-out, achievements)
+   ========================================================= */
+function processDate(date){
+  const score = dailyScore(date);
+  const qualifying = score > 0;
+  // streak
+  const s = state.streak;
+  if(qualifying){
+    if(s.lastQualifyingDate === addDays(date,-1) || s.lastQualifyingDate === null){
+      s.current = (s.lastQualifyingDate === addDays(date,-1)) ? s.current+1 : 1;
+    } else {
+      s.current = 1;
+    }
+    s.lastQualifyingDate = date;
+    s.longest = Math.max(s.longest, s.current);
+  } else {
+    s.current = 0;
+  }
+  // willpower regen on a clean day (no deductions logged)
+  const hadDeductions = dayDeductionTotal(date) < 0;
+  if(!hadDeductions){ state.willpower = Math.min(100, state.willpower + 10); }
+
+  // close out week if this date is the week's Sunday
+  if(date === weekEndOf(date)){
+    const wk = weekStartOf(date);
+    const w = state.weeklyQuest.weeks[wk] || { count:0, status:"in_progress" };
+    if(w.status !== "cleared"){
+      w.status = "missed";
+      state.weeklyQuest.bossStreak = 0;
+      state.willpower = Math.max(0, state.willpower - state.weeklyQuest.settings.missedPenalty);
+    }
+    state.weeklyQuest.weeks[wk] = w;
+  }
+
+  runAchievementChecks(date);
+}
+
+function runAchievementChecks(date){
+  const A = state.achievements;
+  // Triple Threat: fitness + creative + growth category habit all logged same day
+  const logs = state.habitLogs[date] || {};
+  const cats = new Set(Object.keys(logs).filter(id=>logs[id].points>0).map(id=>habitDef(id).category));
+  if(cats.has("fitness") && cats.has("creative") && (cats.has("growth")||cats.has("spiritual"))){
+    unlock("triple_threat", date);
+  }
+  // Iron Streak: 30-day positive streak
+  if(state.streak.current >= 30) unlock("iron_streak", date);
+  // Boss Slayer: 10 consecutive weekly boss quests cleared
+  if(state.weeklyQuest.bossStreak >= 10) unlock("boss_slayer", date);
+  // Clean Week: 7 consecutive days with zero deductions ending on `date`
+  let clean = true;
+  for(let i=0;i<7;i++){
+    const dd = addDays(date, -i);
+    if(dayDeductionTotal(dd) < 0){ clean = false; break; }
+  }
+  if(clean) unlock("clean_week", date);
+}
+function unlock(id, date){
+  if(!state.achievements[id]) state.achievements[id] = date;
+}
+
+function catchUpDays(){
+  const last = state.lastProcessedDate;
+  const today = todayStr();
+  if(last === today) return;
+  let cursor = last ? addDays(last, 1) : today; // first run: nothing to backfill
+  let guard = 0;
+  while(cursor < today && guard < 730){
+    processDate(cursor);
+    cursor = addDays(cursor, 1);
+    guard++;
+  }
+  state.lastProcessedDate = addDays(today, -1);
+  saveState();
+}
+
+/* =========================================================
+   RENDERING
+   ========================================================= */
+function renderTopbar(){
+  const overall = levelInfo(overallXp());
+  document.getElementById("charLevelBadge").textContent = "LV " + overall.level;
+  document.getElementById("charXpFill").style.width = Math.min(100, (overall.xpForNext? overall.xpIntoLevel/overall.xpForNext*100 : 100)) + "%";
+  document.getElementById("charXpLabel").textContent = `${overall.xpIntoLevel} / ${overall.xpForNext} XP`;
+
+  const score = dailyScore(todayStr());
+  const scoreEl = document.getElementById("dailyScoreNum");
+  scoreEl.textContent = score;
+  scoreEl.className = "score-num pixel " + (score>0?"pos":score<0?"neg":"");
+  document.getElementById("dailyRank").textContent = rankForScore(score);
+
+  document.getElementById("streakCurrent").textContent = state.streak.current + " day streak";
+  document.getElementById("streakLongest").textContent = state.streak.longest;
+
+  const wk = weekStartOf(todayStr());
+  const w = state.weeklyQuest.weeks[wk] || { count:0, status:"in_progress" };
+  const mini = document.getElementById("bossMini");
+  mini.textContent = "BOSS: " + Math.min(w.count, CONFIG.weeklyQuest.minimumCount) + "/" + CONFIG.weeklyQuest.minimumCount;
+  mini.className = "boss-mini " + (w.status === "cleared" ? "cleared" : w.status === "missed" ? "missed" : "progress");
+}
+
+function renderHabitList(){
+  const el = document.getElementById("habitList");
+  el.innerHTML = "";
+  const date = todayStr();
+  const logs = state.habitLogs[date] || {};
+  for(const h of CONFIG.positiveHabits){
+    const cur = logs[h.id] || { rawValue:0, points:0 };
+    const row = document.createElement("div");
+    row.className = "quest-row" + (cur.points>0 ? " done":"");
+    const tiersText = h.type==="flat" ? `+${h.points}` : h.tiers.map(t=>`${t.threshold}${h.type==='tiered_duration'?'m':'x'}:+${t.points}`).join("  ");
+    let controls = "";
+    if(h.type === "flat"){
+      controls = `<button class="btn small" onclick="toggleFlatHabit('${h.id}')">${cur.points>0?'UNDO':'LOG'}</button>`;
+    } else {
+      controls = `<input type="number" min="0" step="${h.type==='tiered_duration'?15:1}" value="${cur.rawValue}" id="inp-${h.id}" style="width:70px">
+                  <button class="btn small" onclick="setHabitValue('${h.id}', Number(document.getElementById('inp-${h.id}').value)||0)">SET</button>`;
+    }
+    row.innerHTML = `
+      <div>
+        <div class="quest-name">${h.name} <span class="stat-chip ${h.statMapping}">${h.statMapping}</span></div>
+        <div class="quest-tiers">${tiersText}</div>
+      </div>
+      <div class="quest-actions">
+        ${controls}
+        <div class="today-points ${cur.points<0?'neg':''}">${cur.points>0?'+':''}${cur.points}</div>
+      </div>`;
+    el.appendChild(row);
+  }
+}
+
+function renderDeductionList(){
+  const el = document.getElementById("deductionList");
+  el.innerHTML = "";
+  const date = todayStr();
+  const occ = state.deductionOccurrences[date] || {};
+  for(const d of CONFIG.deductions){
+    if(d.type === "tiered_amount") continue; // handled separately below
+    const count = occ[d.id] || 0;
+    const points = pointsForDeductionCount(d, count);
+    const row = document.createElement("div");
+    row.className = "ded-row";
+    row.innerHTML = `
+      <div>
+        <div class="quest-name">${d.name}</div>
+        <div class="quest-tiers">${d.type==='flat_stacking' ? `${d.points} each` : d.tiers.map(t=>`${t.threshold}x:${t.points}`).join("  ")}</div>
+      </div>
+      <div class="quest-actions">
+        <button class="btn small ghost" onclick="incDeductionOccurrence('${d.id}', -1)">-</button>
+        <div style="min-width:20px;text-align:center">${count}</div>
+        <button class="btn small danger" onclick="incDeductionOccurrence('${d.id}', 1)">LOG</button>
+        <div class="today-points neg">${points}</div>
+      </div>`;
+    el.appendChild(row);
+  }
+  // Purchases (per-purchase amounts)
+  const purch = state.purchases[date] || [];
+  const purchTotal = purch.reduce((s,p)=>s+p.points,0);
+  const row = document.createElement("div");
+  row.className = "ded-row";
+  row.innerHTML = `
+    <div>
+      <div class="quest-name">Purchase (non-food)</div>
+      <div class="quest-tiers">&lt;$25:-100  $25-75:-250  $75-150:-500  &gt;$150:-1000</div>
+      <div class="muted">${purch.length} purchase(s) logged today</div>
+    </div>
+    <div class="quest-actions">
+      <input type="number" min="0" step="1" id="purchAmountInput" placeholder="$ amount" style="width:90px">
+      <button class="btn small danger" onclick="logPurchase(Number(document.getElementById('purchAmountInput').value)||0)">LOG</button>
+      <button class="btn small ghost" onclick="undoLastPurchase()">UNDO LAST</button>
+      <div class="today-points neg">${purchTotal}</div>
+    </div>`;
+  el.appendChild(row);
+}
+
+function renderStats(){
+  const grid = document.getElementById("statGrid");
+  grid.innerHTML = "";
+  for(const key of STAT_KEYS){
+    const info = levelInfo(state.xp[key]);
+    const card = document.createElement("div");
+    card.className = "stat-card " + key;
+    card.innerHTML = `
+      <h4>${key}</h4>
+      <div class="stat-lvl pixel">LV ${info.level}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100, info.xpForNext? info.xpIntoLevel/info.xpForNext*100:100)}%"></div></div>
+      <div class="bar-label">${info.xpIntoLevel} / ${info.xpForNext} XP &middot; ${state.xp[key]} lifetime</div>`;
+    grid.appendChild(card);
+  }
+  document.getElementById("willFill").style.width = state.willpower + "%";
+  document.getElementById("willLabel").textContent = state.willpower + " / 100";
+}
+
+function renderBoss(){
+  const date = todayStr();
+  const wk = weekStartOf(date);
+  const w = state.weeklyQuest.weeks[wk] || { count:0, status:"in_progress" };
+  document.getElementById("bossProgress").textContent = Math.min(w.count, CONFIG.weeklyQuest.minimumCount) + " / " + CONFIG.weeklyQuest.minimumCount;
+  const end = weekEndOf(date);
+  const daysLeft = (parseDate(end) - parseDate(date)) / 86400000;
+  document.getElementById("bossDays").textContent = daysLeft + " day(s) left this week (week ends " + end + ")";
+  const msg = document.getElementById("bossStatusMsg");
+  if(w.status === "cleared") msg.textContent = "CLEARED — great work this week.";
+  else if(w.status === "missed") msg.textContent = "Missed last time this window closed — willpower penalty applied. New week, new run.";
+  else msg.textContent = "Non-negotiable. Get it done before the week ends.";
+  document.getElementById("bossStreak").textContent = state.weeklyQuest.bossStreak;
+}
+
+let calCursor = new Date();
+function renderHistory(){
+  const grid = document.getElementById("calGrid");
+  grid.innerHTML = "";
+  const y = calCursor.getFullYear(), m = calCursor.getMonth();
+  document.getElementById("monthLabel").textContent = calCursor.toLocaleString(undefined,{month:"long", year:"numeric"});
+  const first = new Date(y,m,1);
+  const startOffset = (first.getDay()+6)%7; // Monday-first
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  for(let i=0;i<startOffset;i++){ const e=document.createElement("div"); e.className="cal-day empty"; grid.appendChild(e); }
+  for(let day=1; day<=daysInMonth; day++){
+    const ds = dateStr(new Date(y,m,day));
+    const score = dailyScore(ds);
+    const isFuture = ds > todayStr();
+    const rank = isFuture ? "" : rankForScore(score);
+    const cell = document.createElement("div");
+    cell.className = "cal-day" + (rank ? " rank-"+rank : "");
+    cell.innerHTML = `<div class="d">${day}</div><div class="r">${rank}</div>`;
+    if(!isFuture){
+      cell.onclick = ()=>showDayDetail(ds, score, rank);
+    }
+    grid.appendChild(cell);
+  }
+}
+function showDayDetail(ds, score, rank){
+  const el = document.getElementById("calDetail");
+  const logs = state.habitLogs[ds] || {};
+  const occ = state.deductionOccurrences[ds] || {};
+  const purch = state.purchases[ds] || [];
+  let lines = [`<b>${ds}</b> — score ${score} (rank ${rank})`];
+  for(const id in logs){ if(logs[id].points>0) lines.push(`+${logs[id].points} ${habitDef(id).name}`); }
+  for(const id in occ){ const p=pointsForDeductionCount(deductionDef(id),occ[id]); if(p<0) lines.push(`${p} ${deductionDef(id).name} (${occ[id]}x)`); }
+  for(const p of purch){ lines.push(`${p.points} Purchase ($${p.amount})`); }
+  if(lines.length===1) lines.push("No activity logged.");
+  el.innerHTML = lines.join("<br>");
+  el.style.display = "block";
+}
+
+const ACHIEVEMENTS = [
+  { id:"triple_threat", name:"Triple Threat", desc:"Hit fitness, creative, and growth in one day", icon:"⚔️" },
+  { id:"clean_week", name:"Clean Week", desc:"7 straight days, zero setbacks", icon:"🛡️" },
+  { id:"iron_streak", name:"Iron Streak", desc:"30-day positive streak", icon:"🔥" },
+  { id:"boss_slayer", name:"Boss Slayer", desc:"10 consecutive boss quests cleared", icon:"🏆" }
+];
+function renderAchievements(){
+  const grid = document.getElementById("achGrid");
+  grid.innerHTML = "";
+  for(const a of ACHIEVEMENTS){
+    const unlocked = state.achievements[a.id];
+    const card = document.createElement("div");
+    card.className = "ach-card" + (unlocked ? " unlocked":"");
+    card.innerHTML = `<div class="ach-icon">${unlocked?a.icon:"❔"}</div>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-desc">${a.desc}</div>
+      ${unlocked?`<div class="muted" style="margin-top:6px;">unlocked ${unlocked}</div>`:""}`;
+    grid.appendChild(card);
+  }
+}
+
+function renderSettings(){
+  document.getElementById("crtToggle").checked = state.settings.crt;
+  document.getElementById("soundToggle").checked = state.settings.sound;
+  document.getElementById("bossBonusInput").value = state.weeklyQuest.settings.completionPoints;
+  document.getElementById("bossPenaltyInput").value = state.weeklyQuest.settings.missedPenalty;
+  document.body.classList.toggle("crt", state.settings.crt);
+}
+
+function renderAll(){
+  renderTopbar();
+  renderHabitList();
+  renderDeductionList();
+  renderStats();
+  renderBoss();
+  renderHistory();
+  renderAchievements();
+  renderSettings();
+}
+
+/* =========================================================
+   TAB NAV
+   ========================================================= */
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".tab-page").forEach(p=>p.style.display="none");
+    document.getElementById("page-"+btn.dataset.tab).style.display="block";
+  });
+});
+document.getElementById("prevMonth").onclick = ()=>{ calCursor.setMonth(calCursor.getMonth()-1); renderHistory(); };
+document.getElementById("nextMonth").onclick = ()=>{ calCursor.setMonth(calCursor.getMonth()+1); renderHistory(); };
+document.getElementById("logSurfboardBtn").onclick = logSurfboardProgress;
+
+document.getElementById("crtToggle").onchange = (e)=>{ state.settings.crt = e.target.checked; saveState(); renderSettings(); };
+document.getElementById("soundToggle").onchange = (e)=>{ state.settings.sound = e.target.checked; saveState(); };
+document.getElementById("bossBonusInput").onchange = (e)=>{ state.weeklyQuest.settings.completionPoints = Number(e.target.value)||0; saveState(); };
+document.getElementById("bossPenaltyInput").onchange = (e)=>{ state.weeklyQuest.settings.missedPenalty = Number(e.target.value)||0; saveState(); };
+document.getElementById("exportBtn").onclick = ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "habit-rpg-data-"+todayStr()+".json";
+  a.click();
+};
+document.getElementById("resetBtn").onclick = ()=>{
+  if(confirm("This will permanently erase all logged habits, XP, and streaks stored in this browser. Continue?")){
+    localStorage.removeItem(STORAGE_KEY);
+    state = defaultState();
+    window._lastOverallLevel = undefined;
+    renderAll();
+  }
+};
+
+/* =========================================================
+   INIT
+   ========================================================= */
+catchUpDays();
+window._lastOverallLevel = levelFromXp(overallXp());
+renderAll();
+</script>
+</body>
+</html>
