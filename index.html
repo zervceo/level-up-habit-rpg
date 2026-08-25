@@ -9,39 +9,54 @@
 
   :root{
     --bg: #0f0e17;
-    --panel: #1a1826;
-    --panel-2: #241f38;
-    --border: #4a3f6b;
-    --text: #e8e6f0;
-    --text-dim: #9b93b8;
+    --panel: rgba(26,22,46,0.86);
+    --panel-2: rgba(36,30,64,0.86);
+    --border: #6b5aa8;
+    --border-light: #9c86e8;
+    --border-dark: #241a4a;
+    --gold: #ffd23f;
+    --gold-dark: #8a6a12;
+    --text: #f1eefb;
+    --text-dim: #b3a8d9;
     --accent: #ffd23f;
-    --accent-2: #4ecdc4;
+    --accent-2: #7dd3fc;
+    --magic: #7dd3fc;
+    --magic-glow: rgba(125,211,252,0.55);
     --hp-red: #ff4d6d;
     --hp-green: #58d68d;
-    --str: #ff6b6b;
-    --cre: #ffd23f;
+    --str: #ff8a4d;
+    --cre: #ff6fd8;
     --int: #4ecdc4;
     --spi: #b892ff;
-    --will: #7fd1ae;
+    --will: #6fe3b4;
     --rank-s: #ffd23f;
     --rank-a: #58d68d;
-    --rank-b: #4ecdc4;
+    --rank-b: #4fb4ff;
     --rank-c: #b892ff;
     --rank-d: #9b93b8;
     --rank-f: #ff4d6d;
+    --princess: #ff8fc7;
+    --dragon: #3f9b5c;
+    --dragon-dark: #1f5c34;
   }
   *{ box-sizing: border-box; }
   html,body{ height:100%; }
   body{
     margin:0;
-    background: radial-gradient(ellipse at top, #1e1a30 0%, var(--bg) 60%);
+    background: var(--bg);
     color: var(--text);
     font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
     min-height:100vh;
     padding-bottom: 40px;
   }
   .pixel{ font-family: 'Press Start 2P', monospace; }
-  .app{ max-width: 900px; margin: 0 auto; padding: 12px 14px 60px; }
+  .app{ max-width: 900px; margin: 0 auto; padding: 12px 14px 60px; position:relative; z-index:1; }
+
+  /* Fixed medieval landscape background */
+  #landscapeBg{
+    position: fixed; inset:0; z-index:-1; overflow:hidden; background:#1a1030;
+  }
+  #landscapeBg svg{ width:100%; height:100%; display:block; }
 
   /* Scanline / CRT toggle */
   body.crt::before{
@@ -55,7 +70,9 @@
   /* Top bar */
   .topbar{
     background: var(--panel);
-    border: 3px solid var(--border);
+    backdrop-filter: blur(6px);
+    border: 3px solid var(--gold);
+    outline: 1px solid var(--border-dark);
     border-radius: 6px;
     padding: 12px;
     display:flex;
@@ -64,7 +81,7 @@
     align-items:center;
     justify-content: space-between;
     margin-bottom: 14px;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.45), 0 0 18px rgba(255,210,63,0.15);
   }
   .lvl-block{ display:flex; align-items:center; gap:10px; }
   .lvl-badge{
@@ -117,15 +134,18 @@
     font-family: 'Press Start 2P', monospace;
   }
   .tab-btn.active{ background: var(--accent); color:#1a1305; border-color: var(--accent); }
-  .tab-btn:hover:not(.active){ border-color: var(--accent-2); color:var(--text); }
+  .tab-btn:hover:not(.active){ border-color: var(--magic); color:var(--text); box-shadow: 0 0 8px var(--magic-glow); }
 
   .panel{
     background: var(--panel);
+    backdrop-filter: blur(6px);
     border: 3px solid var(--border);
+    outline: 1px solid var(--gold-dark);
+    outline-offset: -6px;
     border-radius: 6px;
     padding: 16px;
     margin-bottom: 14px;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.4);
   }
   .panel h2{ font-size:12px; margin: 0 0 12px; color: var(--accent); }
   .panel h3{ font-size: 10px; color: var(--text-dim); margin: 16px 0 8px; text-transform:uppercase; letter-spacing:1px;}
@@ -141,8 +161,9 @@
     gap: 10px;
     flex-wrap: wrap;
   }
-  .quest-row.done{ border-color: var(--rank-a); }
-  .quest-name{ font-weight:600; font-size:14px; }
+  .quest-row.done{ border-color: var(--rank-a); box-shadow: 0 0 10px rgba(88,214,141,0.25); }
+  .quest-name{ font-weight:600; font-size:14px; display:flex; align-items:center; gap:8px; }
+  .quest-icon, .ded-icon{ flex:0 0 auto; image-rendering:pixelated; }
   .quest-tiers{ font-size: 11px; color: var(--text-dim); }
   .quest-actions{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
   .stat-chip{
@@ -165,8 +186,10 @@
     border-radius: 4px;
     font-size: 12px;
     font-weight: 700;
+    box-shadow: 0 0 0 rgba(125,211,252,0);
+    transition: box-shadow .2s;
   }
-  .btn:hover{ filter:brightness(1.1); }
+  .btn:hover{ filter:brightness(1.1); box-shadow: 0 0 10px var(--magic-glow); }
   .btn.small{ padding: 5px 8px; font-size:11px; }
   .btn.danger{ background: var(--hp-red); color:#2a0006; }
   .btn.ghost{ background: transparent; border: 2px solid var(--border); color: var(--text); }
@@ -196,7 +219,7 @@
   .stat-card{
     background: var(--panel-2); border: 2px solid var(--border); border-radius: 6px; padding: 12px;
   }
-  .stat-card h4{ margin:0 0 8px; font-size: 11px; letter-spacing:1px; }
+  .stat-card h4{ margin:0 0 8px; font-size: 11px; letter-spacing:1px; display:flex; align-items:center; gap:6px; }
   .stat-card.STRENGTH h4{ color: var(--str); }
   .stat-card.CREATIVITY h4{ color: var(--cre); }
   .stat-card.INTELLECT h4{ color: var(--int); }
@@ -204,9 +227,25 @@
   .stat-lvl{ font-size: 18px; margin-bottom: 6px; }
 
   .willpower-card{
-    background: linear-gradient(135deg, #12261d, var(--panel-2));
+    background: linear-gradient(135deg, rgba(18,38,29,0.9), var(--panel-2));
     border: 2px solid var(--will); border-radius:6px; padding:12px;
   }
+
+  /* Knight sprite */
+  .knight-panel{
+    display:flex; gap:20px; align-items:center; flex-wrap:wrap;
+    background: radial-gradient(ellipse at center, rgba(125,211,252,0.08), transparent 70%);
+    border-radius: 8px; padding: 10px;
+  }
+  .knight-stage{
+    flex: 0 0 auto; width:150px; height:190px; position:relative;
+    image-rendering:pixelated;
+  }
+  .knight-stage svg{ width:100%; height:100%; }
+  .knight-tier-name{ font-size:12px; color:var(--gold); margin-bottom:6px; }
+  .knight-tier-desc{ font-size:11px; color:var(--text-dim); line-height:1.6; }
+  .aura{ animation: auraPulse 2.4s ease-in-out infinite; }
+  @keyframes auraPulse{ 0%,100%{ opacity:0.35; } 50%{ opacity:0.75; } }
 
   /* History calendar */
   .cal-grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
@@ -237,14 +276,29 @@
   .ach-name{ font-size: 11px; margin-bottom: 4px; }
   .ach-desc{ font-size: 10px; color: var(--text-dim); }
 
-  /* Boss quest screen */
+  /* Boss quest screen — the Dragon's Lair */
   .boss-banner{
-    text-align:center; padding: 20px; background: linear-gradient(135deg,#2a1030,#120a20);
-    border: 3px solid var(--accent); border-radius:8px;
+    text-align:center; padding: 20px;
+    background: linear-gradient(180deg, rgba(40,14,20,0.9), rgba(18,8,16,0.92));
+    border: 3px solid var(--hp-red); border-radius:8px;
+    position: relative; overflow:hidden;
   }
-  .boss-title{ font-size:14px; color: var(--accent); margin-bottom:10px; }
+  .boss-banner.cleared-bg{ border-color: var(--rank-a); background: linear-gradient(180deg, rgba(12,40,26,0.9), rgba(8,20,16,0.92)); }
+  .boss-title{ font-size:14px; color: var(--accent); margin-bottom:4px; }
+  .boss-subtitle{ font-size:10px; color:var(--text-dim); margin-bottom:14px; }
   .boss-progress{ font-size: 28px; margin: 10px 0; }
   .boss-days{ font-size: 11px; color: var(--text-dim); }
+  .boss-stage{ width:220px; height:170px; margin:10px auto; position:relative; }
+  .boss-stage svg{ width:100%; height:100%; }
+  .dragon-hp-track{
+    width:220px; margin:0 auto 10px; height:12px; background:#000;
+    border:2px solid var(--border); border-radius:3px; overflow:hidden;
+  }
+  .dragon-hp-fill{ height:100%; background: linear-gradient(90deg,#ff8a4d, var(--hp-red)); transition: width .6s ease; }
+  .dragon-wobble{ animation: dragonWobble 2.6s ease-in-out infinite; transform-origin: 50% 80%; }
+  @keyframes dragonWobble{ 0%,100%{ transform: rotate(-1.5deg); } 50%{ transform: rotate(1.5deg); } }
+  .princess-glow{ animation: princessGlow 1.8s ease-in-out infinite; }
+  @keyframes princessGlow{ 0%,100%{ opacity:0.85; } 50%{ opacity:1; filter: drop-shadow(0 0 6px var(--princess)); } }
 
   /* Floating point popup */
   .pop{
@@ -272,10 +326,11 @@
 
   .levelup-flash{
     position:fixed; inset:0; z-index: 998; pointer-events:none;
-    background: var(--accent); opacity:0;
-    animation: flash 0.6s ease-out;
+    background: radial-gradient(circle, var(--magic) 0%, var(--gold) 55%, transparent 75%);
+    opacity:0;
+    animation: flash 0.7s ease-out;
   }
-  @keyframes flash{ 0%{opacity:0.55;} 100%{opacity:0;} }
+  @keyframes flash{ 0%{opacity:0.6;} 100%{opacity:0;} }
 
   .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .muted{ color:var(--text-dim); font-size:11px; }
@@ -290,11 +345,73 @@
 </style>
 </head>
 <body>
+<div id="landscapeBg">
+<svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#241854"/>
+      <stop offset="35%" stop-color="#5a3a8c"/>
+      <stop offset="62%" stop-color="#e8724f"/>
+      <stop offset="100%" stop-color="#ffd79a"/>
+    </linearGradient>
+    <linearGradient id="hillGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3f8c5a"/>
+      <stop offset="100%" stop-color="#28613b"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="400" height="240" fill="url(#sky)"/>
+  <g fill="#ffffff" opacity="0.7">
+    <rect x="30" y="20" width="2" height="2"/><rect x="80" y="10" width="2" height="2"/>
+    <rect x="140" y="30" width="2" height="2"/><rect x="200" y="15" width="2" height="2"/>
+    <rect x="250" y="8" width="2" height="2"/><rect x="320" y="25" width="2" height="2"/>
+    <rect x="360" y="14" width="2" height="2"/>
+  </g>
+  <circle cx="340" cy="40" r="16" fill="#fff6d8" opacity="0.9"/>
+  <circle cx="346" cy="36" r="16" fill="#241854" opacity="0.55"/>
+  <g fill="#ffffff" opacity="0.22">
+    <ellipse cx="70" cy="55" rx="26" ry="8"/><ellipse cx="95" cy="50" rx="20" ry="7"/>
+    <ellipse cx="260" cy="70" rx="30" ry="9"/>
+  </g>
+  <polygon points="0,150 40,95 80,140 120,80 170,150 220,100 260,150 310,90 360,150 400,120 400,240 0,240" fill="#4a3a7a" opacity="0.85"/>
+  <g fill="#cfc4ff" opacity="0.7">
+    <polygon points="120,80 128,92 112,92"/><polygon points="310,90 318,100 302,100"/>
+  </g>
+  <polygon points="0,180 60,120 110,175 160,110 210,180 270,130 320,180 400,150 400,240 0,240" fill="#33285c"/>
+  <path d="M0,210 Q60,180 120,205 T240,200 T400,210 L400,240 L0,240 Z" fill="url(#hillGrad)"/>
+  <ellipse cx="205" cy="205" rx="70" ry="22" fill="#2a5236"/>
+  <g id="castle">
+    <rect x="185" y="150" width="40" height="55" fill="#5b5470"/>
+    <rect x="185" y="150" width="40" height="6" fill="#443c60"/>
+    <g fill="#5b5470">
+      <rect x="183" y="140" width="6" height="10"/><rect x="193" y="140" width="6" height="10"/>
+      <rect x="203" y="140" width="6" height="10"/><rect x="213" y="140" width="6" height="10"/>
+      <rect x="221" y="140" width="6" height="10"/>
+    </g>
+    <rect x="160" y="165" width="22" height="40" fill="#4d4762"/>
+    <polygon points="160,165 171,148 182,165" fill="#7a3f4f"/>
+    <rect x="228" y="165" width="22" height="40" fill="#4d4762"/>
+    <polygon points="228,165 239,148 250,165" fill="#7a3f4f"/>
+    <rect x="170" y="140" width="2" height="10" fill="#d8d0f0"/>
+    <polygon points="172,141 180,144 172,147" fill="#ff8fc7"/>
+    <rect x="238" y="140" width="2" height="10" fill="#d8d0f0"/>
+    <polygon points="240,141 248,144 240,147" fill="#ffd23f"/>
+    <rect x="167" y="178" width="8" height="10" fill="#ffe9a8"/>
+    <rect x="198" y="185" width="14" height="20" fill="#241a30"/>
+    <rect x="192" y="162" width="6" height="8" fill="#ffe9a8" opacity="0.8"/>
+    <rect x="212" y="162" width="6" height="8" fill="#ffe9a8" opacity="0.8"/>
+  </g>
+  <g fill="#254a30">
+    <polygon points="60,205 68,180 76,205"/><polygon points="60,215 68,192 76,215"/>
+    <polygon points="330,205 338,180 346,205"/><polygon points="330,215 338,192 346,215"/>
+  </g>
+  <rect x="0" y="228" width="400" height="12" fill="#1f4a2c"/>
+</svg>
+</div>
 <div class="app">
 
   <div class="topbar">
     <div class="lvl-block">
-      <div class="lvl-badge pixel" id="charLevelBadge">LV 1</div>
+      <div class="lvl-badge pixel" id="charLevelBadge" style="display:flex;align-items:center;gap:6px;">LV 1</div>
       <div class="xp-wrap">
         <div class="bar-track"><div class="bar-fill" id="charXpFill" style="width:0%"></div></div>
         <div class="bar-label" id="charXpLabel">0 / 1000 XP</div>
@@ -313,8 +430,8 @@
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="board">QUEST BOARD</button>
-    <button class="tab-btn" data-tab="stats">CHARACTER</button>
-    <button class="tab-btn" data-tab="boss">BOSS QUEST</button>
+    <button class="tab-btn" data-tab="stats">KNIGHT</button>
+    <button class="tab-btn" data-tab="boss">DRAGON'S LAIR</button>
     <button class="tab-btn" data-tab="history">HISTORY</button>
     <button class="tab-btn" data-tab="ach">ACHIEVEMENTS</button>
     <button class="tab-btn" data-tab="settings">SETTINGS</button>
@@ -335,11 +452,20 @@
   <!-- CHARACTER / STATS -->
   <div class="tab-page" id="page-stats" style="display:none">
     <div class="panel">
+      <h2>YOUR KNIGHT</h2>
+      <div class="knight-panel">
+        <div class="knight-stage" id="knightStage"></div>
+        <div>
+          <div class="knight-tier-name pixel" id="knightTierName">TIER 0 — PEASANT</div>
+          <div class="knight-tier-desc" id="knightTierDesc">Every point you earn strengthens your knight. Level up to unlock new armor, weapons, and a champion's aura.</div>
+        </div>
+      </div>
+      <hr class="sep">
       <h2>CHARACTER SHEET</h2>
       <div class="stat-grid" id="statGrid"></div>
       <hr class="sep">
       <div class="willpower-card">
-        <h4 style="margin:0 0 8px;color:var(--will);font-size:11px;">WILLPOWER</h4>
+        <h4 id="willHeading" style="margin:0 0 8px;color:var(--will);font-size:11px;display:flex;align-items:center;gap:6px;">WILLPOWER</h4>
         <div class="bar-track"><div class="bar-fill" id="willFill" style="background:var(--will);width:100%"></div></div>
         <div class="bar-label" id="willLabel">100 / 100</div>
         <div class="muted" style="margin-top:6px;">Damaged by setbacks, restored by clean days. Never lowers your permanent level.</div>
@@ -347,21 +473,24 @@
     </div>
   </div>
 
-  <!-- BOSS QUEST -->
+  <!-- DRAGON'S LAIR (weekly boss quest) -->
   <div class="tab-page" id="page-boss" style="display:none">
     <div class="panel">
-      <div class="boss-banner">
-        <div class="boss-title pixel">&#127908; BOSS QUEST: MAKE 1 SURFBOARD</div>
+      <div class="boss-banner" id="bossBanner">
+        <div class="boss-title pixel" id="bossTitleText">&#128009; SLAY THE DRAGON</div>
+        <div class="boss-subtitle">Real quest: Make 1 Surfboard this week</div>
+        <div class="dragon-hp-track"><div class="dragon-hp-fill" id="dragonHpFill" style="width:100%"></div></div>
+        <div class="boss-stage" id="bossStage"></div>
         <div class="boss-progress" id="bossProgress">0 / 1</div>
         <div class="boss-days" id="bossDays"></div>
         <div style="margin-top:14px;">
-          <button class="btn" id="logSurfboardBtn">LOG SURFBOARD PROGRESS</button>
+          <button class="btn" id="logSurfboardBtn">STRIKE THE DRAGON (log surfboard progress)</button>
         </div>
         <div class="muted" style="margin-top:10px;" id="bossStatusMsg"></div>
       </div>
       <hr class="sep">
       <div class="row">
-        <div class="muted">Consecutive boss quests cleared: <b id="bossStreak">0</b></div>
+        <div class="muted">Consecutive dragons slain: <b id="bossStreak">0</b></div>
       </div>
     </div>
   </div>
@@ -791,7 +920,7 @@ function catchUpDays(){
    ========================================================= */
 function renderTopbar(){
   const overall = levelInfo(overallXp());
-  document.getElementById("charLevelBadge").textContent = "LV " + overall.level;
+  document.getElementById("charLevelBadge").innerHTML = svgIcon("CROWN","#7a5a10","#fff2b0",16) + " LV " + overall.level;
   document.getElementById("charXpFill").style.width = Math.min(100, (overall.xpForNext? overall.xpIntoLevel/overall.xpForNext*100 : 100)) + "%";
   document.getElementById("charXpLabel").textContent = `${overall.xpIntoLevel} / ${overall.xpForNext} XP`;
 
@@ -809,6 +938,36 @@ function renderTopbar(){
   const mini = document.getElementById("bossMini");
   mini.textContent = "BOSS: " + Math.min(w.count, CONFIG.weeklyQuest.minimumCount) + "/" + CONFIG.weeklyQuest.minimumCount;
   mini.className = "boss-mini " + (w.status === "cleared" ? "cleared" : w.status === "missed" ? "missed" : "progress");
+}
+
+/* ---- Small pixel-art category icons (8x8), matching each stat's color ---- */
+const PIXEL_ICONS = {
+  FLAME: ["...11...","..1221..","..1221..",".122221.",".122221.","1222221.","1222221.","..11111."],
+  STAR:  ["....1...","...111..","..11111.",".1111111","..11111.","...111..","....1...","........"],
+  BOOK:  ["........",".111111.",".122221.",".122221.",".122221.",".122221.",".111111.","........"],
+  ORB:   ["...11...","..1221..",".122221.",".122221.",".122221.","..1221...","...11...","........"],
+  BURST: [".1...1..","..1.1...","...1....","1..1..1.","...1....","..1.1...",".1...1..","........"],
+  HEART: [".11.11..","1221221.","12222221",".122221.","..1221..","...11...","........","........"],
+  CROWN: ["1..1..1.","11111111","12222221","12222221","11111111","........","........","........"]
+};
+const ICON_FOR_STAT = { STRENGTH:"FLAME", CREATIVITY:"STAR", INTELLECT:"BOOK", SPIRIT:"ORB" };
+function svgIcon(name, mainColor, highlightColor, px){
+  px = px || 22;
+  const rows = PIXEL_ICONS[name];
+  let cells = "";
+  for(let y=0;y<rows.length;y++){
+    for(let x=0;x<rows[y].length;x++){
+      const c = rows[y][x];
+      if(c === "1") cells += `<rect x="${x}" y="${y}" width="1" height="1" fill="${mainColor}"/>`;
+      else if(c === "2") cells += `<rect x="${x}" y="${y}" width="1" height="1" fill="${highlightColor}"/>`;
+    }
+  }
+  return `<svg class="quest-icon" width="${px}" height="${px}" viewBox="0 0 8 8" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">${cells}</svg>`;
+}
+function iconForStat(stat){
+  const name = ICON_FOR_STAT[stat] || "STAR";
+  const colorVar = "var(--" + { STRENGTH:"str", CREATIVITY:"cre", INTELLECT:"int", SPIRIT:"spi" }[stat] + ")";
+  return svgIcon(name, colorVar, "#ffffff");
 }
 
 function renderHabitList(){
@@ -830,7 +989,7 @@ function renderHabitList(){
     }
     row.innerHTML = `
       <div>
-        <div class="quest-name">${h.name} <span class="stat-chip ${h.statMapping}">${h.statMapping}</span></div>
+        <div class="quest-name">${iconForStat(h.statMapping)} ${h.name} <span class="stat-chip ${h.statMapping}">${h.statMapping}</span></div>
         <div class="quest-tiers">${tiersText}</div>
       </div>
       <div class="quest-actions">
@@ -854,7 +1013,7 @@ function renderDeductionList(){
     row.className = "ded-row";
     row.innerHTML = `
       <div>
-        <div class="quest-name">${d.name}</div>
+        <div class="quest-name">${svgIcon("BURST","var(--hp-red)","#ffd0d0")} ${d.name}</div>
         <div class="quest-tiers">${d.type==='flat_stacking' ? `${d.points} each` : d.tiers.map(t=>`${t.threshold}x:${t.points}`).join("  ")}</div>
       </div>
       <div class="quest-actions">
@@ -872,7 +1031,7 @@ function renderDeductionList(){
   row.className = "ded-row";
   row.innerHTML = `
     <div>
-      <div class="quest-name">Purchase (non-food)</div>
+      <div class="quest-name">${svgIcon("BURST","var(--hp-red)","#ffd0d0")} Purchase (non-food)</div>
       <div class="quest-tiers">&lt;$25:-100  $25-75:-250  $75-150:-500  &gt;$150:-1000</div>
       <div class="muted">${purch.length} purchase(s) logged today</div>
     </div>
@@ -893,7 +1052,7 @@ function renderStats(){
     const card = document.createElement("div");
     card.className = "stat-card " + key;
     card.innerHTML = `
-      <h4>${key}</h4>
+      <h4>${iconForStat(key)} ${key}</h4>
       <div class="stat-lvl pixel">LV ${info.level}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100, info.xpForNext? info.xpIntoLevel/info.xpForNext*100:100)}%"></div></div>
       <div class="bar-label">${info.xpIntoLevel} / ${info.xpForNext} XP &middot; ${state.xp[key]} lifetime</div>`;
@@ -901,20 +1060,153 @@ function renderStats(){
   }
   document.getElementById("willFill").style.width = state.willpower + "%";
   document.getElementById("willLabel").textContent = state.willpower + " / 100";
+  document.getElementById("willHeading").innerHTML = svgIcon("HEART","var(--will)","#d0fff0") + " WILLPOWER";
+  renderKnight();
+}
+
+/* ---- Knight sprite: gains real armor as your overall Level rises ---- */
+const ARMOR_TIERS = [
+  { minLevel:0,  name:"Peasant",     desc:"Bare-handed and eager. Log real habits to earn your first armor." },
+  { minLevel:3,  name:"Squire",      desc:"Leather gear and a dagger at your side." },
+  { minLevel:6,  name:"Man-at-Arms", desc:"Chainmail, an open helm, and a shortsword." },
+  { minLevel:10, name:"Knight",      desc:"Steel plate, pauldrons, and a longsword — a true knight of the realm." },
+  { minLevel:15, name:"Champion",    desc:"Gold-trimmed plate, a flowing cape, and a blade wreathed in magic light." }
+];
+function armorTierIndex(level){
+  let idx = 0;
+  for(let i=0;i<ARMOR_TIERS.length;i++){ if(level >= ARMOR_TIERS[i].minLevel) idx = i; }
+  return idx;
+}
+const KNIGHT_SETS = [
+  { tunic:"#8a5a3c", legs:"#6b4530", helmet:null,      weapon:"none",       shield:false,   pauldrons:false, cape:false, aura:false, plume:false },
+  { tunic:"#7a8a4a", legs:"#5c6b3a", helmet:"#5c4530", weapon:"dagger",     shield:false,   pauldrons:false, cape:false, aura:false, plume:false },
+  { tunic:"#9aa0ad", legs:"#7a808d", helmet:"#8a8f9c", weapon:"sword",      shield:"round", pauldrons:false, cape:false, aura:false, plume:false },
+  { tunic:"#c7ccd6", legs:"#aeb4c0", helmet:"#c7ccd6", weapon:"sword",      shield:"kite",  pauldrons:true,  cape:false, aura:false, plume:false },
+  { tunic:"#f0d878", legs:"#d9c05a", helmet:"#f0d878", weapon:"magicsword", shield:"tower", pauldrons:true,  cape:true,  aura:true,  plume:true }
+];
+function knightSVG(tier){
+  const skin = "#e8b98a";
+  const s = KNIGHT_SETS[tier];
+  const headFill = s.helmet || skin;
+  let parts = "";
+  if(s.aura){
+    parts += `<circle cx="10" cy="14" r="11" fill="var(--magic)" opacity="0.12" class="aura"/>
+               <circle cx="10" cy="14" r="9" fill="none" stroke="var(--magic)" stroke-width="0.6" opacity="0.5" class="aura"/>`;
+  }
+  if(s.cape){ parts += `<polygon points="6,7 4,23 1,23 2,9" fill="#3b5fc4"/>`; }
+  parts += `<rect x="6" y="16" width="3" height="8" fill="${s.legs}"/>
+             <rect x="11" y="16" width="3" height="8" fill="${s.legs}"/>
+             <rect x="6" y="24" width="3" height="2" fill="#2a1f14"/>
+             <rect x="11" y="24" width="3" height="2" fill="#2a1f14"/>
+             <rect x="3" y="7" width="3" height="8" fill="${s.tunic}"/>
+             <rect x="14" y="7" width="3" height="8" fill="${s.tunic}"/>`;
+  if(s.shield === "round"){
+    parts += `<rect x="0" y="8" width="4" height="5" fill="${s.tunic}" stroke="#3a3f4a" stroke-width="0.3"/>
+               <rect x="1.3" y="9.5" width="1.4" height="1.4" fill="#3a3f4a"/>`;
+  } else if(s.shield === "kite"){
+    parts += `<polygon points="-1,7 4,7 4,13 1.5,16 -1,13" fill="${s.tunic}" stroke="#8a1f2a" stroke-width="0.3"/>
+               <rect x="0.7" y="9" width="1.6" height="4" fill="#8a1f2a"/>`;
+  } else if(s.shield === "tower"){
+    parts += `<polygon points="-1.5,6 4.5,6 4.5,15 1.5,18 -1.5,15" fill="${s.tunic}" stroke="var(--gold)" stroke-width="0.4"/>
+               <polygon points="1.5,8 3,11 1.5,14 0,11" fill="var(--gold)"/>`;
+  }
+  parts += `<rect x="6" y="7" width="8" height="8" fill="${s.tunic}"/>
+             <rect x="6" y="15" width="8" height="1" fill="${s.aura ? 'var(--gold)':'#3a2a1a'}"/>`;
+  if(s.pauldrons){
+    parts += `<rect x="2" y="6" width="4" height="2.4" fill="${s.legs}"/>
+               <rect x="14" y="6" width="4" height="2.4" fill="${s.legs}"/>`;
+  }
+  parts += `<rect x="7" y="1" width="6" height="5" fill="${headFill}"/>`;
+  if(s.helmet){ parts += `<rect x="8" y="4" width="4" height="1" fill="#241a1a"/>`; }
+  if(s.plume){ parts += `<polygon points="9,1 11,1 10,-2.5" fill="#d84343"/>`; }
+  if(s.weapon === "dagger"){
+    parts += `<rect x="17" y="10" width="1" height="6" fill="#c7ccd6"/><rect x="16.4" y="15.5" width="2.2" height="1.4" fill="#5c4530"/>`;
+  } else if(s.weapon === "sword"){
+    parts += `<rect x="17" y="5" width="1.1" height="11" fill="#dfe3ea"/><rect x="16.3" y="15.5" width="2.5" height="1.6" fill="var(--gold)"/>`;
+  } else if(s.weapon === "magicsword"){
+    parts += `<rect x="16.7" y="4" width="1.7" height="12" fill="var(--magic)" opacity="0.9"/><rect x="17" y="4.4" width="1.1" height="11.2" fill="#eaffff"/><rect x="16.1" y="15.5" width="3" height="1.8" fill="var(--gold)"/>`;
+  }
+  return `<svg viewBox="-2 -4 24 30" xmlns="http://www.w3.org/2000/svg">${parts}</svg>`;
+}
+function renderKnight(){
+  const level = levelInfo(overallXp()).level;
+  const tierIdx = armorTierIndex(level);
+  const tier = ARMOR_TIERS[tierIdx];
+  document.getElementById("knightStage").innerHTML = knightSVG(tierIdx);
+  document.getElementById("knightTierName").textContent = `LV ${level} — ${tier.name.toUpperCase()}`;
+  const next = ARMOR_TIERS[tierIdx+1];
+  document.getElementById("knightTierDesc").textContent = tier.desc + (next ? ` Reach Level ${next.minLevel} to become a ${next.name}.` : " You've reached the highest tier of armor.");
+}
+
+/* ---- Dragon's Lair visuals ---- */
+function dragonAliveSVG(){
+  return `<svg viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg" class="dragon-wobble">
+    <polygon points="10,8 5,1 17,6" fill="var(--dragon-dark)"/>
+    <polygon points="8,11 2,13 6,9" fill="var(--dragon)"/>
+    <rect x="8" y="8" width="14" height="7" rx="2" fill="var(--dragon)"/>
+    <rect x="9" y="12" width="12" height="3" fill="#c9d84a"/>
+    <rect x="20" y="4" width="6" height="5" fill="var(--dragon)"/>
+    <rect x="25" y="6" width="3" height="2" fill="var(--dragon)"/>
+    <rect x="24" y="5" width="1.6" height="1.6" fill="#ff4d6d"/>
+    <polygon points="21,4 22,1 23,4" fill="var(--dragon-dark)"/>
+    <rect x="11" y="15" width="2" height="3" fill="var(--dragon-dark)"/>
+    <rect x="17" y="15" width="2" height="3" fill="var(--dragon-dark)"/>
+    <polygon points="27,7 29,7.6 27,8.3" fill="#ff8a4d" opacity="0.85"/>
+  </svg>`;
+}
+function dragonDefeatedSVG(){
+  return `<svg viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg" style="filter:grayscale(0.55);opacity:0.75;transform:rotate(8deg) translateY(4px)">
+    <polygon points="8,15 3,10 13,12" fill="var(--dragon-dark)"/>
+    <rect x="6" y="12" width="16" height="6" rx="2" fill="var(--dragon)"/>
+    <rect x="7" y="15" width="14" height="2.5" fill="#c9d84a"/>
+    <rect x="20" y="10" width="6" height="5" fill="var(--dragon)"/>
+    <g stroke="#241a1a" stroke-width="0.6">
+      <line x1="22" y1="11" x2="23.2" y2="12.2"/><line x1="23.2" y1="11" x2="22" y2="12.2"/>
+    </g>
+    <g fill="var(--gold)" opacity="0.8">
+      <polygon points="20,3 20.6,4.4 22,4.6 20.9,5.5 21.2,7 20,6.2 18.8,7 19.1,5.5 18,4.6 19.4,4.4"/>
+      <polygon points="26,5 26.4,5.9 27.4,6 26.6,6.6 26.9,7.6 26,7 25.1,7.6 25.4,6.6 24.6,6 25.6,5.9"/>
+    </g>
+  </svg>`;
+}
+function princessSVG(){
+  return `<svg viewBox="0 -3 10 19" xmlns="http://www.w3.org/2000/svg" class="princess-glow">
+    <polygon points="2,4 8,4 9,15 1,15" fill="var(--princess)"/>
+    <rect x="2.5" y="6" width="5" height="1.2" fill="#ffd0e8" opacity="0.8"/>
+    <rect x="3" y="0" width="4" height="4" fill="#f0c090"/>
+    <rect x="2.5" y="-0.5" width="5" height="1.5" fill="#7a4a2a"/>
+    <polygon points="4,-1.5 5,-2.6 6,-1.5" fill="var(--gold)"/>
+    <rect x="0.5" y="5" width="1.4" height="5" fill="var(--princess)"/>
+    <rect x="8" y="5" width="1.4" height="5" fill="var(--princess)"/>
+  </svg>`;
 }
 
 function renderBoss(){
   const date = todayStr();
   const wk = weekStartOf(date);
   const w = state.weeklyQuest.weeks[wk] || { count:0, status:"in_progress" };
+  const cleared = w.status === "cleared";
   document.getElementById("bossProgress").textContent = Math.min(w.count, CONFIG.weeklyQuest.minimumCount) + " / " + CONFIG.weeklyQuest.minimumCount;
   const end = weekEndOf(date);
   const daysLeft = (parseDate(end) - parseDate(date)) / 86400000;
   document.getElementById("bossDays").textContent = daysLeft + " day(s) left this week (week ends " + end + ")";
   const msg = document.getElementById("bossStatusMsg");
-  if(w.status === "cleared") msg.textContent = "CLEARED — great work this week.";
-  else if(w.status === "missed") msg.textContent = "Missed last time this window closed — willpower penalty applied. New week, new run.";
-  else msg.textContent = "Non-negotiable. Get it done before the week ends.";
+  const banner = document.getElementById("bossBanner");
+  const stage = document.getElementById("bossStage");
+  const hpFill = document.getElementById("dragonHpFill");
+  const titleText = document.getElementById("bossTitleText");
+  banner.classList.toggle("cleared-bg", cleared);
+  hpFill.style.width = cleared ? "0%" : "100%";
+  stage.style.position = "relative";
+  if(cleared){
+    titleText.innerHTML = "&#127881; THE DRAGON HAS FALLEN";
+    stage.innerHTML = dragonDefeatedSVG() + `<div style="position:absolute;bottom:-6px;right:14px;width:28px;">${princessSVG()}</div>`;
+    msg.textContent = "The princess is safe. Great work this week.";
+  } else {
+    titleText.innerHTML = "&#128009; SLAY THE DRAGON";
+    stage.innerHTML = dragonAliveSVG();
+    msg.textContent = "Non-negotiable. Strike it down before the week ends, or the dragon rampages on.";
+  }
   document.getElementById("bossStreak").textContent = state.weeklyQuest.bossStreak;
 }
 
