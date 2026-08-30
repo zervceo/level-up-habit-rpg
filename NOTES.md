@@ -1,8 +1,21 @@
 # Build notes / judgment calls
 
 Everything below is a decision I made while implementing the spec where the
-brief didn't fully pin things down. All are easy to change directly in
-`index.html`.
+brief didn't fully pin things down. Most are easy to change directly in the
+relevant file (`app.js` for scoring/config, `style.css` for visuals,
+`index.html`/`chronicle.html`/`honors.html` for page-specific markup).
+
+0. **Split into three pages** (Dashboard/Chronicle/Honors, sharing
+   `style.css` + `app.js`) instead of one long single-page app with JS tabs,
+   per a later request — it gives each section its own room to breathe on a
+   phone screen and a real sticky nav bar instead of scrolling past
+   everything to reach Honors. All game state is still read/written straight
+   to `localStorage`, so the pages stay in sync with no routing logic: any
+   page can be reloaded or landed on directly and it's always current. The
+   Sacred Oath's interactive "log it" control lives on the Chronicle page
+   (since it has to react to the date navigator, per the spec), while the
+   Dashboard shows a read-only summary of the current week's Oath with a
+   link over to Chronicle.
 
 1. **Weeks are Monday-start (ISO-style).** "This Week" on the scoreboard and
    the Sacred Oath's weekly bucket both use the Monday of the relevant date's

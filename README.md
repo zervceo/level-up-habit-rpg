@@ -1,18 +1,28 @@
 # Game of Life: Path to Knighthood
 
-A single-page, self-improvement scorekeeper themed as a medieval RPG — log your
-**Deeds** and **Follies** each day, rise from Commoner to Champion of the Realm,
-uphold your weekly **Sacred Oath**, and earn **Honors** along the way.
+A self-improvement scorekeeper themed as a medieval RPG — log your **Deeds**
+and **Follies** each day, rise from Commoner to Champion of the Realm, uphold
+your weekly **Sacred Oath**, and earn **Honors** along the way.
 
-Everything lives in one file (`index.html`) and runs entirely in your browser —
-no build step, no server, no account. All progress is saved to `localStorage`
-on your device only; nothing is ever sent anywhere.
+It's a small static site (three pages — Dashboard, Chronicle, Honors —
+sharing one stylesheet and one script) and runs entirely in your browser: no
+build step, no server, no account. All progress is saved to `localStorage` on
+your device only; nothing is ever sent anywhere.
+
+- `index.html` — Dashboard: your Knight's Profile, scoreboard, and a peek at
+  recent Honors.
+- `chronicle.html` — where you actually log Deeds and Follies, navigate to
+  any past day, and mark the week's Sacred Oath.
+- `honors.html` — the full Honors gallery.
+- `style.css`, `app.js` — shared styling and game logic used by all three pages.
 
 ## Deploy to GitHub Pages
 
 1. Create a new repository on GitHub (public or private).
-2. Upload `index.html` (and this `README.md`) to the repository — drag and
-   drop them into the GitHub web UI, or `git push` them.
+2. Upload all the files above (`index.html`, `chronicle.html`, `honors.html`,
+   `style.css`, `app.js`, and this `README.md`) to the repository — drag and
+   drop them into the GitHub web UI, or `git push` them. Keep them all in the
+   repo root so the relative links between pages resolve.
 3. In the repo, go to **Settings → Pages**.
 4. Under "Build and deployment", set **Source** to "Deploy from a branch",
    pick branch **main** and folder **/ (root)**, then **Save**.
