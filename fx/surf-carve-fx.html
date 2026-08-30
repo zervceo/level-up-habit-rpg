@@ -1,0 +1,178 @@
+<!doctype html>
+<!--
+  Surf Carve FX — looping trippy line-art surfer carving a neon wave.
+  Pure SVG + CSS (no JS, no external assets) — drop this <svg>+<style> block
+  into any ad unit, hero section, or video capture rig. Seamless 6s loop.
+
+  Customizing:
+    - Swap #bgGlow / #waveFace stop-colors for brand colors.
+    - .surferRig's `carve` keyframes control the S-turn path down the wave.
+    - The bottom <rect fill="url(#bottomFade)"> is a safe area for a logo/CTA.
+    - To export as video: screen-record this page (e.g. headless Chromium +
+      ffmpeg) for ~6s, it loops cleanly at the cut point.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<title>Surf Carve FX</title>
+<style>
+  html,body{margin:0;height:100%;background:#050014;overflow:hidden}
+  .stage{width:100vw;height:100vh;display:block}
+</style>
+</head>
+<body>
+<svg class="stage" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgGlow" cx="60%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#3a1868"/>
+      <stop offset="45%" stop-color="#160a3a"/>
+      <stop offset="100%" stop-color="#050014"/>
+    </radialGradient>
+    <linearGradient id="waveFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1c3d6b"/>
+      <stop offset="55%" stop-color="#0e2450"/>
+      <stop offset="100%" stop-color="#050b26"/>
+    </linearGradient>
+    <linearGradient id="bottomFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#02030a" stop-opacity="0.85"/>
+    </linearGradient>
+    <!-- neon glow + chromatic-aberration halo, shared by the wave rim and the surfer -->
+    <filter id="neonTrippy" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="rBlur"/>
+      <feOffset in="rBlur" dx="-3" dy="0" result="rOff">
+        <animate attributeName="dx" values="-2;-5;-2" dur="2.4s" repeatCount="indefinite"/>
+      </feOffset>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="gBlur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="bBlur"/>
+      <feOffset in="bBlur" dx="3" dy="0" result="bOff">
+        <animate attributeName="dx" values="2;5;2" dur="2.4s" repeatCount="indefinite"/>
+      </feOffset>
+      <feBlend in="rOff" in2="gBlur" mode="screen" result="rg"/>
+      <feBlend in="rg" in2="bOff" mode="screen" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1080" height="1080" fill="url(#bgGlow)"/>
+
+  <!-- distant swell lines, slow parallax drift -->
+  <g class="swell" opacity="0.35" fill="none" stroke="#7dd3fc" stroke-width="2">
+    <path d="M-200,300 Q-50,270 100,300 T400,300 T700,300 T1000,300 T1300,300"/>
+    <path d="M-200,360 Q-50,335 100,360 T400,360 T700,360 T1000,360 T1300,360"/>
+    <path d="M-200,420 Q-50,400 100,420 T400,420 T700,420 T1000,420 T1300,420"/>
+  </g>
+
+  <!-- main wave face the surfer carves across -->
+  <path class="waveBody" fill="url(#waveFace)"
+    d="M-100,1180 C120,760 260,560 480,470 C700,380 900,430 1180,320
+       L1180,1180 Z"/>
+  <path class="waveRim" fill="none" stroke="#7dfcff" stroke-width="6" stroke-linecap="round"
+    filter="url(#neonTrippy)"
+    d="M-100,760 C120,760 260,560 480,470 C700,380 900,430 1180,320"/>
+  <path class="waveFoam" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"
+    stroke-dasharray="2 22"
+    d="M-100,760 C120,760 260,560 480,470 C700,380 900,430 1180,320"/>
+
+  <!-- SURFER RIG -->
+  <g class="surferRig">
+    <!-- concentric pulse rings at the carve/tail point, riding with the rig -->
+    <g class="pulseGroup" transform="translate(890,610)">
+      <circle class="pulseRing r1" r="10" fill="none" stroke="#ff6fd8" stroke-width="3"/>
+      <circle class="pulseRing r2" r="10" fill="none" stroke="#7dfcff" stroke-width="3"/>
+      <circle class="pulseRing r3" r="10" fill="none" stroke="#ffe23f" stroke-width="3"/>
+    </g>
+
+    <!-- wake / spray particles kicked off the tail, riding with the rig -->
+    <g class="wake" transform="translate(890,610)">
+      <circle class="p" style="--dx:55px;--dy:-8px;--t:0s"    r="5" fill="#7dfcff"/>
+      <circle class="p" style="--dx:70px;--dy:18px;--t:.15s"  r="4" fill="#ffe23f"/>
+      <circle class="p" style="--dx:40px;--dy:-25px;--t:.3s"  r="6" fill="#ff6fd8"/>
+      <circle class="p" style="--dx:85px;--dy:-2px;--t:.45s"  r="3" fill="#7dfcff"/>
+      <circle class="p" style="--dx:30px;--dy:32px;--t:.6s"   r="4" fill="#ffe23f"/>
+      <circle class="p" style="--dx:95px;--dy:12px;--t:.75s"  r="5" fill="#ff6fd8"/>
+      <circle class="p" style="--dx:50px;--dy:40px;--t:.9s"   r="3" fill="#7dfcff"/>
+      <circle class="p" style="--dx:65px;--dy:-18px;--t:1.05s" r="4" fill="#ffe23f"/>
+    </g>
+
+    <g transform="translate(420,320) scale(1.35)" filter="url(#neonTrippy)">
+      <g transform="rotate(-8 255 220)">
+        <path class="board" fill="none" stroke="#ffe23f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"
+          transform="translate(250,300) rotate(-20)"
+          d="M -125 0 C -125 -16, -60 -20, 0 -19 C 55 -18, 100 -13, 128 -3
+             L 118 3 L 128 9 C 100 15, 55 19, 0 20 C -60 21, -125 16, -125 0 Z"/>
+        <path fill="none" stroke="#ffe23f" stroke-width="4" stroke-linecap="round"
+          transform="translate(250,300) rotate(-20)" d="M 40,18 C 44,30 44,40 38,48"/>
+
+        <g class="body" fill="none" stroke="#7dfcff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M 250,220 C 232,235 216,248 205,268 C 200,277 202,282 203,286"/>
+          <path d="M 255,222 C 275,232 292,244 298,262 C 300,272 300,280 300,286"/>
+          <path d="M 252,220 C 256,196 260,170 266,148"/>
+          <path d="M 264,150 C 244,160 222,172 202,192 C 192,202 186,210 182,218"/>
+          <path d="M 270,147 C 288,136 304,124 315,105"/>
+          <path d="M 266,148 C 270,142 274,137 278,132"/>
+          <circle cx="288" cy="122" r="14"/>
+          <path stroke-width="4" d="M 297,113 C 305,105 314,101 323,100"/>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <!-- foreground wave lip curling over -->
+  <path class="lip" fill="none" stroke="#b892ff" stroke-width="4" opacity="0.55"
+    d="M760,340 C860,300 960,330 1040,410"/>
+
+  <!-- bottom vignette: safe area for a brand lockup / CTA over the loop -->
+  <rect x="0" y="860" width="1080" height="220" fill="url(#bottomFade)"/>
+</svg>
+
+<style>
+  .swell{ animation: drift 14s linear infinite; }
+  @keyframes drift{ from{transform:translateX(0)} to{transform:translateX(-300px)} }
+
+  .surferRig{
+    transform-box: fill-box;
+    animation: carve 6s ease-in-out infinite, hue 6s linear infinite;
+  }
+  @keyframes carve{
+    0%   { transform: translate(0,0)      rotate(0deg); }
+    25%  { transform: translate(60px,-30px) rotate(6deg); }
+    50%  { transform: translate(110px,10px) rotate(-4deg); }
+    75%  { transform: translate(50px,50px)  rotate(5deg); }
+    100% { transform: translate(0,0)      rotate(0deg); }
+  }
+  @keyframes hue{
+    0%{ filter:hue-rotate(0deg); } 100%{ filter:hue-rotate(360deg); }
+  }
+
+  .waveRim, .waveFoam{ animation: hue 6s linear infinite; }
+  .waveFoam{ animation: foamFlow 2s linear infinite; }
+  @keyframes foamFlow{ from{stroke-dashoffset:0} to{stroke-dashoffset:-48} }
+
+  .pulseRing{ animation: pulse 2s ease-out infinite; transform-box: fill-box; transform-origin: center; opacity:0;}
+  .r1{ animation-delay:0s } .r2{ animation-delay:.66s } .r3{ animation-delay:1.32s }
+  @keyframes pulse{
+    0%{ r:8; opacity:.9; }
+    100%{ r:170; opacity:0; }
+  }
+
+  .wake .p{
+    transform-box: fill-box; transform-origin: center;
+    animation: burst 1.8s ease-out infinite;
+    animation-delay: var(--t);
+    opacity:0;
+  }
+  @keyframes burst{
+    0%{ transform: translate(0,0) scale(1); opacity:1; }
+    100%{ transform: translate(var(--dx),var(--dy)) scale(0.2); opacity:0; }
+  }
+
+  .lip{ animation: lipPulse 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes lipPulse{ 0%,100%{ opacity:.35 } 50%{ opacity:.75 } }
+</style>
+</body>
+</html>
