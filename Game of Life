@@ -1,0 +1,418 @@
+/* =========================================================================
+   Game of Life: Path to Knighthood — shared config, storage & scoring engine.
+   Included by every page (index.html, chronicle.html, honors.html) before
+   that page's own inline script. All game state lives in localStorage, so
+   pages stay in sync purely by reading/writing the same keys — no SPA
+   routing needed.
+   ========================================================================= */
+
+const DEEDS = [
+  { id:"lifting_workout", name:"Lifting Workout", icon:"🏋️", type:"flat", points:250 },
+  { id:"cardio_workout",  name:"Cardio Workout",  icon:"🏃", type:"flat", points:250 },
+  { id:"video_creatives", name:"Video Creatives", icon:"🎬", type:"tiered", unit:"video", tiers:[
+      {n:1, points:100, label:"1 video"}, {n:2, points:250, label:"2 videos"},
+      {n:3, points:400, label:"3 videos"}, {n:5, points:750, label:"5+ videos"} ] },
+  { id:"reading", name:"Read", icon:"📖", type:"tiered", unit:"min", tiers:[
+      {n:15, points:100, label:"15 min"}, {n:30, points:200, label:"30 min"}, {n:60, points:500, label:"60 min"} ] },
+  { id:"journaling", name:"Journal", icon:"📓", type:"tiered", unit:"min", tiers:[
+      {n:15, points:100, label:"15 min"}, {n:30, points:200, label:"30 min"}, {n:60, points:500, label:"60 min"} ] },
+  { id:"prayer", name:"Pray", icon:"🙏", type:"tiered", unit:"min", tiers:[
+      {n:15, points:250, label:"15 min"}, {n:30, points:500, label:"30 min"},
+      {n:45, points:750, label:"45 min"}, {n:60, points:1000, label:"60 min"} ] },
+  { id:"guitar", name:"Play Guitar", icon:"🎸", type:"tiered", unit:"min", tiers:[
+      {n:15, points:100, label:"15 min"}, {n:30, points:200, label:"30 min"},
+      {n:45, points:300, label:"45 min"}, {n:60, points:400, label:"60 min"} ] },
+  { id:"duolingo", name:"Duolingo", icon:"🦉", type:"tiered", unit:"min", tiers:[
+      {n:15, points:100, label:"15 min"}, {n:30, points:200, label:"30 min"},
+      {n:45, points:300, label:"45 min"}, {n:60, points:400, label:"60 min"} ] },
+  { id:"study_trading", name:"Study / Trading", icon:"📈", type:"tiered", unit:"min", tiers:[
+      {n:15, points:100, label:"15 min"}, {n:30, points:200, label:"30 min"}, {n:60, points:500, label:"60 min"} ] },
+  { id:"sales", name:"Sales", icon:"💰", type:"tiered", unit:"$", tiers:[
+      {n:100, points:250, label:"$100"}, {n:250, points:500, label:"$250"},
+      {n:500, points:750, label:"$500"}, {n:1000, points:1000, label:"$1000"} ] },
+  { id:"art_piece", name:"Create an Art Piece", icon:"🎨", type:"repeatable", points:250 },
+  { id:"poem", name:"Write a Poem", icon:"🖋️", type:"repeatable", points:250 }
+];
+
+const FOLLIES = [
+  { id:"weed", name:"Smoking Marijuana", icon:"🌿", type:"stacking", points:-500 },
+  { id:"alcohol", name:"Drinking Alcohol", icon:"🍺", type:"stacking", points:-500 },
+  { id:"masturbation", name:"Masturbating", icon:"🔞", type:"tiered_count", tiers:[
+      {n:1, points:-250}, {n:2, points:-750}, {n:3, points:-1000} ] },
+  { id:"food_spending", name:"Spending Money on Food", icon:"🍔", type:"tiered_count", tiers:[
+      {n:1, points:-250}, {n:2, points:-500}, {n:3, points:-1000} ] },
+  { id:"purchases", name:"Purchases (non-food)", icon:"🛍️", type:"amount_each", ranges:[
+      {min:0, max:25, points:-100}, {min:25, max:75, points:-250},
+      {min:75, max:150, points:-500}, {min:150, max:Infinity, points:-1000} ] }
+];
+
+const RANK_TIERS = [
+  { score:0,       rank:"Commoner",           weapon:"Wooden Stick",        weaponIcon:"🥢", armor:"Ragged Tunic",        armorIcon:"👕" },
+  { score:2500,    rank:"Squire",              weapon:"Rusty Dagger",        weaponIcon:"🔪", armor:"Leather Vest",        armorIcon:"🦺" },
+  { score:7500,    rank:"Knight",              weapon:"Iron Sword",          weaponIcon:"⚔️", armor:"Chainmail",           armorIcon:"⛓️" },
+  { score:15000,   rank:"Knight-Errant",       weapon:"Steel Longsword",     weaponIcon:"🗡️", armor:"Plate Armor",         armorIcon:"🛡️" },
+  { score:30000,   rank:"Knight Captain",      weapon:"Enchanted Blade",     weaponIcon:"✨",  armor:"Engraved Plate",      armorIcon:"🛡️" },
+  { score:60000,   rank:"Baron of the Realm",  weapon:"Dragonfire Blade",    weaponIcon:"🔥",  armor:"Royal Plate",         armorIcon:"👑" },
+  { score:100000,  rank:"Champion of the Realm", weapon:"Legendary Excalibur", weaponIcon:"🏆", armor:"Legendary Aegis Plate", armorIcon:"🌟" }
+];
+
+const ACHIEVEMENTS = [
+  { id:"first_deed", name:"First Steps", icon:"👣", desc:"Log your very first Deed.",
+    check:a => a.totalDeedEvents >= 1 },
+  { id:"renaissance_day", name:"Renaissance Knight", icon:"🎭", desc:"Log every single Deed category in one day.",
+    check:a => a.everyCategoryDay },
+  { id:"spotless_day", name:"Spotless Day", icon:"✨", desc:"Log a day with zero Follies.",
+    check:a => a.hasSpotlessDay },
+  { id:"spotless_week", name:"Week of Virtue", icon:"🕊️", desc:"7-day streak of spotless days.",
+    check:a => a.longestSpotlessStreak >= 7 },
+  { id:"big_day", name:"Legendary Day", icon:"💥", desc:"Score 2,000+ points in a single day.",
+    check:a => a.maxDayScore >= 2000 },
+  { id:"iron_week", name:"Iron Discipline", icon:"🏋️", desc:"7-day streak with a Lifting or Cardio workout every day.",
+    check:a => a.longestLiftCardioStreak >= 7 },
+  { id:"thirty_day_deeds", name:"Unbroken Vow", icon:"🔥", desc:"30-day streak with a positive Deed logged every day.",
+    check:a => a.longestDeedStreak >= 30 },
+  { id:"journal_30", name:"Chronicler", icon:"📓", desc:"Journal on 30 different days.",
+    check:a => a.journalDays >= 30 },
+  { id:"hundred_events", name:"Century of Deeds", icon:"💯", desc:"100 total Deeds/Follies logged, lifetime.",
+    check:a => a.totalLogEvents >= 100 },
+  { id:"rank_squire", name:"Squire of the Realm", icon:"🔪", desc:"Reach the rank of Squire.", check:a => a.allTime >= 2500 },
+  { id:"rank_knight", name:"Dubbed a Knight", icon:"⚔️", desc:"Reach the rank of Knight.", check:a => a.allTime >= 7500 },
+  { id:"rank_errant", name:"Knight-Errant", icon:"🗡️", desc:"Reach the rank of Knight-Errant.", check:a => a.allTime >= 15000 },
+  { id:"rank_captain", name:"Knight Captain", icon:"✨", desc:"Reach the rank of Knight Captain.", check:a => a.allTime >= 30000 },
+  { id:"rank_baron", name:"Baron of the Realm", icon:"🔥", desc:"Reach the rank of Baron of the Realm.", check:a => a.allTime >= 60000 },
+  { id:"rank_champion", name:"Champion of the Realm", icon:"🏆", desc:"Reach the rank of Champion of the Realm.", check:a => a.allTime >= 100000 },
+  { id:"oath_4weeks", name:"Sworn and True", icon:"🏄", desc:"Sacred Oath fulfilled 4 weeks in a row.",
+    check:a => a.oathStreak >= 4 },
+  { id:"sales_1000", name:"Merchant Prince", icon:"💰", desc:"Reach the $1,000/day Sales tier at least once.",
+    check:a => a.hitTopSalesTier },
+  { id:"art_10", name:"Master Artisan", icon:"🎨", desc:"10 total Art Pieces created, lifetime.",
+    check:a => a.artCount >= 10 },
+  { id:"poem_10", name:"Poet Laureate", icon:"🖋️", desc:"10 total Poems written, lifetime.",
+    check:a => a.poemCount >= 10 },
+  { id:"days_50", name:"Veteran Adventurer", icon:"🗺️", desc:"Data logged on 50 different days, lifetime.",
+    check:a => a.distinctLoggedDays >= 50 },
+  { id:"study_20", name:"Devoted Scholar", icon:"📈", desc:"Study/Trading logged on 20 different days.",
+    check:a => a.studyDays >= 20 },
+  { id:"market_5", name:"Market Day", icon:"🏪", desc:"Reach the $500+ Sales tier on 5 different days.",
+    check:a => a.salesBigDays >= 5 }
+];
+
+/* =========================================================================
+   STORAGE
+   ========================================================================= */
+const DAY_PREFIX = "gameoflife:day:";
+const WEEK_PREFIX = "gameoflife:week:";
+const ACH_KEY = "gameoflife:achievements";
+const PROFILE_KEY = "gameoflife:profile";
+
+function defaultDay(){ return { deeds:{}, follies:{}, locked:false }; }
+function defaultWeek(){ return { oathCount:0 }; }
+
+const state = { days:{}, weeks:{}, achievements:{} };
+
+function loadAll(){
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    if(key.startsWith(DAY_PREFIX)){
+      try{ state.days[key.slice(DAY_PREFIX.length)] = Object.assign(defaultDay(), JSON.parse(localStorage.getItem(key))); }catch(e){}
+    } else if(key.startsWith(WEEK_PREFIX)){
+      try{ state.weeks[key.slice(WEEK_PREFIX.length)] = Object.assign(defaultWeek(), JSON.parse(localStorage.getItem(key))); }catch(e){}
+    }
+  }
+  try{ state.achievements = JSON.parse(localStorage.getItem(ACH_KEY)) || {}; }catch(e){ state.achievements = {}; }
+  if(!localStorage.getItem(PROFILE_KEY)){
+    localStorage.setItem(PROFILE_KEY, JSON.stringify({ schemaVersion:1, createdAt: new Date().toISOString() }));
+  }
+}
+function saveDay(date){
+  localStorage.setItem(DAY_PREFIX + date, JSON.stringify(state.days[date]));
+}
+function saveWeek(weekStart){
+  localStorage.setItem(WEEK_PREFIX + weekStart, JSON.stringify(state.weeks[weekStart]));
+}
+function saveAchievements(){
+  localStorage.setItem(ACH_KEY, JSON.stringify(state.achievements));
+}
+function getDay(date){
+  if(!state.days[date]) state.days[date] = defaultDay();
+  return state.days[date];
+}
+function getWeek(weekStart){
+  if(!state.weeks[weekStart]) state.weeks[weekStart] = defaultWeek();
+  return state.weeks[weekStart];
+}
+
+/* =========================================================================
+   DATE HELPERS (local time, Monday-start weeks)
+   ========================================================================= */
+function pad(n){ return String(n).padStart(2,"0"); }
+function dateStr(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function todayStr(){ return dateStr(new Date()); }
+function parseDate(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); }
+function addDays(s, n){ const d = parseDate(s); d.setDate(d.getDate()+n); return dateStr(d); }
+function weekStartOf(s){
+  const d = parseDate(s);
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diff);
+  return dateStr(d);
+}
+
+/* =========================================================================
+   SCORING ENGINE
+   ========================================================================= */
+function deedDef(id){ return DEEDS.find(d=>d.id===id); }
+function follyDef(id){ return FOLLIES.find(f=>f.id===id); }
+
+function tierPointsByN(tiers, n){
+  let bestN = -1, bestPoints = 0;
+  for(const t of tiers){ if(n >= t.n && t.n > bestN){ bestN = t.n; bestPoints = t.points; } }
+  return bestPoints;
+}
+function amountPoints(ranges, amount){
+  for(const r of ranges){ if(amount >= r.min && amount < r.max) return r.points; }
+  return ranges[ranges.length-1].points;
+}
+
+function dayDeedPoints(day, id){
+  const def = deedDef(id);
+  const rec = day.deeds[id];
+  if(!rec) return 0;
+  if(def.type === "flat") return rec.on ? def.points : 0;
+  if(def.type === "tiered") return rec.points || 0;
+  if(def.type === "repeatable") return (rec.entries||[]).reduce((s,e)=>s+e.points,0);
+  return 0;
+}
+function dayDeedsTotal(day){ return DEEDS.reduce((s,d)=>s + dayDeedPoints(day, d.id), 0); }
+
+function dayFollyPoints(day, id){
+  const def = follyDef(id);
+  const rec = day.follies[id];
+  if(!rec) return 0;
+  if(def.type === "stacking") return (rec.count||0) * def.points;
+  if(def.type === "tiered_count") return tierPointsByN(def.tiers, rec.count||0);
+  if(def.type === "amount_each") return (rec.entries||[]).reduce((s,e)=>s+e.points,0);
+  return 0;
+}
+function dayFolliesTotal(day){ return FOLLIES.reduce((s,f)=>s + dayFollyPoints(day, f.id), 0); }
+
+function dayNetScore(date){
+  const day = state.days[date];
+  if(!day) return 0;
+  return dayDeedsTotal(day) + dayFolliesTotal(day);
+}
+function weekNetScore(weekStart){
+  let total = 0;
+  for(let i=0;i<7;i++){ total += dayNetScore(addDays(weekStart, i)); }
+  return total;
+}
+function allTimeScore(){
+  let total = 0;
+  for(const date in state.days){ total += dayNetScore(date); }
+  return total;
+}
+
+function rankInfoForScore(score){
+  let cur = RANK_TIERS[0], next = RANK_TIERS[1] || null, idx = 0;
+  for(let i=0;i<RANK_TIERS.length;i++){
+    if(score >= RANK_TIERS[i].score){ cur = RANK_TIERS[i]; idx = i; next = RANK_TIERS[i+1] || null; }
+  }
+  return { cur, next, idx };
+}
+
+function computeOathStreak(uptoWeekStart){
+  let streak = 0;
+  let cursor = uptoWeekStart;
+  while(state.weeks[cursor] && state.weeks[cursor].oathCount >= 1){
+    streak++;
+    cursor = addDays(cursor, -7);
+  }
+  return streak;
+}
+
+/* =========================================================================
+   ACHIEVEMENT AGGREGATES — scans the entire stored history every call.
+   ========================================================================= */
+function computeAggregates(){
+  const dates = Object.keys(state.days).sort();
+  const agg = {
+    allTime: allTimeScore(),
+    totalDeedEvents: 0, totalLogEvents: 0,
+    everyCategoryDay: false, hasSpotlessDay: false,
+    maxDayScore: -Infinity,
+    longestSpotlessStreak: 0, longestLiftCardioStreak: 0, longestDeedStreak: 0,
+    journalDays: 0, studyDays: 0, artCount: 0, poemCount: 0,
+    distinctLoggedDays: 0, hitTopSalesTier: false, salesBigDays: 0,
+    oathStreak: computeOathStreak(weekStartOf(todayStr()))
+  };
+  if(dates.length === 0) return agg;
+
+  const minDate = dates[0];
+  const maxDate = dates[dates.length-1] < todayStr() ? dates[dates.length-1] : todayStr();
+
+  let spotlessRun = 0, liftCardioRun = 0, deedRun = 0;
+  let cursor = minDate;
+  let guard = 0;
+  while(cursor <= maxDate && guard < 3660){
+    const day = state.days[cursor];
+    if(day){
+      const deedsTotal = dayDeedsTotal(day);
+      const folliesTotal = dayFolliesTotal(day);
+      const net = deedsTotal + folliesTotal;
+      const hasAnyDeed = deedsTotal > 0;
+      const hasAnything = Object.keys(day.deeds).length > 0 || Object.keys(day.follies).length > 0;
+
+      if(hasAnything) agg.distinctLoggedDays++;
+
+      for(const d of DEEDS){
+        const rec = day.deeds[d.id];
+        if(!rec) continue;
+        if(d.type === "flat" && rec.on){ agg.totalDeedEvents++; agg.totalLogEvents++; }
+        else if(d.type === "tiered" && rec.n){ agg.totalDeedEvents++; agg.totalLogEvents++; }
+        else if(d.type === "repeatable" && rec.entries){ agg.totalDeedEvents += rec.entries.length; agg.totalLogEvents += rec.entries.length; }
+      }
+      for(const f of FOLLIES){
+        const rec = day.follies[f.id];
+        if(!rec) continue;
+        if(f.type === "stacking" && rec.count) agg.totalLogEvents += rec.count;
+        else if(f.type === "tiered_count" && rec.count) agg.totalLogEvents += rec.count;
+        else if(f.type === "amount_each" && rec.entries) agg.totalLogEvents += rec.entries.length;
+      }
+
+      const jr = day.deeds.journaling;
+      if(jr && jr.n) agg.journalDays++;
+      const sr = day.deeds.study_trading;
+      if(sr && sr.n) agg.studyDays++;
+      agg.artCount += (day.deeds.art_piece && day.deeds.art_piece.entries || []).length;
+      agg.poemCount += (day.deeds.poem && day.deeds.poem.entries || []).length;
+      const sales = day.deeds.sales;
+      if(sales && sales.n >= 1000) agg.hitTopSalesTier = true;
+      if(sales && sales.n >= 500) agg.salesBigDays++;
+
+      const allCatsLogged = DEEDS.every(d => {
+        const rec = day.deeds[d.id];
+        if(!rec) return false;
+        if(d.type === "flat") return !!rec.on;
+        if(d.type === "tiered") return !!rec.n;
+        if(d.type === "repeatable") return (rec.entries||[]).length > 0;
+        return false;
+      });
+      if(allCatsLogged) agg.everyCategoryDay = true;
+
+      if(hasAnything && net > agg.maxDayScore) agg.maxDayScore = net;
+
+      const spotless = hasAnything && folliesTotal === 0;
+      if(spotless){ agg.hasSpotlessDay = true; spotlessRun++; } else { spotlessRun = 0; }
+      agg.longestSpotlessStreak = Math.max(agg.longestSpotlessStreak, spotlessRun);
+
+      const liftCardio = (day.deeds.lifting_workout && day.deeds.lifting_workout.on) ||
+                          (day.deeds.cardio_workout && day.deeds.cardio_workout.on);
+      if(liftCardio) liftCardioRun++; else liftCardioRun = 0;
+      agg.longestLiftCardioStreak = Math.max(agg.longestLiftCardioStreak, liftCardioRun);
+
+      if(hasAnyDeed) deedRun++; else deedRun = 0;
+      agg.longestDeedStreak = Math.max(agg.longestDeedStreak, deedRun);
+    } else {
+      spotlessRun = 0; liftCardioRun = 0; deedRun = 0;
+    }
+    cursor = addDays(cursor, 1);
+    guard++;
+  }
+  if(agg.maxDayScore === -Infinity) agg.maxDayScore = 0;
+  return agg;
+}
+
+/* Checks every Achievement against full history, unlocking + persisting +
+   toasting any newly-earned ones. Safe to call from any page after any
+   state-changing action, and once on load. Does not touch the DOM grid. */
+function checkAndUnlockAchievements(){
+  const agg = computeAggregates();
+  for(const a of ACHIEVEMENTS){
+    if(state.achievements[a.id]) continue;
+    if(a.check(agg)){
+      state.achievements[a.id] = todayStr();
+      saveAchievements();
+      showToast(`🏅 Honor earned: ${a.name}`);
+    }
+  }
+}
+
+/* =========================================================================
+   CROSS-PAGE UI HELPERS (toasts, popups, scoreboard, rank-up detection)
+   ========================================================================= */
+function popupAt(text, positive){
+  const el = document.createElement("div");
+  el.className = "pop " + (positive ? "pos":"neg");
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1150);
+}
+function showToast(msg){
+  const layer = document.getElementById("toastLayer");
+  if(!layer) return;
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  layer.appendChild(t);
+  setTimeout(()=>t.remove(), 3200);
+}
+function flashLevelUp(){
+  const f = document.createElement("div");
+  f.style.cssText = "position:fixed;inset:0;z-index:998;pointer-events:none;background:radial-gradient(circle,var(--tie-gold) 0%,transparent 70%);opacity:0.5;animation:flashLU .7s ease-out forwards;";
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(), 750);
+}
+
+/* Fills #scoreToday / #scoreWeek / #scoreAllTime if present on the page. */
+function renderScoreboard(){
+  if(!document.getElementById("scoreToday")) return;
+  const t = todayStr();
+  const wk = weekStartOf(t);
+  setScoreTile("scoreToday", dayNetScore(t));
+  setScoreTile("scoreWeek", weekNetScore(wk));
+  setScoreTile("scoreAllTime", allTimeScore());
+}
+function setScoreTile(id, val){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = val.toLocaleString();
+  el.className = "num" + (val < 0 ? " neg" : "");
+}
+
+/* Fills the Knight's Profile widget if present on the page, and toasts a
+   rank-up (comparing against __lastRankIdx, tracked per page-load). */
+let __lastRankIdx = null;
+function renderKnightProfile(){
+  const all = allTimeScore();
+  const { cur, next, idx } = rankInfoForScore(all);
+  if(__lastRankIdx === null) __lastRankIdx = idx;
+
+  if(document.getElementById("rankName")){
+    document.getElementById("rankName").textContent = cur.rank;
+    document.getElementById("weaponIcon").textContent = cur.weaponIcon;
+    document.getElementById("weaponName").textContent = cur.weapon;
+    document.getElementById("armorIcon").textContent = cur.armorIcon;
+    document.getElementById("armorName").textContent = cur.armor;
+
+    const fill = document.getElementById("rankProgressFill");
+    const label = document.getElementById("rankProgressLabel");
+    if(next){
+      const span = next.score - cur.score;
+      const into = Math.max(0, all - cur.score);
+      const pct = Math.min(100, (into/span)*100);
+      fill.style.width = pct + "%";
+      label.textContent = `${into.toLocaleString()} / ${span.toLocaleString()} to ${next.rank}`;
+    } else {
+      fill.style.width = "100%";
+      label.textContent = `${all.toLocaleString()} — the pinnacle of the Realm has been reached`;
+    }
+  }
+
+  if(idx > __lastRankIdx){
+    showToast(`⚔️ Rank up! You are now a ${cur.rank}!`);
+    flashLevelUp();
+  }
+  __lastRankIdx = idx;
+}
+
+loadAll();
