@@ -1,0 +1,1156 @@
+[
+  {
+    "id": "regt-01",
+    "topic": "MARGIN_REG_T",
+    "question": "Under Regulation T, what is the standard initial margin requirement for purchasing a marginable equity security?",
+    "choices": ["25% of purchase price", "50% of purchase price", "70% of purchase price", "100% of purchase price"],
+    "correctIndex": 1,
+    "explanation": "Reg T sets initial margin at 50% for equity securities, giving a maximum of 2:1 leverage on a new marginable purchase. The other 50% can be borrowed from the broker-dealer.",
+    "citation": "12 CFR §220.12 (Regulation T, Supplement)"
+  },
+  {
+    "id": "regt-02",
+    "topic": "MARGIN_REG_T",
+    "question": "What is the FINRA minimum maintenance margin requirement for a long equity position?",
+    "choices": ["10% of market value", "20% of market value", "25% of market value", "40% of market value"],
+    "correctIndex": 2,
+    "explanation": "FINRA Rule 4210 sets 25% of current market value as the minimum equity a long position must maintain. Individual brokers frequently impose higher 'house' requirements, especially on volatile names.",
+    "citation": "FINRA Rule 4210(c)(2)"
+  },
+  {
+    "id": "regt-03",
+    "topic": "MARGIN_REG_T",
+    "question": "What is the FINRA minimum maintenance margin requirement for a short equity position?",
+    "choices": ["25% of market value", "30% of market value", "50% of market value", "100% of market value"],
+    "correctIndex": 1,
+    "explanation": "Short positions carry a higher minimum maintenance requirement than longs — 30% of current market value — because a short's loss potential is theoretically unlimited as the price rises.",
+    "citation": "FINRA Rule 4210(c)(2)"
+  },
+  {
+    "id": "regt-04",
+    "topic": "MARGIN_REG_T",
+    "question": "You get a Reg T (initial margin) call after a new purchase. Under Federal Reserve rules, what is the standard timeframe a broker's clearing firm typically gives you to meet it before liquidating?",
+    "choices": ["Same day, before market close", "By the close of the 4th business day after the trade", "30 calendar days", "There is no deadline as long as equity stays positive"],
+    "correctIndex": 1,
+    "explanation": "Reg T calls are conventionally due within 4 business days of the trade date (T+4 under current settlement timing). If unmet, the broker can restrict the account to cash-only or liquidate to cover the call.",
+    "citation": "12 CFR §220.4(c) (Regulation T)"
+  },
+  {
+    "id": "regt-05",
+    "topic": "MARGIN_REG_T",
+    "question": "What does 'SMA' (Special Memorandum Account) represent in a Reg T margin account?",
+    "choices": [
+      "A separate account holding your unsettled cash",
+      "A line of credit that tracks excess equity above the Reg T requirement, which can be drawn on for further purchases without depositing new cash",
+      "The account FINRA uses to track your PDT status",
+      "A tax-deferred account type for margin trading"
+    ],
+    "correctIndex": 1,
+    "explanation": "SMA is a running memo of 'excess' margin equity. It increases when a position gains value or cash is deposited, and generally does not decrease when a position simply loses value — it's a ratchet, which is why real Reg T buying power calculations are more path-dependent than a snapshot formula.",
+    "citation": "12 CFR §220.5 (Regulation T, Special Memorandum Account)"
+  },
+  {
+    "id": "regt-06",
+    "topic": "MARGIN_REG_T",
+    "question": "A broker's 'house' maintenance requirement compared to the FINRA/Reg T minimum can be:",
+    "choices": ["Only lower, never higher", "Only equal to the minimum", "Higher than the regulatory minimum, at the broker's discretion", "Irrelevant — brokers must use exactly the FINRA minimum"],
+    "correctIndex": 2,
+    "explanation": "FINRA and Reg T set floors, not ceilings. Broker-dealers routinely impose stricter house requirements, especially for volatile, low-priced, or concentrated positions, and can change them without notice.",
+    "citation": "FINRA Rule 4210(f) (house maintenance requirements)"
+  },
+  {
+    "id": "regt-07",
+    "topic": "MARGIN_REG_T",
+    "question": "An account has $50,000 of margin equity and no open positions. Under standard Reg T (2:1) buying power, what is the maximum marginable stock this account can purchase?",
+    "choices": ["$50,000", "$75,000", "$100,000", "$150,000"],
+    "correctIndex": 2,
+    "explanation": "With zero prior positions, buying power is simply 2x equity: $50,000 x 2 = $100,000 of marginable stock, since Reg T requires only 50% initial margin.",
+    "citation": "12 CFR §220.12"
+  },
+  {
+    "id": "regt-08",
+    "topic": "MARGIN_REG_T",
+    "question": "Which of these can satisfy a maintenance margin call?",
+    "choices": ["Depositing cash", "Depositing fully-paid marginable securities", "Liquidating enough of the position to restore the required equity percentage", "All of the above"],
+    "correctIndex": 3,
+    "explanation": "A margin call can be met with new cash, additional eligible collateral, or by reducing the position (voluntarily, or via forced liquidation if you don't act).",
+    "citation": "FINRA Rule 4210(f)"
+  },
+  {
+    "id": "regt-09",
+    "topic": "MARGIN_REG_T",
+    "question": "Why might a broker set a much higher house maintenance requirement — sometimes up to 100% — on a large, concentrated position in a single volatile stock?",
+    "choices": [
+      "It's required by the IRS for tax reasons",
+      "To limit the broker's own risk of loss if that one illiquid position can't be liquidated fast enough to cover a decline",
+      "It has no real purpose, it's arbitrary",
+      "It only applies to options, not stock"
+    ],
+    "correctIndex": 1,
+    "explanation": "Concentration and liquidity risk are the broker's risk, not just yours — if a large chunk of your account is one thinly-traded name, the broker may not be able to sell out fast enough in a fast decline, so they demand more cushion up front.",
+    "citation": "FINRA Rule 4210(f) (house/concentration requirements)"
+  },
+  {
+    "id": "regt-10",
+    "topic": "MARGIN_REG_T",
+    "question": "Portfolio margin, as opposed to standard Reg T strategy-based margin, is:",
+    "choices": [
+      "Available to any account regardless of size",
+      "A risk-based margin methodology generally requiring $100,000-$125,000+ in account equity, which can allow substantially more leverage than 2:1",
+      "Only available to institutional accounts, never to individuals",
+      "The same calculation as Reg T, just renamed"
+    ],
+    "correctIndex": 1,
+    "explanation": "Portfolio margin uses theoretical risk-based stress testing (similar to OCC's TIMS methodology) instead of fixed percentages, and can produce leverage well beyond 2:1 for hedged or diversified portfolios — but it requires a much higher minimum equity and carries materially higher risk of rapid, large margin calls.",
+    "citation": "FINRA Rule 4210(g); SEA Rule 15c3-1a"
+  },
+  {
+    "id": "regt-11",
+    "topic": "MARGIN_REG_T",
+    "question": "A Pattern Day Trader's account must maintain what minimum equity, and what special maintenance margin applies to day-trading buying power?",
+    "choices": [
+      "$2,000 minimum; 50% maintenance",
+      "$25,000 minimum; typically 25% maintenance, giving up to 4:1 intraday buying power",
+      "$100,000 minimum; 10% maintenance",
+      "There is no special day-trading buying power — it's always 2:1"
+    ],
+    "correctIndex": 1,
+    "explanation": "PDT accounts must maintain $25,000 equity and typically get up to 4x intraday (day-trading) buying power against a 25% day-trading maintenance margin, but only 2x for positions held overnight.",
+    "citation": "FINRA Rule 4210(f)(8)(B)"
+  },
+  {
+    "id": "regt-12",
+    "topic": "MARGIN_REG_T",
+    "question": "What's the practical difference between Regulation T and FINRA Rule 4210?",
+    "choices": [
+      "They are the same rule, just cited differently",
+      "Reg T (a Federal Reserve Board rule) governs the initial margin a broker-dealer may extend on a new purchase; FINRA Rule 4210 governs the ongoing maintenance margin an account must hold afterward",
+      "Reg T governs short sales only; FINRA 4210 governs long purchases only",
+      "Reg T applies to individuals; FINRA 4210 applies only to institutions"
+    ],
+    "correctIndex": 1,
+    "explanation": "Reg T is a Federal Reserve credit-extension rule about the initial transaction. FINRA Rule 4210 (and historically NYSE Rule 431) is the self-regulatory maintenance-margin rule governing what must be kept in the account afterward.",
+    "citation": "12 CFR Part 220; FINRA Rule 4210"
+  },
+
+  {
+    "id": "short-01",
+    "topic": "SHORT_SELLING",
+    "question": "Before executing a short sale, Reg SHO requires a broker-dealer to:",
+    "choices": [
+      "Nothing — short sales can be entered freely",
+      "Obtain a 'locate' — reasonable grounds to believe the security can be borrowed for delivery",
+      "Wait 3 business days",
+      "Get SEC pre-approval for each trade"
+    ],
+    "correctIndex": 1,
+    "explanation": "Rule 203(b)(1) requires a locate before accepting a short sale order — either an actual arrangement to borrow, or a reasonable belief shares can be borrowed by settlement.",
+    "citation": "SEC Regulation SHO, Rule 203(b)"
+  },
+  {
+    "id": "short-02",
+    "topic": "SHORT_SELLING",
+    "question": "Reg SHO Rule 204 imposes a mandatory close-out requirement on a broker-dealer's fail-to-deliver position. What is this rule primarily designed to curb?",
+    "choices": [
+      "High-frequency trading",
+      "Persistent naked short selling / undelivered short sales",
+      "Wash sales for tax purposes",
+      "Insider trading"
+    ],
+    "correctIndex": 1,
+    "explanation": "Rule 204 forces broker-dealers to close out fails to deliver within a defined window after settlement date, with tighter deadlines for fails stemming from short sales — a direct check against abusive naked shorting.",
+    "citation": "SEC Regulation SHO, Rule 204"
+  },
+  {
+    "id": "short-03",
+    "topic": "SHORT_SELLING",
+    "question": "A security lands on the 'Threshold Securities List' when it has, among other criteria, persistent fails-to-deliver of at least 10,000 shares equal to roughly what percentage of shares outstanding, for five consecutive settlement days?",
+    "choices": ["0.05%", "0.5%", "5%", "50%"],
+    "correctIndex": 1,
+    "explanation": "Threshold securities are flagged when aggregate fails-to-deliver reach 10,000+ shares and about 0.5% of shares outstanding, persisting for 5 consecutive settlement days — triggering the accelerated Rule 204 close-out clock.",
+    "citation": "SEC Regulation SHO, Rule 203(c)(6)"
+  },
+  {
+    "id": "short-04",
+    "topic": "SHORT_SELLING",
+    "question": "SEC Rule 201 (the 'Alternative Uptick Rule') restricts short selling in a stock once it:",
+    "choices": [
+      "Reaches a new 52-week high",
+      "Declines 10% or more from the prior day's closing price, intraday",
+      "Is added to a major index",
+      "Announces earnings"
+    ],
+    "correctIndex": 1,
+    "explanation": "A 10%+ intraday decline from the prior close triggers a circuit breaker: for the rest of that day and the following day, short sales are only allowed above the current national best bid, to prevent short sellers from accelerating the decline.",
+    "citation": "SEC Rule 201 of Regulation SHO (17 CFR §242.201)"
+  },
+  {
+    "id": "short-05",
+    "topic": "SHORT_SELLING",
+    "question": "A hard-to-borrow stock's daily stock loan (borrow) fee is typically calculated as:",
+    "choices": [
+      "A flat dollar amount per share, fixed forever",
+      "The annualized borrow rate applied to the position's current market value, accrued daily (commonly using a /360 day-count)",
+      "A one-time fee charged only when the short is opened",
+      "The same rate for every stock regardless of scarcity"
+    ],
+    "correctIndex": 1,
+    "explanation": "Borrow fees float with market value and the annualized rate (which itself can change daily as scarcity changes), and typically accrue using a 360-day convention — meaning your fee changes as the stock price moves even if the rate doesn't.",
+    "citation": "Industry stock loan convention; disclosed in broker margin/short-selling agreements"
+  },
+  {
+    "id": "short-06",
+    "topic": "SHORT_SELLING",
+    "question": "If you are short a stock when it goes ex-dividend, what happens?",
+    "choices": [
+      "Nothing — dividends only affect long holders",
+      "You owe a 'payment in lieu of dividend' to whoever your shares were borrowed from, debited from your account",
+      "Your broker automatically covers your short",
+      "You receive the dividend as if you were long"
+    ],
+    "correctIndex": 1,
+    "explanation": "The share lender is still entitled to the dividend, so the short seller's account is charged a manufactured payment equal to the dividend. Note this payment is generally NOT a qualified dividend for tax purposes to the lender in the way an actual dividend might be.",
+    "citation": "Standard margin/loan agreement terms; see also IRC §512 / broker disclosures on substitute payments"
+  },
+  {
+    "id": "short-07",
+    "topic": "SHORT_SELLING",
+    "question": "A 'forced buy-in' on a short position happens when:",
+    "choices": [
+      "You voluntarily decide to cover",
+      "The stock lender recalls the loaned shares (or the broker can no longer maintain the borrow) and you must cover, often on short notice, regardless of your own view on price",
+      "The stock pays a dividend",
+      "You've held the short for exactly one year"
+    ],
+    "correctIndex": 1,
+    "explanation": "Buy-ins are outside your control — a lender recalling shares (common in hard-to-borrow names) can force you to cover at the prevailing market price on a tight deadline, even if that price is unfavorable.",
+    "citation": "Reg SHO Rule 204; standard stock loan agreement recall provisions"
+  },
+  {
+    "id": "short-08",
+    "topic": "SHORT_SELLING",
+    "question": "What does 'days-to-cover' (short interest ratio) measure?",
+    "choices": [
+      "How many days until your borrow fee resets",
+      "Total shares short divided by average daily trading volume — an estimate of how many days it would take short sellers to cover their positions at typical volume",
+      "The settlement period for short sales",
+      "How many days a locate is valid"
+    ],
+    "correctIndex": 1,
+    "explanation": "Days-to-cover is a liquidity/squeeze-risk metric: a high ratio means a large short position relative to normal trading volume, which can fuel a sharper short squeeze if buyers force a rush to cover.",
+    "citation": "Standard market data metric (FINRA/exchange short interest reports)"
+  },
+  {
+    "id": "short-09",
+    "topic": "SHORT_SELLING",
+    "question": "What distinguishes an illegal 'naked short' from a legitimate short sale?",
+    "choices": [
+      "Naked shorts are simply shorts held longer than 30 days",
+      "A naked short is sold without a valid locate/reasonable ability to borrow and deliver the shares by settlement, whereas a legitimate short has a locate in place",
+      "Naked shorts are shorts on ETFs specifically",
+      "There is no legal distinction"
+    ],
+    "correctIndex": 1,
+    "explanation": "The locate requirement (Rule 203(b)) is exactly what separates a compliant short sale from a 'naked' one that risks a settlement fail.",
+    "citation": "SEC Regulation SHO, Rule 203(b)"
+  },
+  {
+    "id": "short-10",
+    "topic": "SHORT_SELLING",
+    "question": "'Short against the box' (shorting a stock you already own long) is now heavily restricted for tax purposes because:",
+    "choices": [
+      "It's illegal under securities law",
+      "It can trigger a 'constructive sale' under IRC §1259, taxing the built-in gain on the long position immediately even though you haven't sold it",
+      "It doubles your dividend income",
+      "It has no tax consequence at all"
+    ],
+    "correctIndex": 1,
+    "explanation": "Congress closed the short-against-the-box tax deferral loophole in 1997: certain hedges that lock in a gain on an appreciated position (like an offsetting short in the same or substantially identical stock) are treated as a constructive sale, accelerating gain recognition.",
+    "citation": "IRC §1259 (Constructive Sales of Appreciated Financial Positions)"
+  },
+  {
+    "id": "short-11",
+    "topic": "SHORT_SELLING",
+    "question": "Under Reg T, what is the total initial margin requirement to open a new short sale of marginable stock?",
+    "choices": [
+      "50% of the proceeds, same as a long purchase",
+      "150% of the value of the shares shorted (100% covered by the short-sale proceeds themselves, plus 50% additional margin)",
+      "100% only, no additional margin required",
+      "There is no margin requirement for short sales"
+    ],
+    "correctIndex": 1,
+    "explanation": "Short sales require 150% initial margin under Reg T: the sale proceeds themselves satisfy 100%, and the trader must post an additional 50% of the position's value — the same 2:1 leverage ratio as a long purchase, just structured differently.",
+    "citation": "12 CFR §220.12(a) (Regulation T)"
+  },
+  {
+    "id": "short-12",
+    "topic": "SHORT_SELLING",
+    "question": "Why do brokers charge materially higher borrow fees on hard-to-borrow (HTB) names versus general collateral (easy-to-borrow) names?",
+    "choices": [
+      "HTB fees are arbitrary and unrelated to supply",
+      "Supply of lendable shares is scarce relative to short demand, so the market-clearing price for borrowing them rises — sometimes to double-digit annualized percentages",
+      "HTB only applies to penny stocks",
+      "It's a flat regulatory fee set by FINRA"
+    ],
+    "correctIndex": 1,
+    "explanation": "Borrow rates are a supply-and-demand market. When few shares are available to lend relative to short demand (small float, heavy short interest), rates spike — sometimes dramatically, and can change day to day.",
+    "citation": "Stock loan market mechanics; disclosed via broker HTB rate feeds"
+  },
+
+  {
+    "id": "settle-01",
+    "topic": "SETTLEMENT",
+    "question": "As of May 28, 2024, what is the standard settlement cycle for most U.S. equity trades?",
+    "choices": ["T+0 (same day)", "T+1 (one business day after trade date)", "T+2", "T+3"],
+    "correctIndex": 1,
+    "explanation": "The SEC shortened standard settlement from T+2 to T+1 for most securities transactions, reducing (but not eliminating) settlement risk and the window during which funds/shares are 'unsettled.'",
+    "citation": "SEC Release No. 34-96930 (Shortening the Securities Transaction Settlement Cycle)"
+  },
+  {
+    "id": "settle-02",
+    "topic": "SETTLEMENT",
+    "question": "In a cash account, a 'good faith violation' occurs when you:",
+    "choices": [
+      "Buy a stock and never sell it",
+      "Buy a security using proceeds from a sale that have not yet settled, then sell that newly purchased security before the original sale's settlement date, without depositing enough additional settled cash to cover the purchase",
+      "Sell a security at a loss",
+      "Hold a position over 90 days"
+    ],
+    "correctIndex": 1,
+    "explanation": "GFVs are a cash-account-specific settlement issue: you're effectively trading with money you don't have yet. It's 'good faith' because you're relying on funds arriving as expected rather than having them in hand.",
+    "citation": "FINRA/SEC cash account settlement guidance; Regulation T §220.8"
+  },
+  {
+    "id": "settle-03",
+    "topic": "SETTLEMENT",
+    "question": "'Free-riding' is:",
+    "choices": [
+      "A discount on commissions for frequent traders",
+      "Buying a security in a cash account with no settled funds to pay for it, then selling it before ever paying for the purchase — effectively trading without capital",
+      "Trading during extended hours",
+      "A margin account benefit"
+    ],
+    "correctIndex": 1,
+    "explanation": "Free-riding is the most severe settlement violation: you never had (and never contributed) settled funds to cover the purchase at all. It typically triggers an automatic 90-day restriction requiring full cash-up-front for every trade.",
+    "citation": "Regulation T §220.8(c); FINRA guidance on cash account trading restrictions"
+  },
+  {
+    "id": "settle-04",
+    "topic": "SETTLEMENT",
+    "question": "How many good faith violations within a rolling 12-month period commonly trigger a 90-day cash-account restriction at most brokers?",
+    "choices": ["1", "3", "10", "There's no such threshold"],
+    "correctIndex": 1,
+    "explanation": "Most brokers apply a 3-strikes policy: a 3rd GFV within 12 months typically restricts the account to trading only with fully settled funds for 90 days. Brokers can be stricter, and a single free-riding violation can trigger the restriction outright.",
+    "citation": "FINRA Investor Alert: 'Trading in Cash Accounts'; broker cash account agreements"
+  },
+  {
+    "id": "settle-05",
+    "topic": "SETTLEMENT",
+    "question": "Trade date versus settlement date: which one legally obligates you to pay for a purchase or deliver shares on a sale?",
+    "choices": [
+      "Trade date — the obligation is created at execution; settlement date is simply when that obligation is fulfilled",
+      "Settlement date — nothing is owed until then",
+      "Neither — obligations are created only when the broker sends a statement",
+      "It depends on whether you use a debit or credit card"
+    ],
+    "correctIndex": 0,
+    "explanation": "The contractual obligation to pay (or deliver) is created at trade execution. Settlement date is the mechanical date the exchange of cash and securities actually clears — the shortened window (T+1) doesn't change when you're legally on the hook.",
+    "citation": "Uniform Commercial Code Article 8 (securities settlement); SEC settlement guidance"
+  },
+  {
+    "id": "settle-06",
+    "topic": "SETTLEMENT",
+    "question": "Does the good-faith-violation / free-riding framework, as traditionally defined, apply the same way to a standard margin account?",
+    "choices": [
+      "Yes, identically — margin accounts have the exact same rule",
+      "Not quite — a margin account's buying power is extended against margin equity rather than strictly against settled cash, so the specific 'GFV' mechanism is a cash-account concept; margin accounts instead face margin-call and maintenance-requirement risk if over-leveraged",
+      "Margin accounts are completely exempt from all settlement rules",
+      "GFVs only exist in retirement accounts"
+    ],
+    "correctIndex": 1,
+    "explanation": "This is a key nuance: GFVs and free-riding, in their strict regulatory sense, are cash-account settlement violations tied to Reg T §220.8. A margin account extends credit against margin equity, so its analogous risk is a margin/maintenance call rather than a settlement violation — though many trading platforms and this trainer still flag unsettled-funds reliance as a habit-building warning even in a margin account.",
+    "citation": "Regulation T §220.8 vs §220.12; see also RULES.md for how this trainer simplifies the distinction"
+  },
+  {
+    "id": "settle-07",
+    "topic": "SETTLEMENT",
+    "question": "If you sell a stock today and simply let the proceeds settle without touching them, what happens?",
+    "choices": [
+      "You've committed a good faith violation",
+      "Nothing adverse — funds settle T+1 in the ordinary course and become fully available cash with no violation",
+      "The trade is automatically canceled",
+      "You are charged a settlement fee"
+    ],
+    "correctIndex": 1,
+    "explanation": "There's nothing wrong with unsettled funds by themselves — the violation only arises from a specific pattern of reusing them and then selling the resulting position again before they settle.",
+    "citation": "Regulation T §220.8"
+  },
+  {
+    "id": "settle-08",
+    "topic": "SETTLEMENT",
+    "question": "A 'fail to deliver' in the settlement process refers to:",
+    "choices": [
+      "A trade that was never executed",
+      "A situation where the seller does not deliver the securities (or the buyer does not deliver funds) by the scheduled settlement date",
+      "A canceled limit order",
+      "An order rejected for insufficient buying power"
+    ],
+    "correctIndex": 1,
+    "explanation": "A fail occurs when one side of the trade doesn't perform by settlement date. On the short-sale side specifically, persistent fails are what triggers Reg SHO's Rule 204 close-out and Threshold List mechanics.",
+    "citation": "SEC Regulation SHO, Rule 204"
+  },
+  {
+    "id": "settle-09",
+    "topic": "SETTLEMENT",
+    "question": "Why did the SEC shorten settlement from T+2 to T+1 rather than moving straight to T+0?",
+    "choices": [
+      "T+0 is technologically impossible for any security",
+      "T+1 was seen as a meaningful risk-reduction step achievable with existing infrastructure, while true same-day (T+0) settlement raises unresolved operational challenges (funding, FX, cross-border settlement, etc.) still being studied",
+      "T+0 was rejected because it would increase risk",
+      "Regulators have no plans to ever consider T+0"
+    ],
+    "correctIndex": 1,
+    "explanation": "T+1 balanced meaningful counterparty/margin risk reduction against what current market infrastructure could support; T+0 remains a longer-term subject of industry study given funding and operational hurdles.",
+    "citation": "SEC Release No. 34-96930; DTCC industry T+1 implementation materials"
+  },
+  {
+    "id": "settle-10",
+    "topic": "SETTLEMENT",
+    "question": "In this trainer's cash balance, 'unsettled funds' from a sale become fully settled cash:",
+    "choices": [
+      "Instantly, at the moment of the sale",
+      "One business day later (T+1), consistent with current standard equity settlement",
+      "After 3 business days",
+      "Only after you manually request settlement"
+    ],
+    "correctIndex": 1,
+    "explanation": "This trainer models the current standard T+1 cycle: proceeds from a sale on Monday settle and become usable settled cash on Tuesday (the next business day).",
+    "citation": "SEC Release No. 34-96930"
+  },
+
+  {
+    "id": "ordtype-01",
+    "topic": "ORDER_TYPES",
+    "question": "A market order guarantees:",
+    "choices": ["A specific price", "Execution (fill), but not a specific price", "Neither execution nor price", "The best price of the day"],
+    "correctIndex": 1,
+    "explanation": "Market orders prioritize speed/certainty of execution over price — you'll get filled (assuming liquidity exists), but the exact price depends on the prevailing bid/ask at the moment of execution, plus any slippage.",
+    "citation": "FINRA Investor Education: Order Types"
+  },
+  {
+    "id": "ordtype-02",
+    "topic": "ORDER_TYPES",
+    "question": "A limit order guarantees:",
+    "choices": ["Execution, but not price", "Price (or better), but not execution — it may never fill", "Both execution and price", "Neither"],
+    "correctIndex": 1,
+    "explanation": "A limit order will never execute at a worse price than specified, but if the market never trades through your limit, it simply sits unfilled — potentially forever, or until it expires per its TIF.",
+    "citation": "FINRA Investor Education: Order Types"
+  },
+  {
+    "id": "ordtype-03",
+    "topic": "ORDER_TYPES",
+    "question": "Once a stop (stop-market) order's trigger price is touched, it becomes:",
+    "choices": [
+      "A limit order at the stop price",
+      "A market order, which can then fill at a materially worse price than the stop price in a fast-moving or gapping market",
+      "A canceled order",
+      "A GTC order automatically"
+    ],
+    "correctIndex": 1,
+    "explanation": "This is the core risk of a plain stop order: it converts to a market order on trigger, so in a gap (e.g., a bad overnight headline), it can fill far through your intended stop price — there's no price protection once triggered.",
+    "citation": "FINRA Investor Education: Order Types (Stop Orders)"
+  },
+  {
+    "id": "ordtype-04",
+    "topic": "ORDER_TYPES",
+    "question": "What is the key risk unique to a stop-limit order (versus a plain stop order)?",
+    "choices": [
+      "It has no risk — it's strictly safer",
+      "Once triggered it becomes a limit order, so in a fast gap it may not execute at all, leaving you unintentionally holding the position through further adverse movement",
+      "It always executes immediately at the stop price",
+      "It cannot be used for short sales"
+    ],
+    "correctIndex": 1,
+    "explanation": "Stop-limit trades price protection for execution certainty: if the price gaps past your limit before it can fill, the order simply sits unfilled — the opposite failure mode from a plain stop.",
+    "citation": "FINRA Investor Education: Order Types (Stop-Limit Orders)"
+  },
+  {
+    "id": "ordtype-05",
+    "topic": "ORDER_TYPES",
+    "question": "A trailing stop set with a $2.00 trail on a long position that you bought at $50 and that has since risen to $60 will trigger a sell at approximately:",
+    "choices": ["$48", "$50", "$58", "$62"],
+    "correctIndex": 2,
+    "explanation": "A trailing stop ratchets with favorable price movement: as the high climbs to $60, the stop trails $2.00 behind, i.e. around $58. It never moves against you — if price falls back to $58 it triggers; if price keeps rising, the stop keeps rising with it.",
+    "citation": "FINRA Investor Education: Order Types (Trailing Stop Orders)"
+  },
+  {
+    "id": "ordtype-06",
+    "topic": "ORDER_TYPES",
+    "question": "A DAY order that does not fill by the close of the session it was entered in:",
+    "choices": ["Automatically converts to GTC", "Expires/is canceled at the end of that trading session", "Executes at the closing price regardless", "Rolls over to the next day at the same priority"],
+    "correctIndex": 1,
+    "explanation": "DAY is the default TIF at most brokers: unfilled DAY orders are automatically canceled at the close of the session (regular session close, unless extended-hours DAY rules differ by broker).",
+    "citation": "FINRA Investor Education: Time-in-Force"
+  },
+  {
+    "id": "ordtype-07",
+    "topic": "ORDER_TYPES",
+    "question": "GTC (Good-'Til-Canceled) orders:",
+    "choices": [
+      "Never expire under any circumstances and require no maintenance",
+      "Persist across multiple sessions until filled or explicitly canceled, though most brokers impose a practical expiration (commonly 60-90 calendar days) and cancel them around corporate actions",
+      "Are only valid for one trading day, same as DAY orders",
+      "Can only be used for limit orders, never stops"
+    ],
+    "correctIndex": 1,
+    "explanation": "GTC extends an order's life well beyond one session, but 'good til canceled' is not literally infinite in practice — brokers typically auto-expire them after a set window and may cancel/adjust them around splits, dividends, or other corporate actions.",
+    "citation": "FINRA Investor Education: Time-in-Force"
+  },
+  {
+    "id": "ordtype-08",
+    "topic": "ORDER_TYPES",
+    "question": "An IOC (Immediate-Or-Cancel) order will:",
+    "choices": [
+      "Fill completely or not at all, with no partial fills allowed",
+      "Attempt to fill immediately, taking whatever quantity is available right away, and cancel any unfilled remainder — partial fills are allowed",
+      "Wait indefinitely for a full fill",
+      "Only execute during extended hours"
+    ],
+    "correctIndex": 1,
+    "explanation": "IOC demands immediacy but not completeness: it can partially fill, with the leftover quantity canceled rather than left resting.",
+    "citation": "FINRA Investor Education: Time-in-Force (IOC)"
+  },
+  {
+    "id": "ordtype-09",
+    "topic": "ORDER_TYPES",
+    "question": "An FOK (Fill-Or-Kill) order will:",
+    "choices": [
+      "Accept partial fills immediately, canceling the rest",
+      "Execute the entire order immediately in full, or be canceled entirely with zero fill — no partials",
+      "Rest on the book until fully filled, however long that takes",
+      "Automatically split into smaller child orders over the day"
+    ],
+    "correctIndex": 1,
+    "explanation": "FOK is the strictest common TIF: it demands both immediacy AND completeness. If the full size can't be filled right now, none of it fills.",
+    "citation": "FINRA Investor Education: Time-in-Force (FOK)"
+  },
+  {
+    "id": "ordtype-10",
+    "topic": "ORDER_TYPES",
+    "question": "Trading during extended (pre-market/after-hours) sessions carries which added risks versus the regular session?",
+    "choices": [
+      "None — liquidity and spreads are identical to regular hours",
+      "Wider bid/ask spreads, lower volume/liquidity, higher volatility, and often only limit orders are accepted",
+      "Extended hours are actually safer because fewer participants are trading",
+      "Stop orders always execute better in extended hours"
+    ],
+    "correctIndex": 1,
+    "explanation": "Thinner participation in extended sessions typically means wider spreads and choppier price action; many brokers restrict extended-hours trading to limit orders only for exactly this reason.",
+    "citation": "FINRA Investor Alert: Extended Hours Trading"
+  },
+  {
+    "id": "ordtype-11",
+    "topic": "ORDER_TYPES",
+    "question": "A 'marketable limit order' is:",
+    "choices": [
+      "A contradiction in terms — limit orders can never be marketable",
+      "A limit order whose limit price is already at or through the current market (e.g., a buy limit at or above the current ask), so it behaves like a market order but still caps your worst-case price",
+      "An order only available to institutional traders",
+      "The same thing as a stop-limit order"
+    ],
+    "correctIndex": 1,
+    "explanation": "A marketable limit gives you the immediacy of a market order in normal conditions while still capping the price you'll accept — useful protection against a sudden bad print or thin book.",
+    "citation": "FINRA Investor Education: Order Types"
+  },
+  {
+    "id": "ordtype-12",
+    "topic": "ORDER_TYPES",
+    "question": "How does an All-Or-None (AON) modifier differ from an FOK order?",
+    "choices": [
+      "They are identical",
+      "AON requires the full quantity to fill but is willing to wait/rest on the book to do so; FOK also requires the full quantity but demands it happen immediately or cancels entirely",
+      "AON allows partial fills; FOK does not allow any fills",
+      "AON is only for options, FOK is only for stocks"
+    ],
+    "correctIndex": 1,
+    "explanation": "Both reject partial fills, but they differ on timing: AON can patiently wait for the whole order to be fillable, while FOK is an immediacy demand on top of the all-or-nothing requirement.",
+    "citation": "FINRA Investor Education: Order Conditions"
+  },
+
+  {
+    "id": "acct-01",
+    "topic": "ACCOUNT_TYPES",
+    "question": "The core structural difference between a cash account and a margin account is:",
+    "choices": [
+      "Cash accounts can short stocks; margin accounts cannot",
+      "A margin account allows borrowing against securities (leverage, short selling) from the broker; a cash account requires trades to be paid for in full with settled funds and cannot short",
+      "There is no real difference, just naming",
+      "Margin accounts are only for options trading"
+    ],
+    "correctIndex": 1,
+    "explanation": "Margin accounts unlock leverage and short selling because the broker is extending credit secured by your securities; cash accounts trade dollar-for-dollar with settled funds and can't take on that credit-based risk.",
+    "citation": "FINRA Investor Education: Margin Accounts"
+  },
+  {
+    "id": "acct-02",
+    "topic": "ACCOUNT_TYPES",
+    "question": "Can a standard IRA (retirement account) use full Reg T margin borrowing the same way a regular taxable margin account can?",
+    "choices": [
+      "Yes, identically, with no restriction",
+      "Generally no — IRAs can't borrow money (a 'prohibited transaction' issue), so most custodians instead offer only a restricted 'limited margin' feature that helps avoid cash-account settlement violations and, at some custodians, permits certain covered options strategies, without extending a debit margin loan",
+      "IRAs can never hold any leveraged product",
+      "IRAs automatically get 4:1 margin like a PDT account"
+    ],
+    "correctIndex": 1,
+    "explanation": "Extending credit to an IRA risks running afoul of prohibited-transaction rules, so true margin borrowing isn't offered. 'Limited margin' at some brokers is really about avoiding cash-account trading restrictions (like GFVs) rather than true leverage, and does not permit naked short selling.",
+    "citation": "IRC §4975 (prohibited transactions); custodial IRA agreements"
+  },
+  {
+    "id": "acct-03",
+    "topic": "ACCOUNT_TYPES",
+    "question": "What is the general minimum equity threshold most brokers require before an account is eligible for portfolio margin?",
+    "choices": ["$2,000", "$25,000", "Roughly $100,000-$125,000", "$1,000,000"],
+    "correctIndex": 2,
+    "explanation": "Portfolio margin's higher, risk-based leverage comes with a materially higher entry bar than standard margin — commonly cited around $100,000-$125,000 depending on the broker.",
+    "citation": "FINRA Rule 4210(g)"
+  },
+  {
+    "id": "acct-04",
+    "topic": "ACCOUNT_TYPES",
+    "question": "After repeated cash-account settlement violations, a broker commonly places the account into what kind of restriction?",
+    "choices": [
+      "Permanent account closure with no appeal",
+      "A 90-day restriction requiring the account to have fully settled cash on hand before placing any new purchase (a 'cash up front' / restricted status)",
+      "Automatic conversion to a margin account",
+      "No consequence at all"
+    ],
+    "correctIndex": 1,
+    "explanation": "This is the standard remedial restriction for repeated GFVs or a single free-riding violation: no relying on unsettled or anticipated funds for 90 days.",
+    "citation": "Regulation T §220.8(c); FINRA guidance on cash account restrictions"
+  },
+  {
+    "id": "acct-05",
+    "topic": "ACCOUNT_TYPES",
+    "question": "What is a brokerage 'sweep' or free credit balance?",
+    "choices": [
+      "A fee charged for inactivity",
+      "Uninvested cash sitting in your account, which many brokers automatically 'sweep' into a money market fund or bank deposit program to earn interest until you use it",
+      "The margin interest you owe",
+      "A type of stop order"
+    ],
+    "correctIndex": 1,
+    "explanation": "Rather than letting cash sit completely idle, brokers typically sweep it into an interest-bearing vehicle (money market fund, or a bank sweep program) automatically, crediting you interest until it's deployed.",
+    "citation": "SEC Rule 15c3-3 (customer protection / free credit balances)"
+  },
+  {
+    "id": "acct-06",
+    "topic": "ACCOUNT_TYPES",
+    "question": "In a margin agreement, what does 'hypothecation' refer to?",
+    "choices": [
+      "A tax election",
+      "The broker's contractual right to pledge (re-hypothecate) your margined securities as collateral for its own financing, and in many agreements to lend them out (e.g., for short sellers to borrow)",
+      "A type of limit order",
+      "The interest rate charged on margin loans"
+    ],
+    "correctIndex": 1,
+    "explanation": "When you margin securities, you typically grant the broker the right to hypothecate (pledge) and often re-lend them — this is part of how a broker can supply borrowable shares to short sellers in the first place.",
+    "citation": "Standard margin agreement 'hypothecation' clause; SEC Rule 15c3-3"
+  },
+  {
+    "id": "acct-07",
+    "topic": "ACCOUNT_TYPES",
+    "question": "'Excess equity' in a margin account refers to:",
+    "choices": [
+      "Money you've deposited beyond FDIC insurance limits",
+      "The amount by which your account equity exceeds the Reg T (or maintenance) requirement — the cushion available to be used as additional buying power (feeding SMA) or withdrawn",
+      "Unrealized losses",
+      "A penalty balance"
+    ],
+    "correctIndex": 1,
+    "explanation": "Excess equity is the margin 'cushion' above what's currently required — it's the basis for both further buying power and how much you could withdraw without triggering a call.",
+    "citation": "12 CFR §220.5 (Regulation T, SMA)"
+  },
+  {
+    "id": "acct-08",
+    "topic": "ACCOUNT_TYPES",
+    "question": "Can a margin account be 'downgraded' to cash-account-like restrictions after violations, even though it was originally opened as margin-enabled?",
+    "choices": [
+      "No, margin status is permanent once granted",
+      "Yes — for example, PDT flags restrict day-trading buying power, and severe settlement or risk violations can lead a broker to restrict trading to closing-only or cash-covered orders",
+      "Only if the account holder requests it",
+      "This never happens in practice"
+    ],
+    "correctIndex": 1,
+    "explanation": "Account privileges (margin, day-trading buying power, options levels) are all subject to being pulled back by the broker in response to risk events — they aren't a one-time, unconditional grant.",
+    "citation": "FINRA Rule 4210(f)(8) (PDT restrictions); broker margin agreements"
+  },
+  {
+    "id": "acct-09",
+    "topic": "ACCOUNT_TYPES",
+    "question": "A joint brokerage account's margin treatment, compared to an individual account of the same size, is generally:",
+    "choices": [
+      "Completely different — joint accounts can't use margin at all",
+      "Governed by the same Reg T / FINRA 4210 rules — margin math doesn't change because of joint ownership, though the account agreement adds authorization/liability terms for multiple owners",
+      "Automatically eligible for portfolio margin",
+      "Exempt from PDT rules"
+    ],
+    "correctIndex": 1,
+    "explanation": "Ownership structure changes legal/authorization issues (who can trade, who's liable), not the underlying margin math, which still follows the same Reg T/FINRA framework.",
+    "citation": "FINRA Rule 4210; standard joint account agreements"
+  },
+  {
+    "id": "acct-10",
+    "topic": "ACCOUNT_TYPES",
+    "question": "Why can't a cash account short sell stock?",
+    "choices": [
+      "It's not technically possible on any exchange",
+      "A short sale requires borrowing shares and posting margin against an obligation to buy them back — an extension of credit that, by definition, only a margin account is structured to provide",
+      "Cash accounts are limited to $500 in trades per day",
+      "Only IRAs are barred from shorting, not cash accounts"
+    ],
+    "correctIndex": 1,
+    "explanation": "Shorting inherently involves borrowed shares and an open-ended repurchase obligation — that's credit risk the broker underwrites via a margin agreement, which a cash account never signs.",
+    "citation": "Regulation T §220.8 vs §220.12"
+  },
+
+  {
+    "id": "pdt-01",
+    "topic": "PDT",
+    "question": "Under FINRA's Pattern Day Trader rule, what counts as a single 'day trade'?",
+    "choices": [
+      "Any purchase of a security",
+      "Buying and selling (or selling short and buying to cover) the same security within the same trading day",
+      "Holding a position for less than a week",
+      "Placing more than 5 orders in one day"
+    ],
+    "correctIndex": 1,
+    "explanation": "A day trade is specifically a same-day round trip in the same security — opening and closing the position on the same calendar trading day, regardless of which side (buy or sell) came first.",
+    "citation": "FINRA Rule 4210(f)(8)(B)"
+  },
+  {
+    "id": "pdt-02",
+    "topic": "PDT",
+    "question": "A trader is flagged 'Pattern Day Trader' if they execute 4 or more day trades within 5 rolling business days, AND:",
+    "choices": [
+      "There is no additional condition — 4 day trades alone always triggers it",
+      "Those day trades represent more than 6% of the account's total trading activity in that same 5-day window (for margin accounts under the strict FINRA definition — many brokers simplify and apply the 4-in-5 trigger alone for retail accounts)",
+      "The account has over $1,000,000 in equity",
+      "The trader has held a margin account for over a year"
+    ],
+    "correctIndex": 1,
+    "explanation": "The full regulatory definition includes a proportionality test (day trades > 6% of total trades in the period). In practice, many retail brokers apply the simpler 4-in-5 trigger directly rather than tracking the 6% ratio, but the textbook rule includes both prongs.",
+    "citation": "FINRA Rule 4210(f)(8)(B)(ii)"
+  },
+  {
+    "id": "pdt-03",
+    "topic": "PDT",
+    "question": "The $25,000 minimum equity requirement for a Pattern Day Trader must be:",
+    "choices": [
+      "Met at any point during the trading day, even after the trade",
+      "In the account BEFORE the day-trading activity that would trigger PDT status occurs",
+      "Only checked once a year",
+      "Irrelevant if using a cash account"
+    ],
+    "correctIndex": 1,
+    "explanation": "The requirement is prospective: your equity must already be at/above $25,000 before you place the trade that would be your 4th day trade in 5 business days, not after.",
+    "citation": "FINRA Rule 4210(f)(8)(B)(iv)"
+  },
+  {
+    "id": "pdt-04",
+    "topic": "PDT",
+    "question": "What happens to a margin account under $25,000 equity once it's flagged as a Pattern Day Trader?",
+    "choices": [
+      "Nothing changes",
+      "It is restricted to closing transactions only (or otherwise limited from day trading) until equity is brought back to $25,000 or the flag is cured",
+      "It is permanently closed",
+      "It is converted to a cash account automatically with full trading rights"
+    ],
+    "correctIndex": 1,
+    "explanation": "The classic consequence is a day-trading restriction — often for 90 days or until the account meets the equity minimum — commonly showing an error like 'day trade restricted' on new orders that would open a same-day round trip.",
+    "citation": "FINRA Rule 4210(f)(8)(B)(iv)"
+  },
+  {
+    "id": "pdt-05",
+    "topic": "PDT",
+    "question": "Does closing a position the next trading day (rather than the same day it was opened) count as a day trade?",
+    "choices": [
+      "Yes, always",
+      "No — a day trade specifically requires opening AND closing within the same trading day; an overnight hold breaks that regardless of how short the hold was intraday the next day",
+      "Only if held for over an hour",
+      "Only in cash accounts"
+    ],
+    "correctIndex": 1,
+    "explanation": "Timing matters at the calendar-day level: carry a position overnight even briefly, and its eventual close is not a day trade against the original open — it's simply a regular closing transaction on a different day.",
+    "citation": "FINRA Rule 4210(f)(8)(B)(i)"
+  },
+  {
+    "id": "pdt-06",
+    "topic": "PDT",
+    "question": "Does the PDT rule, as written, apply the same way to a cash account as it does to a margin account?",
+    "choices": [
+      "Yes, identically in all respects",
+      "The PDT designation and its $25,000/day-trading-buying-power framework is fundamentally a margin-account rule; a cash account instead faces its own separate risk — settlement violations (GFVs/free-riding) — if it engages in frequent same-day round trips funded by unsettled proceeds",
+      "PDT only applies to cash accounts, never margin",
+      "Cash accounts are entirely exempt from any day-trading-related restriction"
+    ],
+    "correctIndex": 1,
+    "explanation": "It's easy to conflate these: PDT is specifically about margin day-trading buying power under FINRA 4210. A cash account that day-trades heavily runs into the settlement-based GFV/free-riding framework instead — a related but legally distinct set of consequences.",
+    "citation": "FINRA Rule 4210(f)(8) vs Regulation T §220.8"
+  },
+  {
+    "id": "pdt-07",
+    "topic": "PDT",
+    "question": "If a PDT-flagged account under $25,000 wants the flag removed, what are the typical options?",
+    "choices": [
+      "There is no way to ever remove it",
+      "Deposit funds to reach the $25,000 equity minimum, or request a one-time PDT flag reset from the broker (commonly limited to once per rolling 12 months, at the broker's discretion)",
+      "Wait exactly 24 hours and it clears automatically",
+      "Switch to a different stock symbol"
+    ],
+    "correctIndex": 1,
+    "explanation": "Meeting the equity minimum resolves it structurally; many brokers also offer a courtesy one-time flag removal (not a regulatory entitlement, and typically only offered once) for accounts that got flagged inadvertently.",
+    "citation": "FINRA Rule 4210(f)(8); individual broker PDT reset policies"
+  },
+  {
+    "id": "pdt-08",
+    "topic": "PDT",
+    "question": "Is the PDT day-trade count tracked per individual stock symbol, or across the whole account?",
+    "choices": [
+      "Per symbol — day trades in different stocks don't combine",
+      "Across the whole margin account — day trades in AAPL, then a different stock, then another, all add together toward the same 4-in-5 rolling count",
+      "Per sector",
+      "Per order type"
+    ],
+    "correctIndex": 1,
+    "explanation": "The count aggregates across all securities traded in the account, not per-symbol — three day trades in three different unrelated stocks in one week already puts you at the edge of the threshold.",
+    "citation": "FINRA Rule 4210(f)(8)(B)"
+  },
+  {
+    "id": "pdt-09",
+    "topic": "PDT",
+    "question": "In a standard margin account, do day trades in options count toward the same PDT threshold as day trades in stock?",
+    "choices": [
+      "No, options and stock day trades are tracked completely separately",
+      "Yes — under the margin account definition, day trades across any covered security (stocks, options, etc.) combine into the same rolling count",
+      "Options can never be day traded",
+      "Only stock day trades count; options are always exempt"
+    ],
+    "correctIndex": 1,
+    "explanation": "The rule isn't stock-specific — same-day round trips in options (or other covered margin securities) count toward the same aggregate day-trade total as stock round trips.",
+    "citation": "FINRA Rule 4210(f)(8)(B)(i)"
+  },
+  {
+    "id": "pdt-10",
+    "topic": "PDT",
+    "question": "What is the practical reason FINRA set the day-trading buying power / equity minimum specifically at PDT accounts, rather than applying it to all margin accounts?",
+    "choices": [
+      "It's an arbitrary historical number with no risk rationale",
+      "Frequent intraday round trips using leveraged (up to 4x) day-trading buying power concentrate risk quickly; the higher equity cushion and stricter maintenance requirement are meant to ensure the account can absorb losses from that leveraged, rapid-turnover activity",
+      "It only exists to generate broker fees",
+      "It was set to match the federal minimum wage multiplied by a fixed factor"
+    ],
+    "correctIndex": 1,
+    "explanation": "Day trading with up to 4:1 intraday leverage magnifies both gains and losses very quickly; the equity floor and 25% day-trading maintenance requirement exist to keep that additional leverage from outrunning the account's ability to absorb losses.",
+    "citation": "FINRA Rule 4210(f)(8) adopting release commentary"
+  },
+
+  {
+    "id": "corp-01",
+    "topic": "CORPORATE_ACTIONS",
+    "question": "To receive a declared dividend, you must own the shares:",
+    "choices": [
+      "On the payment date",
+      "Before the ex-dividend date (i.e., you must be a holder of record, which under standard settlement means you purchased before the ex-date)",
+      "On the announcement date only",
+      "It doesn't matter when you own the shares, only that you owned them at some point"
+    ],
+    "correctIndex": 1,
+    "explanation": "Buy on or after the ex-dividend date and you are not entitled to that dividend — the seller keeps it. The stock's opening price on the ex-date is typically adjusted down by roughly the dividend amount to reflect the cash leaving the company.",
+    "citation": "Standard exchange ex-dividend conventions; DTCC record date processing"
+  },
+  {
+    "id": "corp-02",
+    "topic": "CORPORATE_ACTIONS",
+    "question": "In a 2-for-1 stock split, what happens to your shares and cost basis?",
+    "choices": [
+      "Shares double, cost basis per share doubles too (total basis quadruples)",
+      "Shares double, cost basis per share is cut in half — total dollar cost basis is unchanged",
+      "Shares stay the same, price doubles",
+      "You must sell and rebuy to get the new shares"
+    ],
+    "correctIndex": 1,
+    "explanation": "A split is a bookkeeping event, not an economic one: share count and price adjust inversely, and your aggregate cost basis carries over unchanged, just spread across more shares at a lower per-share basis.",
+    "citation": "IRS Pub. 550 (basis adjustments for stock splits)"
+  },
+  {
+    "id": "corp-03",
+    "topic": "CORPORATE_ACTIONS",
+    "question": "In a reverse split (e.g., 1-for-10), a shareholder who ends up with a fractional share typically receives:",
+    "choices": [
+      "Nothing — the fraction is simply forfeited with no compensation",
+      "Cash-in-lieu, a cash payment for the fractional share based on its market value, which is generally a taxable disposition of that fraction",
+      "An automatic loan from the broker",
+      "A guaranteed extra whole share"
+    ],
+    "correctIndex": 1,
+    "explanation": "Since fractional shares generally can't trade, the company/broker cashes them out — and that small cash-in-lieu payment is a real taxable event (a small sale) that's easy to overlook.",
+    "citation": "IRS Pub. 550; standard corporate action processing"
+  },
+  {
+    "id": "corp-04",
+    "topic": "CORPORATE_ACTIONS",
+    "question": "When a company spins off a subsidiary, how is your original cost basis handled?",
+    "choices": [
+      "The spin-off shares always have zero cost basis",
+      "Your original cost basis is allocated between the parent and the spin-off shares based on their relative fair market values at the time of distribution",
+      "You keep 100% of the original basis in the parent and the spin-off is a fully separate windfall",
+      "Basis allocation is unnecessary because spin-offs aren't taxable"
+    ],
+    "correctIndex": 1,
+    "explanation": "A qualifying spin-off is generally tax-free at distribution, but your existing basis must be split between the two stocks proportional to their relative FMVs right after the spin — the company/broker typically publishes the allocation ratio.",
+    "citation": "IRC §355; IRS Pub. 550 (basis allocation on spin-offs)"
+  },
+  {
+    "id": "corp-05",
+    "topic": "CORPORATE_ACTIONS",
+    "question": "In an all-cash acquisition (your shares are bought out for cash), the tax treatment is generally:",
+    "choices": [
+      "Always tax-free",
+      "A fully taxable sale — you recognize capital gain or loss based on your basis, just like selling on the open market",
+      "Treated as a dividend, not a capital transaction",
+      "Deferred indefinitely with no basis adjustment"
+    ],
+    "correctIndex": 1,
+    "explanation": "Cash-for-stock deals are straightforward taxable sales. It's stock-for-stock mergers structured as tax-free reorganizations under §368 that can defer gain recognition instead.",
+    "citation": "IRC §1001 (general sale/exchange rule); IRC §368 (tax-free reorganizations)"
+  },
+  {
+    "id": "corp-06",
+    "topic": "CORPORATE_ACTIONS",
+    "question": "What is the correct chronological order of these dividend dates?",
+    "choices": [
+      "Payment date, ex-dividend date, record date, declaration date",
+      "Declaration date, ex-dividend date, record date, payment date",
+      "Record date, declaration date, payment date, ex-dividend date",
+      "Ex-dividend date, declaration date, payment date, record date"
+    ],
+    "correctIndex": 1,
+    "explanation": "The board declares the dividend first; the ex-date (when the stock trades without the dividend attached) comes next, generally set before or on the record date under current settlement conventions; record date fixes who's on the books as a holder; payment date is when cash actually moves.",
+    "citation": "Standard dividend processing timeline (DTCC / exchange conventions)"
+  },
+  {
+    "id": "corp-07",
+    "topic": "CORPORATE_ACTIONS",
+    "question": "If dividends are automatically reinvested (DRIP) instead of paid out in cash, are they still taxable?",
+    "choices": [
+      "No — since you never touched the cash, there's no tax",
+      "Yes — reinvested dividends are still taxable income in the year received, and the reinvestment simply creates a new tax lot with its own cost basis equal to the reinvested amount",
+      "Only if the dividend exceeds $10,000",
+      "Only qualified dividends reinvested are taxable; ordinary ones are not"
+    ],
+    "correctIndex": 1,
+    "explanation": "DRIP doesn't change the tax character — you're taxed as if you received the cash and then immediately bought more shares with it, and each reinvestment creates its own new lot (with its own future holding period) for later cost-basis tracking.",
+    "citation": "IRS Pub. 550 (dividend reinvestment)"
+  },
+  {
+    "id": "corp-08",
+    "topic": "CORPORATE_ACTIONS",
+    "question": "If you are short a stock and it goes ex-dividend, the substitute payment you owe the lender is a mechanical replication of the dividend for economic purposes, but for tax purposes it is generally treated as:",
+    "choices": [
+      "An ordinary/qualified dividend received by you",
+      "A payment in lieu of dividend — generally deductible as investment interest expense (subject to limitations) or as a miscellaneous item depending on holding period, but importantly NOT eligible for the lender's qualified-dividend treatment simply by being paid",
+      "A tax-free transfer",
+      "The same as a capital gain distribution"
+    ],
+    "correctIndex": 1,
+    "explanation": "The substitute payment doesn't inherit the underlying dividend's preferential 'qualified dividend' character just because it economically mirrors it — its tax treatment on both sides differs from an actual corporate dividend, which is a common trap for short sellers doing their own tax prep.",
+    "citation": "IRC §512 treatment references; IRS guidance on substitute payments in lieu of dividends"
+  },
+  {
+    "id": "corp-09",
+    "topic": "CORPORATE_ACTIONS",
+    "question": "A rights offering (existing shareholders get the right to buy new shares, often at a discount) generally requires you to:",
+    "choices": [
+      "Do nothing — rights have no basis or value implications",
+      "Decide whether to exercise, sell, or let the rights lapse — and if you received them, your original stock's basis may need to be allocated between the stock and the rights based on relative FMV (with an exception if the rights' value is under 15% of the stock's value)",
+      "Automatically forfeit your existing shares",
+      "Pay a penalty to the IRS"
+    ],
+    "correctIndex": 1,
+    "explanation": "Rights aren't just a footnote — depending on their value relative to the underlying stock, you may need to allocate basis between the original shares and the rights, similar in spirit to a spin-off allocation.",
+    "citation": "IRC §307 (basis of stock rights); IRS Pub. 550"
+  },
+  {
+    "id": "corp-10",
+    "topic": "CORPORATE_ACTIONS",
+    "question": "A large special (non-recurring) cash dividend can, for outstanding listed options on that stock, result in:",
+    "choices": [
+      "No effect whatsoever on existing option contracts",
+      "An adjustment by the options clearing/exchange (e.g., strike price or deliverable adjustment) to account for the extraordinary distribution, since ordinary dividends are usually not separately adjusted for but large special ones often are",
+      "Automatic cancellation of all options on that stock",
+      "A mandatory doubling of the contract multiplier"
+    ],
+    "correctIndex": 1,
+    "explanation": "Routine, ordinary dividends are priced into normal options pricing and don't trigger contract adjustments. A large special/extraordinary dividend, however, can prompt the OCC to adjust outstanding contract terms so option holders aren't unfairly harmed by the distribution.",
+    "citation": "OCC By-Laws Article VI (Adjustments); OCC Info Memos on special dividend adjustments"
+  },
+
+  {
+    "id": "tax-01",
+    "topic": "TAX_TREATMENT",
+    "question": "What holding period distinguishes a long-term capital gain from a short-term one?",
+    "choices": ["More than 30 days", "More than 6 months", "More than 1 year", "More than 2 years"],
+    "correctIndex": 2,
+    "explanation": "Hold a position for more than one year before selling, and the gain qualifies for (generally lower) long-term capital gains rates; one year or less is short-term, taxed at ordinary income rates.",
+    "citation": "IRC §1222 (holding period definitions)"
+  },
+  {
+    "id": "tax-02",
+    "topic": "TAX_TREATMENT",
+    "question": "Under the wash sale rule (IRC §1091), a loss is disallowed if you buy a 'substantially identical' security within:",
+    "choices": [
+      "7 days before or after the sale",
+      "30 days before or after the sale (a 61-day window total, including the sale date)",
+      "6 months before or after the sale",
+      "1 year before or after the sale"
+    ],
+    "correctIndex": 1,
+    "explanation": "The wash sale window spans 30 calendar days before the sale, the sale date itself, and 30 calendar days after — 61 days in total during which a repurchase of a substantially identical security disallows the loss.",
+    "citation": "IRC §1091"
+  },
+  {
+    "id": "tax-03",
+    "topic": "TAX_TREATMENT",
+    "question": "When a wash sale disallows a loss, what happens to that disallowed loss amount?",
+    "choices": [
+      "It's simply lost forever with no offset",
+      "It's added to the cost basis of the replacement shares, and the replacement shares' holding period includes the holding period of the shares sold — effectively deferring, not permanently destroying, the loss",
+      "It converts into a tax credit",
+      "It's refunded by the broker"
+    ],
+    "correctIndex": 1,
+    "explanation": "The disallowed loss isn't gone — it's rolled into the replacement lot's basis (increasing it, and thus reducing future gain or increasing future loss on that lot), with a tacked-on holding period.",
+    "citation": "IRC §1091(d)"
+  },
+  {
+    "id": "tax-04",
+    "topic": "TAX_TREATMENT",
+    "question": "If you sell a stock at a loss in your taxable brokerage account and buy it back within 30 days inside your IRA instead, what happens?",
+    "choices": [
+      "The wash sale rule doesn't apply across account types, so the loss is fully allowed",
+      "The wash sale still applies — but because the replacement shares are in an IRA, there's no cost-basis mechanism to carry the disallowed loss forward, so the loss can be permanently lost rather than merely deferred",
+      "The loss automatically transfers into the IRA as a contribution",
+      "It only matters if the IRA is a Roth, not a Traditional IRA"
+    ],
+    "correctIndex": 1,
+    "explanation": "This is a well-known trap: the IRS has stated the wash sale rule applies even when the replacement purchase happens in an IRA, but because IRAs don't track a taxable cost basis, the usual basis-adjustment relief doesn't work — making this version of a wash sale worse than a same-account one.",
+    "citation": "Rev. Rul. 2008-5"
+  },
+  {
+    "id": "tax-05",
+    "topic": "TAX_TREATMENT",
+    "question": "IRC §1259's 'constructive sale' rule taxes an appreciated position as if sold when you:",
+    "choices": [
+      "Simply hold the position for a long time",
+      "Enter into an offsetting position that eliminates substantially all of your risk of loss and opportunity for gain on the appreciated position — e.g., shorting the same or substantially identical security against a long you still hold ('short against the box')",
+      "Receive a dividend on the position",
+      "Transfer the position to a joint account"
+    ],
+    "correctIndex": 1,
+    "explanation": "Congress targeted exactly this kind of hedge-to-lock-in-gain-without-selling strategy: once your economic exposure is fully offset, the IRS treats you as having sold for tax purposes even though you still legally hold the shares.",
+    "citation": "IRC §1259"
+  },
+  {
+    "id": "tax-06",
+    "topic": "TAX_TREATMENT",
+    "question": "If you already hold an appreciated long position and then open a short sale of the same (or substantially identical) security without it rising to a full constructive sale, what special holding-period rule can apply under §1233?",
+    "choices": [
+      "Nothing changes — holding periods are never affected by a later short sale",
+      "The holding period on the long position can be treated as if it started over (suspended), preventing you from converting an otherwise short-term gain into long-term by holding while simultaneously hedged",
+      "The short sale automatically becomes long-term",
+      "Only the short position's holding period is affected, never the long's"
+    ],
+    "correctIndex": 1,
+    "explanation": "Section 1233's 'short sale rules' exist to stop taxpayers from using an offsetting short to lock in a gain's character while running out the clock to long-term status — if the long wasn't already long-term when the offsetting short was opened, its holding period can effectively be tainted/restarted.",
+    "citation": "IRC §1233"
+  },
+  {
+    "id": "tax-07",
+    "topic": "TAX_TREATMENT",
+    "question": "Absent a specific identification instruction to your broker, what is the IRS default cost-basis method for most equity sales?",
+    "choices": [
+      "LIFO (Last-In-First-Out) always",
+      "FIFO (First-In-First-Out) — the oldest shares are treated as sold first, unless you specify otherwise (e.g., specific lot identification) before the trade settles",
+      "Average cost is the mandatory default for all stocks",
+      "Highest-cost-first is the IRS default"
+    ],
+    "correctIndex": 1,
+    "explanation": "FIFO is the default absent an affirmative specific-identification election. Average cost is commonly the default specifically for mutual funds (and some DRIP programs), not individual stocks.",
+    "citation": "Treas. Reg. §1.1012-1"
+  },
+  {
+    "id": "tax-08",
+    "topic": "TAX_TREATMENT",
+    "question": "Does the wash sale rule apply to gains as well as losses?",
+    "choices": [
+      "Yes — gains are deferred the same way losses are",
+      "No — the wash sale rule only disallows losses; there's no equivalent rule deferring or disallowing a recognized gain from a similar repurchase pattern",
+      "It applies to gains over $10,000 only",
+      "It depends on whether the gain is short-term or long-term"
+    ],
+    "correctIndex": 1,
+    "explanation": "Wash sale is strictly a loss-disallowance rule. Selling for a gain and buying back the same stock the next day has no wash-sale consequence — you simply recognize the gain and get a new, higher (or equal) basis lot.",
+    "citation": "IRC §1091"
+  },
+  {
+    "id": "tax-09",
+    "topic": "TAX_TREATMENT",
+    "question": "A trader who qualifies for and makes a valid 'trader tax status' mark-to-market election under IRC §475(f) generally:",
+    "choices": [
+      "Gains nothing different from an ordinary investor",
+      "Marks open positions to market at year-end (recognizing unrealized gains/losses as if sold), reports trading gains/losses as ordinary income/loss rather than capital, and becomes exempt from the wash sale rule and the $3,000 capital loss limitation on those trading positions",
+      "Is exempt from all federal income tax on trading",
+      "Can only be used by accounts under $25,000"
+    ],
+    "correctIndex": 1,
+    "explanation": "The §475(f) MTM election is a significant, largely irrevocable structural choice: ordinary (not capital) treatment removes the wash sale rule's bite and the capital loss cap for qualifying trading activity, but it also means gains are ordinary income, not preferential capital gains.",
+    "citation": "IRC §475(f)"
+  },
+  {
+    "id": "tax-10",
+    "topic": "TAX_TREATMENT",
+    "question": "The Net Investment Income Tax (NIIT) adds an additional surtax on investment income (including capital gains) above certain income thresholds. What is the NIIT rate?",
+    "choices": ["0.9%", "2%", "3.8%", "5%"],
+    "correctIndex": 2,
+    "explanation": "NIIT adds a 3.8% surtax on net investment income for taxpayers above statutory MAGI thresholds ($200,000 single / $250,000 married filing jointly, not indexed for inflation) — on top of regular capital gains tax.",
+    "citation": "IRC §1411"
+  },
+  {
+    "id": "tax-11",
+    "topic": "TAX_TREATMENT",
+    "question": "If your net capital losses exceed your capital gains in a given year, how much of the excess can you deduct against ordinary income, and what happens to the rest?",
+    "choices": [
+      "All of it, fully deductible in the current year",
+      "Up to $3,000 ($1,500 if married filing separately) against ordinary income per year, with any remaining excess carried forward indefinitely to future tax years",
+      "None of it — capital losses can only offset capital gains, never ordinary income",
+      "Up to $10,000, with the remainder permanently forfeited"
+    ],
+    "correctIndex": 1,
+    "explanation": "The annual ordinary-income offset is capped at $3,000 ($1,500 MFS); anything beyond that isn't lost, it carries forward to offset future gains (or future ordinary income, subject to the same annual cap) indefinitely.",
+    "citation": "IRC §1211(b); IRC §1212(b)"
+  },
+  {
+    "id": "tax-12",
+    "topic": "TAX_TREATMENT",
+    "question": "Your broker's Form 1099-B wash sale reporting is generally computed:",
+    "choices": [
+      "Across all of your accounts at every broker, automatically consolidated",
+      "Only within that single account/CUSIP at that one broker — it will NOT automatically detect a wash sale created by a purchase in a different account or a different brokerage, which remains your responsibility to track",
+      "Only for transactions over $50,000",
+      "It's purely advisory and never affects your actual tax liability"
+    ],
+    "correctIndex": 1,
+    "explanation": "Broker 1099-B wash sale tracking has a real blind spot: it can't see your other accounts (a different broker, a spouse's account, or an IRA). If you're trading similar names across multiple accounts, you're on the hook to reconcile wash sales the 1099-B won't catch.",
+    "citation": "Treas. Reg. §1.6045-1 (broker wash sale reporting scope)"
+  }
+]
