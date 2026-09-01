@@ -9,7 +9,7 @@ let dbPromise: Promise<Database> | null = null;
 async function getDb(): Promise<Database> {
   if (!dbPromise) {
     dbPromise = (async () => {
-      const SQL = await initSqlJs({ locateFile: (f) => `/${f}` });
+      const SQL = await initSqlJs({ locateFile: (f) => `${import.meta.env.BASE_URL}${f}` });
       const existing = await idbGet(IDB_KEY);
       const db = existing ? new SQL.Database(existing) : new SQL.Database();
       migrate(db);
