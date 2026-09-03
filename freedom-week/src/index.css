@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   FREEDOM WEEK — theme tokens
+   Every color, font, and timing value the app uses lives here as a CSS
+   custom property. To re-skin the app (swap the palette, change fonts),
+   edit only this block — components reference the tokens, never raw hex.
+   ========================================================================== */
+:root {
+  /* Palette */
+  --color-navy: #0a1128;
+  --color-navy-deep: #060a1c;
+  --color-navy-light: #141e42;
+  --color-parchment: #f4f1ea;
+  --color-parchment-dim: #e8e3d6;
+  --color-crimson: #b3122e;
+  --color-crimson-glow: #d81e42;
+  --color-gold: #c9a227;
+  --color-gold-bright: #e6c34a;
+  --color-ink: #1a1f2e;
+
+  /* Type */
+  --font-display: "Oswald", "Bebas Neue", sans-serif;
+  --font-condensed: "Bebas Neue", "Oswald", sans-serif;
+  --font-scripture: "Cormorant Garamond", Georgia, serif;
+  --font-ui: "Inter", system-ui, sans-serif;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 180ms;
+  --duration-medium: 420ms;
+  --duration-slow: 900ms;
+
+  color-scheme: dark;
+
+  /* Theme intensity — overridden per level below, read by .fw-grain and
+     the breathing/pulse animations so Settings > Theme Intensity has a
+     real, visible effect rather than just a stored preference. */
+  --fw-grain-opacity: 0.05;
+  --fw-breathe-amount: 0.012;
+  --fw-glow-strength: 1;
+}
+
+:root[data-intensity="subtle"] {
+  --fw-grain-opacity: 0.02;
+  --fw-breathe-amount: 0.005;
+  --fw-glow-strength: 0.55;
+}
+:root[data-intensity="bold"] {
+  --fw-grain-opacity: 0.09;
+  --fw-breathe-amount: 0.022;
+  --fw-glow-strength: 1.6;
+}
+
+@theme {
+  --color-navy: var(--color-navy);
+  --color-navy-deep: var(--color-navy-deep);
+  --color-navy-light: var(--color-navy-light);
+  --color-parchment: var(--color-parchment);
+  --color-parchment-dim: var(--color-parchment-dim);
+  --color-crimson: var(--color-crimson);
+  --color-crimson-glow: var(--color-crimson-glow);
+  --color-gold: var(--color-gold);
+  --color-gold-bright: var(--color-gold-bright);
+  --color-ink: var(--color-ink);
+
+  --font-display: var(--font-display);
+  --font-condensed: var(--font-condensed);
+  --font-scripture: var(--font-scripture);
+  --font-ui: var(--font-ui);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-navy);
+  color: var(--color-parchment);
+  font-family: var(--font-ui);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-navy);
+}
+
+/* Parchment grain texture, applied via .fw-grain */
+.fw-grain {
+  position: relative;
+  isolation: isolate;
+}
+.fw-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--fw-grain-opacity);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Gold hairline rule under section headers */
+.fw-hairline {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-gold) 0%, transparent) 0%,
+    color-mix(in srgb, var(--color-gold) 70%, transparent) 20%,
+    color-mix(in srgb, var(--color-gold) 70%, transparent) 80%,
+    color-mix(in srgb, var(--color-gold) 0%, transparent) 100%
+  );
+}
+
+/* Minimum touch target helper */
+.fw-tap {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes fw-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: calc(1 - var(--fw-breathe-amount) * 9);
+    transform: scale(calc(1 - var(--fw-breathe-amount)));
+  }
+}
+.fw-breathe {
+  animation: fw-breathe 4.5s ease-in-out infinite;
+}
+
+@keyframes fw-pulse-overdue {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-crimson-glow) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 calc(14px * var(--fw-glow-strength)) calc(2px * var(--fw-glow-strength))
+      color-mix(in srgb, var(--color-crimson-glow) 55%, transparent);
+  }
+}
+.fw-overdue {
+  animation: fw-pulse-overdue 1.7s ease-in-out infinite;
+  border-color: var(--color-crimson-glow) !important;
+}
+
+/* Scrollbar restraint on the campaign board */
+.fw-scroll::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.fw-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-gold) 40%, transparent);
+  border-radius: 4px;
+}
