@@ -1,71 +1,105 @@
 # Build notes / judgment calls
 
-Everything below is a decision I made while implementing the spec where the
-brief didn't fully pin things down. Most are easy to change directly in the
-relevant file (`app.js` for scoring/config, `style.css` for visuals,
+Everything below is a decision made while reworking this from the medieval
+"Game of Life: Path to Knighthood" build into **ZERV LEVEL UP**, where the
+request didn't fully pin things down. Most are easy to change directly in
+the relevant file (`app.js` for scoring/config, `style.css` for visuals,
 `index.html`/`chronicle.html`/`honors.html` for page-specific markup).
 
-0. **Split into three pages** (Dashboard/Chronicle/Honors, sharing
-   `style.css` + `app.js`) instead of one long single-page app with JS tabs,
-   per a later request — it gives each section its own room to breathe on a
-   phone screen and a real sticky nav bar instead of scrolling past
-   everything to reach Honors. All game state is still read/written straight
-   to `localStorage`, so the pages stay in sync with no routing logic: any
-   page can be reloaded or landed on directly and it's always current. The
-   Sacred Oath's interactive "log it" control lives on the Chronicle page
-   (since it has to react to the date navigator, per the spec), while the
-   Dashboard shows a read-only summary of the current week's Oath with a
-   link over to Chronicle.
+## The "always encouraging, never negative" fix
 
-1. **Weeks are Monday-start (ISO-style).** "This Week" on the scoreboard and
-   the Sacred Oath's weekly bucket both use the Monday of the relevant date's
-   calendar week (`gameoflife:week:<monday-date>`).
+The driving complaint behind this rewrite was seeing the All-Time score sit
+over a million points negative. The fix has two parts:
 
-2. **The top Scoreboard ("Today / This Week / All-Time") always reflects the
-   real current date**, independent of the date navigator below it. The date
-   navigator/Chronicle section is for viewing and backfilling *any* day
-   (past or today) — editing today there does update the Scoreboard live,
-   since it's the same underlying record.
+1. **Every day's net score is floored at zero** (`dayNetScore` in `app.js`).
+   Wipeouts (vices) can only cancel out that day's Wins down to zero — they
+   can never create a debt that carries into the Week or All-Time total.
+   Practically: your lifetime score can only ever go up or stay flat, never
+   down, no matter how bad a day gets.
+2. **Every Wipeout's point value was cut roughly 4–5x** from the old
+   version (e.g. a drink went from −500 to −100; the worst single purchase
+   tier went from −1000 to −200), so even a rough day eats a small, sane
+   chunk out of that day's Wins instead of wiping it out entirely.
 
-3. **Tier-selection Deeds are "set", not "add".** For habits with a
-   single-highest-tier-per-day rule (Video Creatives, Read, Journal, Pray,
-   Guitar, Duolingo, Study/Trading, Sales), tapping a tier button sets that
-   day's value/points for the habit outright, rather than accumulating
-   partial amounts across multiple taps. This keeps the scoring predictable
-   and matches "single highest tier reached per day." Re-tapping a lower
-   tier later in the day will lower that habit's score for the day — this is
-   intentional (self-reported totals), not a bug.
+Together, these mean the number on screen only ever moves the encouraging
+direction. Individual Wipeout line items in the Session Log still show their
+real (negative) point value for transparency — only the aggregated
+Today/Week/All-Time numbers are floored.
 
-4. **Locking is one-way in the UI.** Once a day is sealed there's no unlock
-   button, matching "can't be edited further." If you truly need to fix a
-   sealed day, you'd have to edit `localStorage` directly (e.g. via browser
-   dev tools) for that day's `gameoflife:day:<date>` key.
+## Task roster — what changed and why
 
-5. **The Sacred Oath carries no point value**, per the spec ("no numeric
-   penalty attached since none was specified"). It only drives its own
-   fulfilled/unfulfilled badge, the "consecutive weeks fulfilled" streak, and
-   the "Sworn and True" Honor (4 weeks in a row).
+This was a full replacement of the old habit list to match current real
+goals, not a tweak:
 
-6. **"Every Deed category logged in one day"** (the Renaissance Knight Honor)
-   requires all 11 Deed types to have at least one log that day, including at
-   least one Art Piece and one Poem.
+- **Daily Priority**: ZERV Post — Instagram, ZERV Post — TikTok (both flagged
+  with a "DAILY PRIORITY" tag and a highlighted border on the Sessions page,
+  per the explicit ask).
+- **Daily Wins**: Sprint Training, Strength Training, Surf Session (flat,
+  +250–300 each), Coding (tiered by minutes, same point scale as the other
+  tiered habits), Read, Journal (kept from the old build — still generically
+  useful, nobody asked to drop them).
+- **Bonus Wave**: Shaping a board is no longer a mandatory weekly oath — it's
+  a repeatable, un-gated bonus (+1000, logged on whatever day it happens)
+  with a lifetime counter on the Lineup page. This directly replaces the old
+  "Sacred Oath" mechanic.
+- **Weekly Goals**: Schoolwork, Personal Goal, Business Goal — new, each a
+  simple per-week checkbox worth +750 when checked, no penalty for skipping
+  a week. These reuse the old Sacred Oath's "tied to the date navigator's
+  selected week" plumbing.
+- **Dropped**: Video Creatives, Prayer, Guitar, Duolingo, Study/Trading,
+  Sales, Art Piece, Poem. None of these were mentioned as current goals, and
+  "completely changing the level up habit" read as license to replace the
+  whole roster rather than bolt new items onto the old one. Reading and
+  Journaling survived because they're generic enough to still fit (and
+  nothing said to cut them) — easy to remove from the `DEEDS` array in
+  `app.js` if you'd rather they go too.
+- **Vices kept the same shape** (stacking, tiered-by-count, per-purchase
+  amount tiers) just with much lower point values, per "make my vices
+  deduct less points."
 
-7. **Purchase (non-food) tiers** use `[min, max)` ranges: under $25 → −100,
-   $25–<$75 → −250, $75–<$150 → −500, $150+ → −1000.
+## Rank ladder
 
-8. **Masturbation / Food-spending tiers cap at the 3×-in-a-day value.** A 4th+
-   same-day occurrence can still be logged (it shows in the Chronicle and
-   bumps the counter), but the deduction stays capped at −1000/−1000 rather
-   than growing further, per "not additive beyond 3x."
+Kept the same 7-tier All-Time-score thresholds as before (0 / 2,500 / 7,500
+/ 15,000 / 30,000 / 60,000 / 100,000) — they were already a reasonable curve,
+and now that scores can only climb (see above), you'll reach each tier
+faster than before anyway. Renamed the tiers to a surf progression (Grom →
+Rookie Rider → Wave Chaser → Shortboarder → Barrel Hunter → Big Wave Charger
+→ ZERV Legend) with a Board + Gear pair standing in for the old Weapon +
+Armor slots.
 
-9. **Study/Trading** uses the exact tier numbers given in the brief
-   (15/30/60 min → +100/+200/+500), same shape as Reading/Journaling.
+## ZERV color system
 
-10. **Added three bonus Honors** fitting the new Sales/Art/Poem/Study
-    categories, as the brief invited: Devoted Scholar (Study logged 20 days),
-    Market Day (hit the $500+ Sales tier on 5 different days), plus the
-    Sales/Art/Poem Honors called out explicitly in the spec.
+You gave an exact design-system spec (Background/Headings/Text/Links/Primary
+button/Secondary button/Inputs/Variants, each with its own hover state). I
+implemented it close to literally in `style.css`'s `:root` tokens:
 
-11. **No sound effects.** The brief didn't ask for audio, so level-ups and
-    Honor unlocks are communicated visually (a toast + a soft screen flash,
-    both respecting `prefers-reduced-motion`) rather than with tones.
+- `--zerv-bg` (`#3BC2C7`) is used as the retro "ocean" backdrop behind
+  everything, not as literal `<body>` background on every pixel — long
+  stretches of your pale-yellow Text color directly on that bright teal
+  would be a readability problem, so panels sit on a dark navy surface
+  (`#1A1A2E`, taken from your own button-hover-text color) instead, with
+  Text/Headings/Links keeping their exact specified colors on top of that.
+- Primary/Secondary buttons, inputs, and "Variants" (mapped onto the
+  tier-selector chips, e.g. the "15 min / 30 min / 60 min" buttons) all use
+  your exact bg/text/border/hover values.
+- The one gap: the last hex in "Variants → hover border" was cut off
+  (`#E6E6E`) — completed it as `#E6E6E6` (a light grey), the obvious
+  completion. Easy to fix in `style.css` (`--variant-hover-border`) if that's
+  wrong.
+- The active/selected state of a tier chip (not in your spec, since that's a
+  state your system didn't define) borrows the Primary button's colors,
+  since "selected" is functionally a confirmed action.
+
+## Storage keys unchanged
+
+Day/week/achievement localStorage keys still use the old `gameoflife:*`
+prefix rather than renaming to something ZERV-specific, so progress already
+logged on the live site carries forward instead of resetting to zero.
+
+## Everything else carried over from the previous build
+
+Monday-start weeks, the Scoreboard always reflecting the real current
+date/week (independent of the date navigator), tier buttons "set" rather
+than "add", one-way day locking, purchase `[min, max)` ranges, and
+achievements evaluating against full stored history — none of that changed,
+just the labels and numbers around it.

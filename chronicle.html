@@ -3,30 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Chronicle — Game of Life: Path to Knighthood</title>
-<meta name="description" content="Log today's Deeds and Follies, or backfill any day gone by.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff7a3d'/%3E%3Cstop offset='.5' stop-color='%23ec4899'/%3E%3Cstop offset='1' stop-color='%232dd4bf'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='46' fill='url(%23g)'/%3E%3C/svg%3E">
+<title>Sessions — ZERV LEVEL UP</title>
+<meta name="description" content="Log today's Wins and Wipeouts, or backfill any day gone by.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2300FF41'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%23FF006E'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23FFBE0B'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="bgwash">
-  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
-  <div class="blob b4"></div><div class="blob b5"></div>
+  <div class="sun" aria-hidden="true"></div>
+  <div class="horizon-grid" aria-hidden="true"></div>
+  <div class="waves-fg" aria-hidden="true">
+    <svg viewBox="0 0 400 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#146c6e" opacity="0.85"/>
+      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#1A1A2E" opacity="0.95"/>
+    </svg>
+  </div>
 </div>
 <div id="toastLayer"></div>
 
 <nav class="navbar">
-  <a class="nav-link" href="index.html">🏰 Dashboard</a>
-  <a class="nav-link active" href="chronicle.html">📜 Chronicle</a>
-  <a class="nav-link" href="honors.html">🏅 Honors</a>
+  <a class="nav-link" href="index.html">🌅 Lineup</a>
+  <a class="nav-link active" href="chronicle.html">📋 Sessions</a>
+  <a class="nav-link" href="honors.html">🏆 Medals</a>
 </nav>
 
 <div class="wrap">
   <header class="hero-compact">
-    <div class="crest" aria-hidden="true"></div>
+    <div class="zerv-badge" aria-hidden="true"></div>
     <div>
-      <h1 class="title">The Chronicle</h1>
-      <div class="subtitle">Log your Deeds and Follies for any day</div>
+      <h1 class="title">Sessions</h1>
+      <div class="subtitle">Log your Wins and Wipeouts for any day</div>
     </div>
   </header>
 
@@ -46,37 +52,43 @@
       <button class="btn ghost small" id="nextDayBtn">›</button>
       <input type="date" id="datePicker">
     </div>
-    <div class="lock-badge" id="lockBadge" style="display:none;">🔏 Sealed — this day is locked and read-only</div>
+    <div class="lock-badge" id="lockBadge" style="display:none;">🔒 Sealed — this day is locked and read-only</div>
     <div style="text-align:center; margin-top:10px;">
-      <button class="btn teal small" id="lockDayBtn">Lock This Day&rsquo;s Score</button>
+      <button class="btn secondary small" id="lockDayBtn">Lock This Day's Score</button>
     </div>
   </div>
 
-  <!-- SACRED OATH (tied to the selected date's week, per the date navigator) -->
-  <div class="panel oath-card">
-    <div class="ribbon">Sacred Oath</div>
-    <div class="oath-desc">Shape at least 1 surfboard every week — minimum, non-negotiable.</div>
-    <div class="oath-status" id="oathStatus">Not Yet Fulfilled</div>
-    <div class="muted" id="oathWeekLabel" style="margin-bottom:10px;"></div>
-    <button class="btn gold" id="logSurfboardBtn">🏄 Shape a Surfboard</button>
-    <div class="muted" style="margin-top:8px;">Consecutive weeks fulfilled: <b id="oathStreak">0</b></div>
+  <!-- WEEKLY GOALS (tied to the selected date's week) -->
+  <div class="panel bonus-card">
+    <div class="ribbon pink-ribbon">Weekly Goals</div>
+    <div class="bonus-desc">Bonus points whenever you check one off — no penalty for skipping a week.</div>
+    <div id="weeklyGoalsList"></div>
+    <div class="muted" id="weekLabel" style="margin-top:4px;"></div>
+  </div>
+
+  <!-- BOARD BONUS -->
+  <div class="panel bonus-card">
+    <div class="ribbon pink-ribbon">Bonus Wave 🌊</div>
+    <div class="bonus-desc">Not required, not weekly — just a big bonus whenever you shape a board.</div>
+    <button class="btn" id="shapeBoardBtn">🪵 Shape a Board (+1000)</button>
+    <div class="muted" id="boardsTodayLabel" style="margin-top:8px;"></div>
   </div>
 
   <div class="panel">
-    <div class="ribbon">Deeds</div>
+    <div class="ribbon">Wins</div>
     <div id="deedsList"></div>
   </div>
   <div class="panel">
-    <div class="ribbon danger-ribbon">Follies &amp; Temptations</div>
-    <div id="folliesList"></div>
+    <div class="ribbon pink-ribbon">Wipeouts</div>
+    <div id="viceList"></div>
   </div>
   <div class="panel">
-    <div class="ribbon">Today&rsquo;s Ledger</div>
+    <div class="ribbon">Today's Session Log</div>
     <div id="chronicleLog"></div>
   </div>
 
   <footer>
-    Game of Life: Path to Knighthood &middot; all data lives only in this browser (localStorage) &middot; nothing is ever sent anywhere
+    ZERV LEVEL UP &middot; all data lives only in this browser (localStorage) &middot; nothing is ever sent anywhere
   </footer>
 </div>
 
@@ -89,24 +101,31 @@ let selectedDate = todayStr();
 
 function render(){
   renderScoreboard();
-  renderOath();
+  renderWeeklyGoals();
   renderDateNav();
   renderDeeds();
-  renderFollies();
+  renderVices();
   renderChronicleLog();
+  renderBoardsToday();
 }
 
-function renderOath(){
+function renderWeeklyGoals(){
   const wk = weekStartOf(selectedDate);
   const w = getWeek(wk);
-  const fulfilled = w.oathCount >= 1;
-  const statusEl = document.getElementById("oathStatus");
-  statusEl.textContent = fulfilled ? "Fulfilled This Week ✓" : "Not Yet Fulfilled";
-  statusEl.className = "oath-status " + (fulfilled ? "fulfilled" : "unfulfilled");
-  document.getElementById("oathWeekLabel").textContent =
-    `Week of ${wk} · ${w.oathCount} surfboard${w.oathCount===1?"":"s"} shaped`;
-  document.getElementById("oathStreak").textContent = computeOathStreak(wk);
-  document.getElementById("logSurfboardBtn").disabled = getDay(selectedDate).locked;
+  const locked = getDay(selectedDate).locked;
+  const el = document.getElementById("weeklyGoalsList");
+  el.innerHTML = "";
+  for(const g of WEEKLY_GOALS){
+    const done = !!w[g.id];
+    const row = document.createElement("div");
+    row.className = "weekly-goal-row";
+    row.innerHTML = `
+      <div class="wg-label">${g.icon} ${g.name} <span class="wg-points">(+${g.points})</span></div>
+      <button class="btn ${done?'secondary':''} small" ${locked?'disabled':''}>${done?'✓ Done':'Mark Done'}</button>`;
+    row.querySelector("button").onclick = () => toggleWeeklyGoal(g.id);
+    el.appendChild(row);
+  }
+  document.getElementById("weekLabel").textContent = `Week of ${wk}`;
 }
 
 function renderDateNav(){
@@ -119,7 +138,15 @@ function renderDateNav(){
   const day = getDay(selectedDate);
   document.getElementById("lockBadge").style.display = day.locked ? "flex" : "none";
   document.getElementById("lockDayBtn").disabled = day.locked;
-  document.getElementById("lockDayBtn").textContent = day.locked ? "🔏 Sealed" : "Lock This Day's Score";
+  document.getElementById("lockDayBtn").textContent = day.locked ? "🔒 Sealed" : "Lock This Day's Score";
+  document.getElementById("shapeBoardBtn").disabled = day.locked;
+}
+
+function renderBoardsToday(){
+  const day = getDay(selectedDate);
+  const count = (day.deeds.shape_board && day.deeds.shape_board.entries || []).length;
+  document.getElementById("boardsTodayLabel").textContent =
+    count > 0 ? `${count} board${count===1?"":"s"} shaped on ${selectedDate}` : "None shaped on this day yet";
 }
 
 function renderDeeds(){
@@ -128,14 +155,15 @@ function renderDeeds(){
   const day = getDay(selectedDate);
   const locked = day.locked;
   for(const d of DEEDS){
+    if(d.bonus) continue; // Shape a Board has its own dedicated card above
     const card = document.createElement("div");
-    card.className = "row-card";
+    card.className = "row-card" + (d.priority ? " priority" : "");
     const pts = dayDeedPoints(day, d.id);
     let body = "";
     if(d.type === "flat"){
       const on = day.deeds[d.id] && day.deeds[d.id].on;
       body = `<div class="tier-row">
-        <button class="tier-btn ${on?'active':''}" ${locked?'disabled':''} onclick="toggleFlatDeed('${d.id}')">${on?'✓ Logged':'Log +'+d.points}</button>
+        <button class="btn ${on?'secondary':''} small" ${locked?'disabled':''} onclick="toggleFlatDeed('${d.id}')">${on?'✓ Logged':'Log +'+d.points}</button>
       </div>`;
     } else if(d.type === "tiered"){
       const cur = day.deeds[d.id];
@@ -143,16 +171,10 @@ function renderDeeds(){
         const active = cur && cur.n === t.n;
         return `<button class="tier-btn ${active?'active':''}" ${locked?'disabled':''} onclick="setTieredDeed('${d.id}',${t.n})">${t.label} · +${t.points}</button>`;
       }).join("") + (cur ? `<button class="tier-btn" ${locked?'disabled':''} onclick="clearTieredDeed('${d.id}')">clear</button>` : "") + `</div>`;
-    } else if(d.type === "repeatable"){
-      const count = (day.deeds[d.id] && day.deeds[d.id].entries || []).length;
-      body = `<div class="tier-row">
-        <button class="tier-btn" ${locked?'disabled':''} onclick="addRepeatableDeed('${d.id}')">+ Log (+${d.points})</button>
-        ${count>0?`<span class="muted" style="align-self:center;">logged ${count}×</span>`:""}
-      </div>`;
     }
     card.innerHTML = `
       <div class="row-head">
-        <div class="row-title"><span class="row-icon">${d.icon}</span>${d.name}</div>
+        <div class="row-title"><span class="row-icon">${d.icon}</span>${d.name}${d.priority?' <span class="priority-tag">DAILY PRIORITY</span>':''}</div>
         <div class="row-points ${pts>0?'':'zero'}">${pts>0?'+':''}${pts}</div>
       </div>
       ${body}`;
@@ -160,30 +182,30 @@ function renderDeeds(){
   }
 }
 
-function renderFollies(){
-  const el = document.getElementById("folliesList");
+function renderVices(){
+  const el = document.getElementById("viceList");
   el.innerHTML = "";
   const day = getDay(selectedDate);
   const locked = day.locked;
-  for(const f of FOLLIES){
+  for(const v of VICES){
     const card = document.createElement("div");
     card.className = "row-card";
-    const pts = dayFollyPoints(day, f.id);
+    const pts = dayVicePoints(day, v.id);
     let body = "";
-    if(f.type === "stacking"){
-      const count = (day.follies[f.id] && day.follies[f.id].count) || 0;
+    if(v.type === "stacking"){
+      const count = (day.vices[v.id] && day.vices[v.id].count) || 0;
       body = `<div class="tier-row">
-        <button class="tier-btn" ${locked?'disabled':''} onclick="incStackingFolly('${f.id}',1)">+ Log (${f.points})</button>
-        ${count>0?`<button class="tier-btn" ${locked?'disabled':''} onclick="incStackingFolly('${f.id}',-1)">− Undo</button><span class="muted" style="align-self:center;">×${count}</span>`:""}
+        <button class="tier-btn" ${locked?'disabled':''} onclick="incStackingVice('${v.id}',1)">+ Log (${v.points})</button>
+        ${count>0?`<button class="tier-btn" ${locked?'disabled':''} onclick="incStackingVice('${v.id}',-1)">− Undo</button><span class="muted" style="align-self:center;">×${count}</span>`:""}
       </div>`;
-    } else if(f.type === "tiered_count"){
-      const count = (day.follies[f.id] && day.follies[f.id].count) || 0;
+    } else if(v.type === "tiered_count"){
+      const count = (day.vices[v.id] && day.vices[v.id].count) || 0;
       body = `<div class="tier-row">
-        <button class="tier-btn" ${locked?'disabled':''} onclick="incStackingFolly('${f.id}',1)">+ Log occurrence</button>
-        ${count>0?`<button class="tier-btn" ${locked?'disabled':''} onclick="incStackingFolly('${f.id}',-1)">− Undo</button><span class="muted" style="align-self:center;">×${count}</span>`:""}
+        <button class="tier-btn" ${locked?'disabled':''} onclick="incStackingVice('${v.id}',1)">+ Log occurrence</button>
+        ${count>0?`<button class="tier-btn" ${locked?'disabled':''} onclick="incStackingVice('${v.id}',-1)">− Undo</button><span class="muted" style="align-self:center;">×${count}</span>`:""}
       </div>`;
-    } else if(f.type === "amount_each"){
-      const entries = (day.follies[f.id] && day.follies[f.id].entries) || [];
+    } else if(v.type === "amount_each"){
+      const entries = (day.vices[v.id] && day.vices[v.id].entries) || [];
       body = `<div class="purchase-input">
         <input type="number" min="0" step="1" id="purchaseAmt" placeholder="Amount ($)" ${locked?'disabled':''}>
         <button class="btn small danger" ${locked?'disabled':''} onclick="logPurchase()">Log</button>
@@ -191,7 +213,7 @@ function renderFollies(){
     }
     card.innerHTML = `
       <div class="row-head">
-        <div class="row-title"><span class="row-icon">${f.icon}</span>${f.name}</div>
+        <div class="row-title"><span class="row-icon">${v.icon}</span>${v.name}</div>
         <div class="row-points ${pts<0?'neg':'zero'}">${pts}</div>
       </div>
       ${body}`;
@@ -220,24 +242,24 @@ function renderChronicleLog(){
       });
     }
   }
-  for(const f of FOLLIES){
-    const rec = day.follies[f.id];
+  for(const v of VICES){
+    const rec = day.vices[v.id];
     if(!rec) continue;
-    if(f.type === "stacking" && rec.count){
+    if(v.type === "stacking" && rec.count){
       for(let i=0;i<rec.count;i++){
-        items.push({ label:`${f.icon} ${f.name}`, points:f.points, pos:false, remove:()=>incStackingFolly(f.id,-1) });
+        items.push({ label:`${v.icon} ${v.name}`, points:v.points, pos:false, remove:()=>incStackingVice(v.id,-1) });
       }
-    } else if(f.type === "tiered_count" && rec.count){
-      items.push({ label:`${f.icon} ${f.name} (×${rec.count})`, points:dayFollyPoints(day,f.id), pos:false, remove:()=>incStackingFolly(f.id,-1) });
-    } else if(f.type === "amount_each"){
+    } else if(v.type === "tiered_count" && rec.count){
+      items.push({ label:`${v.icon} ${v.name} (×${rec.count})`, points:dayVicePoints(day,v.id), pos:false, remove:()=>incStackingVice(v.id,-1) });
+    } else if(v.type === "amount_each"){
       (rec.entries||[]).forEach((e,i) => {
-        items.push({ label:`${f.icon} Purchase ($${e.amount})`, points:e.points, pos:false, remove:()=>removePurchase(i) });
+        items.push({ label:`${v.icon} Purchase ($${e.amount})`, points:e.points, pos:false, remove:()=>removePurchase(i) });
       });
     }
   }
 
   if(items.length === 0){
-    el.innerHTML = `<div class="chronicle-empty">No Deeds or Follies recorded for this day yet.</div>`;
+    el.innerHTML = `<div class="chronicle-empty">No Wins or Wipeouts recorded for this day yet.</div>`;
     return;
   }
   for(const it of items){
@@ -259,12 +281,12 @@ function renderChronicleLog(){
    LOGGING ACTIONS
    ========================================================================= */
 function guardLocked(){
-  if(getDay(selectedDate).locked){ showToast("🔏 This day is sealed and cannot be edited."); return true; }
+  if(getDay(selectedDate).locked){ showToast("🔒 This day is sealed and cannot be edited."); return true; }
   return false;
 }
 function afterMutation(){
   checkAndUnlockAchievements();
-  renderKnightProfile();
+  renderSurferProfile();
   render();
 }
 
@@ -315,14 +337,14 @@ function removeRepeatableDeed(id, index){
   afterMutation();
 }
 
-function incStackingFolly(id, delta){
+function incStackingVice(id, delta){
   if(guardLocked()) return;
   const day = getDay(selectedDate);
-  if(!day.follies[id]) day.follies[id] = { count:0 };
-  const prevPoints = dayFollyPoints(day, id);
-  day.follies[id].count = Math.max(0, day.follies[id].count + delta);
+  if(!day.vices[id]) day.vices[id] = { count:0 };
+  const prevPoints = dayVicePoints(day, id);
+  day.vices[id].count = Math.max(0, day.vices[id].count + delta);
   saveDay(selectedDate);
-  const newPoints = dayFollyPoints(day, id);
+  const newPoints = dayVicePoints(day, id);
   const d2 = newPoints - prevPoints;
   if(d2 !== 0) popupAt(String(d2), d2>0);
   afterMutation();
@@ -333,10 +355,10 @@ function logPurchase(){
   const amount = Number(input.value);
   if(!amount || amount <= 0) return;
   const day = getDay(selectedDate);
-  const def = follyDef("purchases");
+  const def = viceDef("purchases");
   const points = amountPoints(def.ranges, amount);
-  if(!day.follies.purchases) day.follies.purchases = { entries: [] };
-  day.follies.purchases.entries.push({ amount, points });
+  if(!day.vices.purchases) day.vices.purchases = { entries: [] };
+  day.vices.purchases.entries.push({ amount, points });
   saveDay(selectedDate);
   popupAt(String(points), false);
   afterMutation();
@@ -344,19 +366,20 @@ function logPurchase(){
 function removePurchase(index){
   if(guardLocked()) return;
   const day = getDay(selectedDate);
-  if(day.follies.purchases && day.follies.purchases.entries) day.follies.purchases.entries.splice(index,1);
+  if(day.vices.purchases && day.vices.purchases.entries) day.vices.purchases.entries.splice(index,1);
   saveDay(selectedDate);
   afterMutation();
 }
 
-function logSurfboard(){
+function toggleWeeklyGoal(goalId){
   if(guardLocked()) return;
   const wk = weekStartOf(selectedDate);
   const w = getWeek(wk);
-  const wasFulfilled = w.oathCount >= 1;
-  w.oathCount++;
+  const wasDone = !!w[goalId];
+  w[goalId] = !wasDone;
   saveWeek(wk);
-  if(!wasFulfilled) showToast("🏄 Sacred Oath fulfilled this week!");
+  const g = WEEKLY_GOALS.find(g=>g.id===goalId);
+  if(!wasDone) showToast(`🎯 ${g.name} complete! +${g.points}`);
   afterMutation();
 }
 
@@ -366,7 +389,7 @@ function lockSelectedDay(){
   if(!confirm(`Seal ${selectedDate}? Once locked, this day can no longer be edited.`)) return;
   day.locked = true;
   saveDay(selectedDate);
-  showToast("🔏 Day sealed with the royal wax.");
+  showToast("🔒 Day sealed.");
   afterMutation();
 }
 
@@ -383,7 +406,7 @@ document.getElementById("prevDayBtn").onclick = () => goToDate(addDays(selectedD
 document.getElementById("nextDayBtn").onclick = () => goToDate(addDays(selectedDate, 1));
 document.getElementById("datePicker").onchange = (e) => { if(e.target.value) goToDate(e.target.value); };
 document.getElementById("lockDayBtn").onclick = lockSelectedDay;
-document.getElementById("logSurfboardBtn").onclick = logSurfboard;
+document.getElementById("shapeBoardBtn").onclick = () => addRepeatableDeed("shape_board");
 
 /* =========================================================================
    INIT

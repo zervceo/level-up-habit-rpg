@@ -3,29 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Game of Life: Path to Knighthood</title>
-<meta name="description" content="A self-improvement scorekeeper themed as a medieval RPG.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff7a3d'/%3E%3Cstop offset='.5' stop-color='%23ec4899'/%3E%3Cstop offset='1' stop-color='%232dd4bf'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='46' fill='url(%23g)'/%3E%3C/svg%3E">
+<title>ZERV LEVEL UP</title>
+<meta name="description" content="Catch your wave. Stack your points. Build your empire.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2300FF41'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%23FF006E'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23FFBE0B'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="bgwash">
-  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
-  <div class="blob b4"></div><div class="blob b5"></div>
+  <div class="sun" aria-hidden="true"></div>
+  <div class="horizon-grid" aria-hidden="true"></div>
+  <div class="waves-fg" aria-hidden="true">
+    <svg viewBox="0 0 400 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#146c6e" opacity="0.85"/>
+      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#1A1A2E" opacity="0.95"/>
+    </svg>
+  </div>
 </div>
 <div id="toastLayer"></div>
 
 <nav class="navbar">
-  <a class="nav-link active" href="index.html">🏰 Dashboard</a>
-  <a class="nav-link" href="chronicle.html">📜 Chronicle</a>
-  <a class="nav-link" href="honors.html">🏅 Honors</a>
+  <a class="nav-link active" href="index.html">🌅 Lineup</a>
+  <a class="nav-link" href="chronicle.html">📋 Sessions</a>
+  <a class="nav-link" href="honors.html">🏆 Medals</a>
 </nav>
 
 <div class="wrap">
   <header class="hero">
-    <div class="crest" aria-hidden="true"></div>
-    <h1 class="title">Game of Life: Path to Knighthood</h1>
-    <div class="subtitle">A chronicle of Deeds, Follies, and the long road to glory</div>
+    <div class="zerv-badge" aria-hidden="true"></div>
+    <h1 class="title">ZERV LEVEL UP</h1>
+    <div class="subtitle">Catch your wave. Stack your points. Build your empire.</div>
   </header>
 
   <!-- SCOREBOARD -->
@@ -35,66 +41,58 @@
     <div class="score-tile"><div class="num" id="scoreAllTime">0</div><div class="lbl">All-Time</div></div>
   </div>
 
-  <!-- KNIGHT'S PROFILE -->
+  <!-- SURFER PROFILE -->
   <div class="panel">
-    <div class="ribbon">Knight&rsquo;s Profile</div>
-    <div class="knight-card">
+    <div class="ribbon">Surfer Profile</div>
+    <div class="surfer-card">
       <div>
-        <div class="rank-name" id="rankName">Commoner</div>
+        <div class="rank-name" id="rankName">Grom</div>
         <div class="gear-row">
-          <div class="gear-item"><span class="gear-icon" id="weaponIcon">🥢</span><span id="weaponName">Wooden Stick</span></div>
-          <div class="gear-item"><span class="gear-icon" id="armorIcon">👕</span><span id="armorName">Ragged Tunic</span></div>
+          <div class="gear-item"><span class="gear-icon" id="boardIcon">🏄</span><span id="boardName">Foam Pop-Out</span></div>
+          <div class="gear-item"><span class="gear-icon" id="gearIcon">🩳</span><span id="gearName">Boardshorts</span></div>
         </div>
       </div>
     </div>
     <div class="progress-track"><div class="progress-fill" id="rankProgressFill" style="width:0%"></div></div>
-    <div class="progress-label" id="rankProgressLabel">0 / 2,500 to Squire</div>
+    <div class="progress-label" id="rankProgressLabel">0 / 2,500 to Rookie Rider</div>
   </div>
 
-  <!-- SACRED OATH (read-only summary; log it from the Chronicle) -->
-  <div class="panel oath-card">
-    <div class="ribbon">Sacred Oath &mdash; This Week</div>
-    <div class="oath-desc">Shape at least 1 surfboard every week — minimum, non-negotiable.</div>
-    <div class="oath-status" id="oathStatus">Not Yet Fulfilled</div>
-    <div class="muted" id="oathWeekLabel" style="margin-bottom:10px;"></div>
-    <a class="btn gold link-btn" href="chronicle.html">🏄 Go Log It</a>
-    <div class="muted" style="margin-top:8px;">Consecutive weeks fulfilled: <b id="oathStreak">0</b></div>
+  <!-- BOARD BONUS (read-only summary; log it from Sessions) -->
+  <div class="panel bonus-card">
+    <div class="ribbon pink-ribbon">Bonus Wave 🌊</div>
+    <div class="bonus-desc">Shaping a board is never required — it's a big bonus whenever you finish one.</div>
+    <div class="bonus-status" id="boardsShapedLabel">0 boards shaped, lifetime</div>
+    <a class="btn link-btn" href="chronicle.html">🪵 Log a Board</a>
   </div>
 
   <!-- QUICK NAV -->
   <div class="panel" style="text-align:center;">
-    <div class="ribbon">Begin Your Day</div>
-    <div class="muted" style="margin-bottom:10px;">Log today&rsquo;s Deeds and Follies, or review any day gone by.</div>
-    <a class="btn link-btn" href="chronicle.html" style="width:100%;">📜 Open the Chronicle</a>
+    <div class="ribbon">Start Your Session</div>
+    <div class="muted" style="margin-bottom:10px;">Log today's Wins, check off your weekly goals, or revisit any day gone by.</div>
+    <a class="btn link-btn" href="chronicle.html" style="width:100%;">📋 Open Sessions</a>
   </div>
 
-  <!-- HONORS PREVIEW -->
+  <!-- MEDALS PREVIEW -->
   <div class="panel">
-    <div class="ribbon">Recent Honors</div>
+    <div class="ribbon">Recent Medals</div>
     <div class="honors-strip" id="honorsStrip"></div>
     <div style="text-align:center;margin-top:12px;">
-      <a class="btn ghost small link-btn" href="honors.html">View All Honors</a>
+      <a class="btn secondary small link-btn" href="honors.html">View All Medals</a>
     </div>
   </div>
 
   <footer>
-    Game of Life: Path to Knighthood &middot; all data lives only in this browser (localStorage) &middot; nothing is ever sent anywhere
+    ZERV LEVEL UP &middot; all data lives only in this browser (localStorage) &middot; nothing is ever sent anywhere
     <br><a href="README.md">Deployment &amp; home-screen instructions</a>
   </footer>
 </div>
 
 <script src="app.js"></script>
 <script>
-function renderOathSummary(){
-  const wk = weekStartOf(todayStr());
-  const w = getWeek(wk);
-  const fulfilled = w.oathCount >= 1;
-  const statusEl = document.getElementById("oathStatus");
-  statusEl.textContent = fulfilled ? "Fulfilled This Week ✓" : "Not Yet Fulfilled";
-  statusEl.className = "oath-status " + (fulfilled ? "fulfilled" : "unfulfilled");
-  document.getElementById("oathWeekLabel").textContent =
-    `Week of ${wk} · ${w.oathCount} surfboard${w.oathCount===1?"":"s"} shaped`;
-  document.getElementById("oathStreak").textContent = computeOathStreak(wk);
+function renderBoardsSummary(){
+  const agg = computeAggregates();
+  document.getElementById("boardsShapedLabel").textContent =
+    `${agg.boardsShaped} board${agg.boardsShaped===1?"":"s"} shaped, lifetime`;
 }
 
 function renderHonorsStrip(){
@@ -118,8 +116,8 @@ function renderHonorsStrip(){
 
 checkAndUnlockAchievements();
 renderScoreboard();
-renderKnightProfile();
-renderOathSummary();
+renderSurferProfile();
+renderBoardsSummary();
 renderHonorsStrip();
 </script>
 </body>

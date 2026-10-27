@@ -3,29 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Honors — Game of Life: Path to Knighthood</title>
-<meta name="description" content="Every Honor of the Realm you've earned — and the ones still to come.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff7a3d'/%3E%3Cstop offset='.5' stop-color='%23ec4899'/%3E%3Cstop offset='1' stop-color='%232dd4bf'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='46' fill='url(%23g)'/%3E%3C/svg%3E">
+<title>Medals — ZERV LEVEL UP</title>
+<meta name="description" content="Every medal you've earned — and the ones still to come.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2300FF41'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%23FF006E'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23FFBE0B'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="bgwash">
-  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
-  <div class="blob b4"></div><div class="blob b5"></div>
+  <div class="sun" aria-hidden="true"></div>
+  <div class="horizon-grid" aria-hidden="true"></div>
+  <div class="waves-fg" aria-hidden="true">
+    <svg viewBox="0 0 400 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#146c6e" opacity="0.85"/>
+      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#1A1A2E" opacity="0.95"/>
+    </svg>
+  </div>
 </div>
 <div id="toastLayer"></div>
 
 <nav class="navbar">
-  <a class="nav-link" href="index.html">🏰 Dashboard</a>
-  <a class="nav-link" href="chronicle.html">📜 Chronicle</a>
-  <a class="nav-link active" href="honors.html">🏅 Honors</a>
+  <a class="nav-link" href="index.html">🌅 Lineup</a>
+  <a class="nav-link" href="chronicle.html">📋 Sessions</a>
+  <a class="nav-link active" href="honors.html">🏆 Medals</a>
 </nav>
 
 <div class="wrap">
   <header class="hero-compact">
-    <div class="crest" aria-hidden="true"></div>
+    <div class="zerv-badge" aria-hidden="true"></div>
     <div>
-      <h1 class="title">Honors of the Realm</h1>
+      <h1 class="title">Medals</h1>
       <div class="subtitle" id="honorsSummary">0 of 0 earned</div>
     </div>
   </header>
@@ -35,7 +41,7 @@
   </div>
 
   <footer>
-    Game of Life: Path to Knighthood &middot; all data lives only in this browser (localStorage) &middot; nothing is ever sent anywhere
+    ZERV LEVEL UP &middot; all data lives only in this browser (localStorage) &middot; nothing is ever sent anywhere
   </footer>
 </div>
 
