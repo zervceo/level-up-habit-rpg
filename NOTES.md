@@ -1,5 +1,49 @@
 # Build notes / judgment calls
 
+## Visual pass: 3D, interactive, animated beach scene
+
+A later request asked to make the app "more 3D and retro surf inspired...
+completely colorful and interactive" with "a different beach scene and
+surfing clips." Judgment calls made implementing that:
+
+- **"Surfing clips" is an animated SVG/CSS loop, not embedded video.** There
+  was no video asset to source, and embedding real footage would add a
+  dependency and page weight the brief's original "no build step, no npm
+  dependencies" constraint was meant to avoid. Instead, `.surfer-clip` in
+  `style.css` is a small looping illustration — a stick-figure surfer on a
+  board that bobs, tilts, and drifts side to side continuously, sitting on
+  the horizon-grid "ocean" layer on every page.
+- **Three distinct scenes, one shared markup.** Lineup (`index.html`) is
+  sunset, Sessions (`chronicle.html`) is bright midday, Medals (`honors.html`)
+  is starry dusk with a moon — satisfying "different beach scene" without
+  tripling the HTML. All three pages render the exact same `#bgwash` layer
+  structure (sky, stars, clouds, seagulls, sun/moon, palms, horizon-grid,
+  surfer clip, waves, sand); only the outer `scene-sunset` / `scene-day` /
+  `scene-dusk` class on `#bgwash` changes, and CSS selectors scoped to each
+  class handle the color/visibility differences (e.g. the sun only gets its
+  retro stripes in the sunset scene; the moon and stars only show in dusk).
+- **3D is "chunky arcade depth," not literal WebGL/3D transforms.** Buttons,
+  tier chips, panels, and score tiles all got an offset drop-shadow that
+  shrinks on press and grows on hover (`translateY` + shadow-offset pairs in
+  `style.css`), mimicking a physical button being pushed. The ZERV badge
+  logo got inset highlight/shadow layers for a glossy-orb look. True
+  perspective is used once, deliberately, for the synthwave horizon grid
+  (`transform: perspective(...) rotateX(...)`).
+- **"Completely colorful" stayed scoped to the background art, not the UI
+  components.** New colors (sand, palm green, ocean blue, cloud tones) only
+  appear in the beach-scene layers. Text, links, buttons, inputs, and borders
+  still use ZERV's exact design-system tokens from the color-system request
+  below — richness came from the scenery, not from drifting off-brand on
+  interactive elements.
+- **Interactivity**: scroll- and pointer-based parallax on the background
+  layers (`initSceneInteractivity()` in `app.js`), a scale "pulse" on each
+  Scoreboard number when its value changes, and a click-the-sun /
+  click-the-badge sparkle burst easter egg. All of it — parallax, pulses,
+  sparkles, and every background animation — is skipped entirely under
+  `prefers-reduced-motion: reduce`.
+
+## Original rework: medieval build -> ZERV LEVEL UP
+
 Everything below is a decision made while reworking this from the medieval
 "Game of Life: Path to Knighthood" build into **ZERV LEVEL UP**, where the
 request didn't fully pin things down. Most are easy to change directly in

@@ -2,12 +2,13 @@
    ZERV LEVEL UP — shared stylesheet. Colors are ZERV's own design system:
    bright turquoise background, neon-green headings, hot-pink links/accents,
    gold borders/shadows, navy for contrast surfaces. See NOTES.md for how
-   the exact ZERV token names map onto these CSS variables.
+   the exact ZERV token names map onto these CSS variables, and for the
+   extra "scene" colors used only in the background artwork.
    ========================================================================= */
 @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 :root{
-  /* ZERV design-system tokens, used verbatim */
+  /* ZERV design-system tokens, used verbatim on UI components */
   --zerv-bg: #3BC2C7;
   --zerv-heading: #00FF41;
   --zerv-text: #F0FC95;
@@ -50,6 +51,22 @@
 
   --good: #00FF41;
   --bad: #FF4D6D;
+
+  /* Extra colors used ONLY in the background beach-scene artwork — never on
+     text, buttons, links, inputs or borders, which stay strictly ZERV's
+     tokens above. These add the "completely colorful" scenery richness
+     without diluting the brand system. */
+  --surf-sand: #F4C06D;
+  --surf-sand-dark: #D99A4E;
+  --surf-palm: #1F8A5F;
+  --surf-palm-dark: #114A33;
+  --surf-cloud-sunset: #FFE3B8;
+  --surf-cloud-day: #FFFFFF;
+  --surf-cloud-dusk: #3A3A66;
+  --surf-ocean-day: #0E8FA0;
+  --surf-moon-glow: #CFE8FF;
+
+  --mx: 0; --my: 0; --scrollY: 0;
 }
 *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html,body{ height:100%; }
@@ -65,16 +82,40 @@ h1,h2,h3,.display{ font-family: 'Bungee', 'Poppins', sans-serif; color: var(--ze
 a{ color: var(--zerv-link); text-decoration-color: var(--zerv-link); }
 a:hover{ color: var(--zerv-link-hover); text-decoration-color: var(--zerv-link-hover); }
 
-/* ============ Retro sunset-over-the-ocean background ============ */
-#bgwash{ position:fixed; inset:0; z-index:-2; overflow:hidden; background: var(--zerv-bg); }
+/* =========================================================================
+   RETRO BEACH SCENE — layered, parallaxed, animated. Three time-of-day
+   variants (scene-sunset / scene-day / scene-dusk) share this one markup;
+   the scene class swaps colors, stripes, moon-vs-sun, and stars via CSS.
+   ========================================================================= */
+#bgwash{ position:fixed; inset:0; z-index:-2; overflow:hidden; }
+
+.sky{ position:absolute; inset:0; }
+.scene-sunset .sky{ background: linear-gradient(180deg, #2B1046 0%, #6A2C6B 26%, var(--zerv-link) 52%, var(--zerv-border) 78%, var(--surf-sand) 100%); }
+.scene-day .sky{ background: linear-gradient(180deg, #0C8FC4 0%, var(--zerv-bg) 55%, #BDEEFF 100%); }
+.scene-dusk .sky{ background: linear-gradient(180deg, #0A0A20 0%, #1A1A2E 38%, #2D1B4E 72%, #4A2060 100%); }
+
+.stars{ position:absolute; inset:0 0 40% 0; opacity:0;
+  background-image:
+    radial-gradient(1.6px 1.6px at 10% 20%, #fff 50%, transparent 52%),
+    radial-gradient(1.6px 1.6px at 30% 10%, #fff 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 50% 28%, #fff 50%, transparent 52%),
+    radial-gradient(1.6px 1.6px at 68% 14%, #fff 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 85% 32%, #fff 50%, transparent 52%),
+    radial-gradient(1.6px 1.6px at 18% 44%, #fff 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 42% 40%, #fff 50%, transparent 52%),
+    radial-gradient(1.6px 1.6px at 92% 48%, #fff 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 76% 50%, #fff 50%, transparent 52%);
+}
+.scene-dusk .stars{ opacity:1; animation: starTwinkle 3.4s ease-in-out infinite; }
+@keyframes starTwinkle{ 0%,100%{ opacity:0.65; } 50%{ opacity:1; } }
+
+.sun-layer{ position:absolute; left:50%; top:30%; width:52vmax; height:52vmax; transform:translate(-50%,-50%); }
 .sun{
-  position:absolute; left:50%; top:30%; width:52vmax; height:52vmax; transform:translate(-50%,-50%);
-  border-radius:50%; overflow:hidden;
-  background: radial-gradient(circle at 50% 42%, #FFBE0B 0%, #FF006E 70%, #c40058 100%);
-  box-shadow: 0 0 120px rgba(255,190,11,0.65);
+  width:100%; height:100%; border-radius:50%; overflow:hidden;
   animation: sunPulse 8s ease-in-out infinite;
 }
-.sun::before{
+.scene-sunset .sun{ background: radial-gradient(circle at 50% 42%, var(--zerv-border) 0%, var(--zerv-link) 70%, #C40058 100%); box-shadow: 0 0 120px rgba(255,190,11,0.65); }
+.scene-sunset .sun::before{
   content:""; position:absolute; inset:0;
   background: repeating-linear-gradient(0deg,
     transparent 0 10%, var(--zerv-bg) 10% 13%,
@@ -82,30 +123,108 @@ a:hover{ color: var(--zerv-link-hover); text-decoration-color: var(--zerv-link-h
     transparent 31% 50%, var(--zerv-bg) 50% 54%,
     transparent 54% 100%);
 }
+.scene-day .sun{ background: radial-gradient(circle at 50% 38%, #FFFDEE 0%, #FFE37A 55%, var(--zerv-border) 100%); box-shadow: 0 0 110px rgba(255,255,255,0.55); }
+.scene-dusk .sun{ display:none; }
+.moon{ display:none; }
+.scene-dusk .moon{
+  display:block; width:38%; height:38%; margin:6% auto 0; border-radius:50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, var(--surf-moon-glow) 55%, #9DB9D8 100%);
+  box-shadow: 0 0 60px rgba(207,232,255,0.55);
+  animation: sunPulse 9s ease-in-out infinite;
+}
 @keyframes sunPulse{ 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(1.12); } }
+
+.cloud-layer{ position:absolute; inset:0; transform: translate(calc(var(--mx) * -10px), calc(var(--scrollY) * -0.03px)); }
+.cloud{ position:absolute; border-radius:50px; filter:blur(1px); animation: cloudDrift linear infinite; }
+.cloud.c1{ width:150px; height:42px; top:12%; left:8%; animation-duration:54s; }
+.cloud.c2{ width:110px; height:34px; top:21%; left:52%; animation-duration:68s; animation-delay:-22s; }
+.cloud.c3{ width:130px; height:38px; top:7%; left:74%; animation-duration:60s; animation-delay:-12s; }
+@keyframes cloudDrift{ from{ transform: translateX(-20vw); } to{ transform: translateX(120vw); } }
+.scene-sunset .cloud{ background: var(--surf-cloud-sunset); opacity:0.75; }
+.scene-day .cloud{ background: var(--surf-cloud-day); opacity:0.95; }
+.scene-dusk .cloud{ background: var(--surf-cloud-dusk); opacity:0.6; }
+
+.seagulls{ position:absolute; inset:0; transform: translate(calc(var(--mx) * -14px), calc(var(--scrollY) * -0.04px)); }
+.gull{ position:absolute; width:26px; height:12px; animation: gullFly linear infinite; }
+.gull path{ fill:none; stroke-width:1.6; }
+.scene-sunset .gull path, .scene-day .gull path{ stroke: var(--navy); opacity:0.55; }
+.scene-dusk .gull{ display:none; }
+.gull.g1{ top:14%; animation-duration:16s; }
+.gull.g2{ top:9%; animation-duration:21s; animation-delay:-7s; }
+.gull.g3{ top:19%; animation-duration:24s; animation-delay:-14s; }
+@keyframes gullFly{ from{ left:-8%; transform: translateY(0); } 50%{ transform: translateY(-6px); } to{ left:108%; transform: translateY(0); } }
+
+.palms{ position:absolute; bottom:6%; width:130px; height:230px; z-index:1; }
+.palms.left{ left:-14px; transform: translate(calc(var(--mx) * -18px), calc(var(--scrollY) * -0.02px)); }
+.palms.right{ right:-14px; transform: scaleX(-1) translate(calc(var(--mx) * 18px), calc(var(--scrollY) * -0.02px)); }
+.palms svg{ width:100%; height:100%; overflow:visible; }
+.palm-leaves{ animation: palmSway 4.6s ease-in-out infinite; transform-origin: 54% 72%; }
+@keyframes palmSway{ 0%,100%{ transform: rotate(-3deg); } 50%{ transform: rotate(3deg); } }
+.palm-trunk{ fill: var(--surf-palm-dark); }
+.palm-frond{ fill: var(--surf-palm); }
+.scene-dusk .palm-frond{ fill: #1a4a35; }
+.scene-dusk .palm-trunk{ fill: #0d2e20; }
+
 .horizon-grid{
   position:absolute; left:-20%; right:-20%; bottom:0; height:38%;
-  background-image:
-    repeating-linear-gradient(90deg, var(--zerv-link) 0 2px, transparent 2px 7%),
-    repeating-linear-gradient(0deg, var(--zerv-border) 0 2px, transparent 2px 12%);
   background-position: center bottom;
   opacity:0.55;
-  transform: perspective(220px) rotateX(62deg);
+  transform: perspective(220px) rotateX(62deg) translateX(calc(var(--mx) * 8px));
   transform-origin: bottom center;
   animation: gridScroll 7s linear infinite;
 }
-@keyframes gridScroll{ from{ background-position: center 0, center 0; } to{ background-position: center 0, center 60px; } }
-#bgwash::after{
-  content:""; position:absolute; inset:0;
-  background: linear-gradient(180deg, rgba(27,16,54,0.15) 0%, rgba(27,16,54,0.05) 45%, var(--zerv-bg) 78%);
+.scene-sunset .horizon-grid{
+  background-image:
+    repeating-linear-gradient(90deg, var(--zerv-link) 0 2px, transparent 2px 7%),
+    repeating-linear-gradient(0deg, var(--zerv-border) 0 2px, transparent 2px 12%);
 }
-.waves-fg{ position:absolute; left:0; right:0; bottom:0; width:100%; }
+.scene-day .horizon-grid{
+  background-image:
+    repeating-linear-gradient(90deg, #ffffff 0 2px, transparent 2px 7%),
+    repeating-linear-gradient(0deg, var(--surf-ocean-day) 0 2px, transparent 2px 12%);
+  opacity:0.4;
+}
+.scene-dusk .horizon-grid{
+  background-image:
+    repeating-linear-gradient(90deg, var(--zerv-heading) 0 2px, transparent 2px 7%),
+    repeating-linear-gradient(0deg, #6a3fa0 0 2px, transparent 2px 12%);
+  opacity:0.45;
+}
+@keyframes gridScroll{ from{ background-position: center 0, center 0; } to{ background-position: center 0, center 60px; } }
+
+/* The "surf clip" — a tiny looping animated illustration of a surfer
+   riding a wave (no video asset exists to embed, so this is a lightweight
+   CSS/SVG loop instead — keeps the whole app a single dependency-free
+   static bundle). */
+.surfer-clip{
+  position:absolute; left:50%; bottom:21%; width:64px; height:46px;
+  animation: surfBob 2.4s ease-in-out infinite, surfDrift 9s ease-in-out infinite;
+}
+@keyframes surfBob{ 0%,100%{ transform: translateX(-50%) translateY(0) rotate(-6deg); } 50%{ transform: translateX(-50%) translateY(-9px) rotate(6deg); } }
+@keyframes surfDrift{ 0%,100%{ left:40%; } 50%{ left:60%; } }
+.surfer-clip svg{ width:100%; height:100%; overflow:visible; }
+.scene-dusk .surfer-clip{ opacity:0.5; }
+
+.waves-fg{ position:absolute; left:0; right:0; bottom:0; width:100%; z-index:2; }
 .waves-fg svg{ width:100%; height:auto; display:block; }
 .wave-layer{ animation: waveDrift 16s ease-in-out infinite; }
 .wave-layer.w2{ animation-duration: 22s; animation-direction: reverse; }
 @keyframes waveDrift{ 0%,100%{ transform: translateX(0); } 50%{ transform: translateX(-3%); } }
+
+.beach-fg{ position:absolute; left:0; right:0; bottom:0; height:6%; z-index:3; background: linear-gradient(180deg, var(--surf-sand), var(--surf-sand-dark)); }
+.beach-fg .prop{ position:absolute; bottom:18%; font-size:26px; filter: drop-shadow(0 3px 2px rgba(0,0,0,0.3)); }
+.beach-fg .prop.board{ left:12%; transform: rotate(-10deg); }
+.beach-fg .prop.ball{ right:16%; font-size:18px; }
+.scene-dusk .beach-fg{ filter: brightness(0.6) saturate(0.8); }
+
+#bgwash::after{
+  content:""; position:absolute; inset:0; z-index:1;
+  background: linear-gradient(180deg, rgba(27,16,54,0.12) 0%, rgba(27,16,54,0.04) 45%, transparent 75%);
+}
+
 @media (prefers-reduced-motion: reduce){
-  .sun, .horizon-grid, .wave-layer{ animation: none !important; }
+  .sun, .moon, .stars, .cloud, .gull, .palm-leaves, .horizon-grid, .surfer-clip, .wave-layer{ animation: none !important; }
+  .cloud-layer, .seagulls, .palms, .horizon-grid{ transform: none !important; }
 }
 
 .wrap{ max-width: 720px; margin:0 auto; padding: 0 12px 56px; position:relative; z-index:1; }
@@ -124,19 +243,26 @@ a:hover{ color: var(--zerv-link-hover); text-decoration-color: var(--zerv-link-h
   padding: 9px 4px; border-radius:10px; min-height:40px;
   display:flex; align-items:center; justify-content:center; gap:5px;
   border: 1.5px solid transparent;
+  transition: transform .12s ease;
 }
 .nav-link.active{ background: var(--btn-primary-bg); color: var(--btn-primary-text); border-color: var(--btn-primary-border); }
-.nav-link:not(.active):hover{ border-color: var(--zerv-border); color: var(--zerv-link-hover); }
+.nav-link:not(.active):hover{ border-color: var(--zerv-border); color: var(--zerv-link-hover); transform: translateY(-1px); }
 
-/* ============ Header / ZERV badge logo ============ */
+/* ============ Header / ZERV badge logo (glossy 3D orb) ============ */
 header.hero{ text-align:center; padding: 18px 6px 6px; }
 .zerv-badge{
   width: 96px; height:96px; margin: 0 auto 8px; border-radius:50%;
-  position:relative; overflow:hidden;
+  position:relative; overflow:hidden; cursor:pointer;
   background: conic-gradient(from 200deg, #81D9F2, var(--zerv-bg), var(--zerv-heading), var(--zerv-link), var(--zerv-border), #81D9F2);
-  box-shadow: 0 0 0 3px var(--navy), 0 0 0 6px var(--zerv-border), 0 6px 18px rgba(0,0,0,0.5);
+  box-shadow:
+    0 0 0 3px var(--navy), 0 0 0 6px var(--zerv-border),
+    0 10px 22px rgba(0,0,0,0.5),
+    inset -10px -10px 18px rgba(0,0,0,0.3),
+    inset 8px 8px 16px rgba(255,255,255,0.3);
   animation: badgeSpin 24s linear infinite;
+  transition: transform .2s ease;
 }
+.zerv-badge:hover{ transform: scale(1.06); }
 .zerv-badge::before{
   content:""; position:absolute; inset:15px; border-radius:50%;
   background: var(--navy); border: 2px solid var(--zerv-border);
@@ -161,7 +287,7 @@ header.hero-compact .zerv-badge::after{ font-size:8px; }
 header.hero-compact h1.title{ font-size:16px; margin:0; text-align:left; }
 header.hero-compact .subtitle{ margin:2px 0 0; text-align:left; }
 
-/* ============ Panels ============ */
+/* ============ Panels (chunky 3D card, lifts on hover) ============ */
 .panel{
   background: var(--navy);
   border: 2px solid var(--zerv-border);
@@ -170,7 +296,9 @@ header.hero-compact .subtitle{ margin:2px 0 0; text-align:left; }
   margin-bottom: 14px;
   position: relative;
   box-shadow: 0 5px 0 var(--zerv-shadow), 0 8px 22px rgba(0,0,0,0.4);
+  transition: transform .18s ease, box-shadow .18s ease;
 }
+.panel:hover{ transform: translateY(-3px); box-shadow: 0 8px 0 var(--zerv-shadow), 0 16px 30px rgba(0,0,0,0.45); }
 .panel::before, .panel::after{
   position:absolute; font-size:15px; pointer-events:none; opacity:0.8;
 }
@@ -187,13 +315,17 @@ header.hero-compact .subtitle{ margin:2px 0 0; text-align:left; }
 .ribbon.pink-ribbon{ background: var(--zerv-link); color:#fff; }
 .ribbon.priority-ribbon{ background: var(--zerv-border); color: var(--navy); }
 
-/* ============ Scoreboard ============ */
+/* ============ Scoreboard (pulses when a value changes) ============ */
 .scoreboard{ display:grid; grid-template-columns: repeat(3,1fr); gap:8px; margin-bottom:14px; }
 .score-tile{
   background: var(--navy); border:2px solid var(--zerv-border); border-radius:12px;
   padding: 10px 6px; text-align:center; box-shadow: 0 3px 0 var(--zerv-shadow);
+  transition: transform .15s ease;
 }
-.score-tile .num{ font-family:'Bungee', sans-serif; font-size: 19px; color: var(--zerv-heading); }
+.score-tile:hover{ transform: translateY(-2px) scale(1.03); }
+.score-tile .num{ font-family:'Bungee', sans-serif; font-size: 19px; color: var(--zerv-heading); display:inline-block; }
+.score-tile .num.pulse{ animation: scorePulse .5s ease; }
+@keyframes scorePulse{ 0%{ transform:scale(1); } 40%{ transform:scale(1.3); color: var(--zerv-border); } 100%{ transform:scale(1); } }
 .score-tile .lbl{ font-size: 10px; color: var(--zerv-text); opacity:0.8; text-transform:uppercase; letter-spacing:0.6px; margin-top:2px; }
 
 /* ============ Surfer Profile ============ */
@@ -202,8 +334,9 @@ header.hero-compact .subtitle{ margin:2px 0 0; text-align:left; }
 .gear-row{ display:flex; gap:14px; font-size:13px; color: var(--zerv-text); margin:6px 0; flex-wrap:wrap; }
 .gear-item{ display:flex; align-items:center; gap:6px; }
 .gear-icon{ font-size: 22px; }
-.progress-track{ background: rgba(0,0,0,0.4); border:1px solid var(--zerv-border); border-radius: 8px; height:14px; overflow:hidden; margin-top:8px; }
-.progress-fill{ height:100%; background: linear-gradient(90deg, var(--zerv-heading), var(--zerv-border), var(--zerv-link)); transition: width .5s ease; }
+.progress-track{ background: rgba(0,0,0,0.45); border:1px solid var(--zerv-border); border-radius: 8px; height:16px; overflow:hidden; margin-top:8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+.progress-fill{ height:100%; background: linear-gradient(90deg, var(--zerv-heading), var(--zerv-border), var(--zerv-link)); transition: width .5s ease; position:relative; }
+.progress-fill::after{ content:""; position:absolute; inset:0; background: linear-gradient(180deg, rgba(255,255,255,0.45), transparent 60%); }
 .progress-label{ font-size:10px; color: var(--zerv-text); opacity:0.85; margin-top:4px; }
 
 /* ============ Bonus board / weekly goals ============ */
@@ -218,29 +351,34 @@ header.hero-compact .subtitle{ margin:2px 0 0; text-align:left; }
 .weekly-goal-row .wg-label{ font-weight:600; font-size:13px; display:flex; align-items:center; gap:8px; }
 .weekly-goal-row .wg-points{ font-size:11px; opacity:0.75; }
 
-/* ============ Buttons ============ */
+/* ============ Buttons (chunky 3D press) ============ */
 button{ font-family:'Poppins', sans-serif; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .btn{
   background: var(--btn-primary-bg); color: var(--btn-primary-text); border: 2px solid var(--btn-primary-border);
   padding: 11px 16px; border-radius: 10px;
   font-size:13px; font-weight:700; min-height:44px;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  box-shadow: 0 5px 0 rgba(0,0,0,0.35);
+  transition: transform .1s ease, box-shadow .1s ease, background .15s ease, color .15s ease, border-color .15s ease;
 }
-.btn:hover{ background: var(--btn-primary-hover-bg); color: var(--btn-primary-hover-text); border-color: var(--btn-primary-hover-border); }
-.btn:active{ transform: translateY(1px); }
+.btn:hover{ background: var(--btn-primary-hover-bg); color: var(--btn-primary-hover-text); border-color: var(--btn-primary-hover-border); transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,0.35); }
+.btn:active{ transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
 .btn.secondary{ background: var(--btn-secondary-bg); color: var(--btn-secondary-text); border-color: var(--btn-secondary-border); }
 .btn.secondary:hover{ background: var(--btn-secondary-hover-bg); color: var(--btn-secondary-hover-text); border-color: var(--btn-secondary-hover-border); }
 .btn.danger{ background: var(--bad); color:#fff; border-color: var(--zerv-border); }
 .btn.ghost{ background: rgba(255,255,255,0.06); border:1.5px solid var(--zerv-border); color: var(--zerv-text); box-shadow:none; }
+.btn.ghost:hover{ box-shadow: 0 4px 0 rgba(0,0,0,0.25); }
 .btn.small{ padding: 7px 10px; font-size:11px; min-height:36px; }
-.btn:disabled{ opacity:0.4; filter:none; cursor:not-allowed; }
+.btn:disabled{ opacity:0.4; filter:none; cursor:not-allowed; transform:none !important; }
 .btn.link-btn{ text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
 .tier-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
 .tier-btn{
   background: var(--variant-bg); border:1.5px solid var(--variant-border); color: var(--variant-text);
   padding: 8px 10px; border-radius:8px; font-size:11px; min-height:40px; font-weight:600;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+  transition: transform .1s ease, box-shadow .1s ease, background .15s ease;
 }
-.tier-btn:hover{ background: var(--variant-hover-bg); color: var(--variant-hover-text); border-color: var(--variant-hover-border); }
+.tier-btn:hover{ background: var(--variant-hover-bg); color: var(--variant-hover-text); border-color: var(--variant-hover-border); transform: translateY(-1px); }
+.tier-btn:active{ transform: translateY(3px); box-shadow: 0 0 0 rgba(0,0,0,0.25); }
 .tier-btn.active{ background: var(--btn-primary-bg); color: var(--btn-primary-text); border-color: var(--btn-primary-border); font-weight:800; }
 
 input[type=number], input[type=date]{
@@ -257,7 +395,9 @@ input[type=number], input[type=date]{
 .row-card{
   background: var(--navy-2); border:1.5px solid var(--zerv-border); border-radius:12px;
   padding: 12px; margin-bottom:10px;
+  transition: transform .15s ease;
 }
+.row-card:hover{ transform: translateY(-2px); }
 .row-card.priority{ border-color: var(--zerv-link); box-shadow: 0 0 0 1px var(--zerv-link) inset; }
 .row-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .row-title{ font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; color: var(--zerv-text); }
@@ -286,7 +426,9 @@ input[type=number], input[type=date]{
 .ach-card{
   background: var(--navy-2); border:1.5px solid var(--zerv-border); border-radius:12px;
   padding: 12px; text-align:center; opacity:0.42;
+  transition: transform .15s ease;
 }
+.ach-card:hover{ transform: translateY(-2px) scale(1.02); }
 .ach-card.unlocked{ opacity:1; border-color: var(--zerv-heading); box-shadow: 0 0 14px rgba(0,255,65,0.3); }
 .ach-icon{ font-size:26px; margin-bottom:6px; }
 .ach-name{ font-size:11.5px; font-weight:800; margin-bottom:4px; color: var(--zerv-text); }
@@ -306,7 +448,7 @@ input[type=number], input[type=date]{
 hr.sep{ border:none; border-top:1.5px solid var(--zerv-border); margin:14px 0; }
 .muted{ color: var(--zerv-text); opacity:0.75; font-size:11px; }
 
-/* ============ Toasts ============ */
+/* ============ Toasts & pop-ups ============ */
 #toastLayer{ position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:1000; display:flex; flex-direction:column; gap:8px; align-items:center; width: min(92vw, 420px); }
 .toast{
   background: var(--btn-primary-bg); color: var(--btn-primary-text); border:2px solid var(--btn-primary-border);
@@ -329,9 +471,19 @@ hr.sep{ border:none; border-top:1.5px solid var(--zerv-border); margin:14px 0; }
   100%{ opacity:0; transform: translate(-50%,-105%) scale(1); }
 }
 @keyframes flashLU{ 0%{ opacity:0.5; } 100%{ opacity:0; } }
+
+/* Click-the-sun / click-the-badge sparkle easter egg */
+.sparkle{
+  position:fixed; width:6px; height:6px; border-radius:50%;
+  background: var(--zerv-border); pointer-events:none; z-index:1002;
+  animation: sparkleOut .6s ease-out forwards;
+}
+@keyframes sparkleOut{ to{ transform: translate(var(--dx), var(--dy)) scale(0); opacity:0; } }
+
 @media (prefers-reduced-motion: reduce){
   .toast{ animation: toastOut 0s ease 3s forwards; }
   .pop{ animation: none; opacity:1; }
+  .score-tile .num.pulse{ animation: none; }
 }
 
 footer{ text-align:center; color: var(--zerv-text); opacity:0.75; font-size:10.5px; margin-top:20px; line-height:1.7; }

@@ -9,14 +9,70 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="bgwash">
-  <div class="sun" aria-hidden="true"></div>
+<div id="bgwash" class="scene-sunset">
+  <div class="sky"></div>
+  <div class="stars" aria-hidden="true"></div>
+  <div class="cloud-layer" aria-hidden="true">
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+  </div>
+  <div class="seagulls" aria-hidden="true">
+    <svg class="gull g1" viewBox="0 0 20 10"><path d="M0,8 Q5,2 10,8 Q15,2 20,8"/></svg>
+    <svg class="gull g2" viewBox="0 0 20 10"><path d="M0,8 Q5,2 10,8 Q15,2 20,8"/></svg>
+    <svg class="gull g3" viewBox="0 0 20 10"><path d="M0,8 Q5,2 10,8 Q15,2 20,8"/></svg>
+  </div>
+  <div class="sun-layer" aria-hidden="true">
+    <div class="sun"></div>
+    <div class="moon"></div>
+  </div>
+  <div class="palms left" aria-hidden="true">
+    <svg viewBox="0 0 120 200">
+      <path class="palm-trunk" d="M58,200 C54,160 64,130 58,100 C56,80 60,55 66,30 L72,32 C64,55 60,80 62,100 C66,130 56,160 62,200 Z"/>
+      <g class="palm-leaves">
+        <path class="palm-frond" d="M66,32 C45,18 15,16 -5,30 C18,26 42,30 62,40 Z"/>
+        <path class="palm-frond" d="M66,32 C50,10 25,-5 0,0 C25,6 48,18 62,36 Z"/>
+        <path class="palm-frond" d="M66,32 C75,10 100,-5 125,2 C102,8 80,18 66,36 Z"/>
+        <path class="palm-frond" d="M66,32 C88,16 115,16 135,32 C112,26 88,30 66,40 Z"/>
+        <path class="palm-frond" d="M66,32 C64,8 68,-15 80,-28 C70,-10 66,8 64,34 Z"/>
+      </g>
+    </svg>
+  </div>
+  <div class="palms right" aria-hidden="true">
+    <svg viewBox="0 0 120 200">
+      <path class="palm-trunk" d="M58,200 C54,160 64,130 58,100 C56,80 60,55 66,30 L72,32 C64,55 60,80 62,100 C66,130 56,160 62,200 Z"/>
+      <g class="palm-leaves">
+        <path class="palm-frond" d="M66,32 C45,18 15,16 -5,30 C18,26 42,30 62,40 Z"/>
+        <path class="palm-frond" d="M66,32 C50,10 25,-5 0,0 C25,6 48,18 62,36 Z"/>
+        <path class="palm-frond" d="M66,32 C75,10 100,-5 125,2 C102,8 80,18 66,36 Z"/>
+        <path class="palm-frond" d="M66,32 C88,16 115,16 135,32 C112,26 88,30 66,40 Z"/>
+        <path class="palm-frond" d="M66,32 C64,8 68,-15 80,-28 C70,-10 66,8 64,34 Z"/>
+      </g>
+    </svg>
+  </div>
   <div class="horizon-grid" aria-hidden="true"></div>
+  <div class="surfer-clip" aria-hidden="true">
+    <svg viewBox="0 0 64 46">
+      <ellipse cx="32" cy="38" rx="26" ry="5" fill="#000000" opacity="0.2"/>
+      <rect x="10" y="34" width="44" height="6" rx="3" fill="#F5F5F5" stroke="#1A1A2E" stroke-width="1"/>
+      <g stroke="#FF006E" stroke-width="3" stroke-linecap="round" fill="none">
+        <line x1="32" y1="34" x2="30" y2="18"/>
+        <line x1="30" y1="18" x2="22" y2="10"/>
+        <line x1="30" y1="18" x2="40" y2="8"/>
+        <line x1="30" y1="18" x2="30" y2="6"/>
+      </g>
+      <circle cx="30" cy="5" r="4" fill="#FF006E"/>
+    </svg>
+  </div>
   <div class="waves-fg" aria-hidden="true">
     <svg viewBox="0 0 400 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#146c6e" opacity="0.85"/>
       <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#1A1A2E" opacity="0.95"/>
     </svg>
+  </div>
+  <div class="beach-fg" aria-hidden="true">
+    <span class="prop board">🏄</span>
+    <span class="prop ball">🏐</span>
   </div>
 </div>
 <div id="toastLayer"></div>
@@ -119,6 +175,7 @@ renderScoreboard();
 renderSurferProfile();
 renderBoardsSummary();
 renderHonorsStrip();
+initSceneInteractivity();
 </script>
 </body>
 </html>

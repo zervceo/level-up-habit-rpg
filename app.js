@@ -384,7 +384,63 @@ function renderScoreboard(){
 function setScoreTile(id, val){
   const el = document.getElementById(id);
   if(!el) return;
+  const prev = el.dataset.val;
   el.textContent = val.toLocaleString();
+  el.dataset.val = val;
+  if(prev !== undefined && Number(prev) !== val){
+    el.classList.remove("pulse");
+    void el.offsetWidth; // restart the animation
+    el.classList.add("pulse");
+  }
+}
+
+/* =========================================================================
+   SCENE INTERACTIVITY — scroll/pointer parallax on the beach background,
+   plus a click-the-sun/click-the-badge sparkle easter egg. Entirely skipped
+   under prefers-reduced-motion. Call once per page after the DOM is ready.
+   ========================================================================= */
+function initSceneInteractivity(){
+  const bg = document.getElementById("bgwash");
+  if(!bg) return;
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  let ticking = false;
+  function updateScroll(){
+    document.documentElement.style.setProperty("--scrollY", window.scrollY);
+    ticking = false;
+  }
+  window.addEventListener("scroll", () => {
+    if(!ticking){ requestAnimationFrame(updateScroll); ticking = true; }
+  }, { passive:true });
+
+  if(window.matchMedia("(hover: hover)").matches){
+    window.addEventListener("mousemove", (e) => {
+      const mx = (e.clientX / window.innerWidth - 0.5) * 2;
+      const my = (e.clientY / window.innerHeight - 0.5) * 2;
+      document.documentElement.style.setProperty("--mx", mx.toFixed(3));
+      document.documentElement.style.setProperty("--my", my.toFixed(3));
+    }, { passive:true });
+  }
+
+  document.querySelectorAll(".sun, .moon, .zerv-badge").forEach(el => {
+    el.addEventListener("click", () => sparkleBurst(el));
+  });
+}
+function sparkleBurst(el){
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+  for(let i=0;i<12;i++){
+    const s = document.createElement("div");
+    s.className = "sparkle";
+    s.style.left = cx + "px";
+    s.style.top = cy + "px";
+    const angle = Math.random()*Math.PI*2;
+    const dist = 36 + Math.random()*70;
+    s.style.setProperty("--dx", (Math.cos(angle)*dist).toFixed(1) + "px");
+    s.style.setProperty("--dy", (Math.sin(angle)*dist).toFixed(1) + "px");
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 650);
+  }
 }
 
 /* Fills the Surfer Profile widget if present on the page, and toasts a
