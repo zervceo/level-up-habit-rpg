@@ -2,6 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+(function(){
+  try{
+    var desktop = window.matchMedia('(min-width: 900px)').matches && window.matchMedia('(pointer: fine)').matches;
+    if(!desktop) return;
+    if(!sessionStorage.getItem('gameoflife:prefer2D')){
+      location.replace('entity-explore.html');
+      return;
+    }
+    window.addEventListener('DOMContentLoaded', function(){
+      var el = document.getElementById('explore3DLink');
+      if(el) el.style.display = '';
+    });
+  }catch(e){}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>The Vitruvian Study — Entity Sector</title>
 <meta name="description" content="The ideal proportions of body and spirit. The Sprint Quest: Division 1 by 21.">
@@ -41,6 +57,7 @@
   <a class="nav-link active" href="entity-arena.html">📐 Study</a>
   <a class="nav-link" href="chronicle.html">🖋️ Practice</a>
   <a class="nav-link" href="honors.html">🏅 Medals</a>
+  <a class="nav-link" id="explore3DLink" href="entity-explore.html" style="display:none;">🧊 3D</a>
 </nav>
 
 <div class="wrap">

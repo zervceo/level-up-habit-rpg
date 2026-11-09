@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>Explore Wall Street — ZERV LEVEL UP</title>
+<meta name="description" content="Walk the trading-floor street at the heart of the Education sector, in 3D.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230B3D91'/%3E%3Ctext x='50' y='68' font-size='54' text-anchor='middle'%3E%F0%9F%8F%A6%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  html, body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+  #bgwash, .wrap{ display:none !important; }
+  #three-canvas{ position:fixed; inset:0; z-index:0; display:block; touch-action:none; }
+
+  #explore-ui{ position:fixed; inset:0; z-index:5; pointer-events:none; font-family:'Poppins',sans-serif; }
+  #explore-ui > *{ pointer-events:auto; }
+
+  .explore-topbar{
+    position:absolute; top:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between;
+    padding: max(12px, env(safe-area-inset-top)) 12px 10px;
+    background: linear-gradient(180deg, rgba(10,10,20,0.65), transparent);
+  }
+  .back-chip{
+    display:inline-flex; align-items:center; gap:6px; text-decoration:none;
+    background: rgba(26,26,46,0.75); border:2px solid var(--zerv-border); color: var(--zerv-text);
+    font-family:'Bungee', sans-serif; font-size:11px; padding:9px 14px; border-radius:20px;
+    backdrop-filter: blur(6px);
+  }
+  .stat-chip{
+    background: rgba(26,26,46,0.75); border:2px solid var(--zerv-border); color: var(--zerv-heading);
+    font-family:'Bungee', sans-serif; font-size:11px; padding:9px 14px; border-radius:20px;
+    backdrop-filter: blur(6px); text-align:right; line-height:1.5;
+  }
+  .stat-chip small{ display:block; color: var(--zerv-text); font-family:'Poppins',sans-serif; font-size:9px; opacity:0.8; }
+
+  #loadingNotice{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px;
+    background: var(--zerv-bg); color: var(--zerv-heading); font-family:'Bungee', sans-serif; font-size:14px; z-index:10;
+  }
+  #loadingNotice .sub{ font-family:'Poppins',sans-serif; color: var(--zerv-text); font-size:11px; opacity:0.85; }
+
+  #joystick-zone{
+    position:absolute; left:18px; bottom: max(24px, env(safe-area-inset-bottom));
+    width:110px; height:110px; border-radius:50%;
+    background: rgba(26,26,46,0.45); border:2px solid var(--zerv-border);
+  }
+  #joystick-nub{
+    position:absolute; left:50%; top:50%; width:46px; height:46px; margin:-23px 0 0 -23px; border-radius:50%;
+    background: var(--btn-primary-bg); border:2px solid var(--btn-primary-border);
+    transition: transform .05s linear;
+  }
+  #look-hint{
+    position:absolute; right:18px; bottom: max(24px, env(safe-area-inset-bottom)); width:150px; text-align:right;
+    color: var(--zerv-text); font-size:10px; opacity:0.75; font-family:'Poppins',sans-serif;
+  }
+</style>
+</head>
+<body class="theme-education">
+<div id="bgwash"></div>
+<div id="toastLayer"></div>
+
+<canvas id="three-canvas"></canvas>
+
+<div id="loadingNotice">
+  <div class="sector-emblem" style="width:64px;height:64px;"><span class="emblem-icon">🏦</span></div>
+  <div>Ringing the opening bell...</div>
+  <div class="sub">Loading the street</div>
+</div>
+
+<div id="explore-ui" style="display:none;">
+  <div class="explore-topbar">
+    <a class="back-chip" href="education.html" onclick="try{sessionStorage.setItem('gameoflife:prefer2D','1')}catch(e){}">🏦 Back to the Floor</a>
+    <div class="stat-chip" id="exploreStat">—<small>ZERV LEVEL UP</small></div>
+  </div>
+  <div id="joystick-zone"><div id="joystick-nub"></div></div>
+  <div id="look-hint">Drag anywhere<br>else to look around</div>
+</div>
+
+<script src="app.js"></script>
+<script type="module" src="education-explore.js"></script>
+</body>
+</html>

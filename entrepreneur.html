@@ -2,6 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+(function(){
+  try{
+    var desktop = window.matchMedia('(min-width: 900px)').matches && window.matchMedia('(pointer: fine)').matches;
+    if(!desktop) return;
+    if(!sessionStorage.getItem('gameoflife:prefer2D')){
+      location.replace('beach-explore.html');
+      return;
+    }
+    window.addEventListener('DOMContentLoaded', function(){
+      var el = document.getElementById('explore3DLink');
+      if(el) el.style.display = '';
+    });
+  }catch(e){}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>The Surf Shack — Entrepreneur Sector</title>
 <meta name="description" content="Your lone surf shack on the beach — where ZERV, DeskGenie, and whatever's next get built.">
@@ -24,6 +40,7 @@
 <nav class="navbar">
   <a class="nav-link" href="index.html">🏠 HQ</a>
   <a class="nav-link active" href="entrepreneur.html">🏖️ Surf Shack</a>
+  <a class="nav-link" id="explore3DLink" href="beach-explore.html" style="display:none;">🧊 3D</a>
 </nav>
 
 <div class="wrap">

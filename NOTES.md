@@ -57,6 +57,67 @@ quick low-poly scene). Entrepreneur/the Beach was picked as the first one.
   same pattern, once this first one's approach is confirmed to be the
   right one.
 
+## All sectors go 3D, desktop-only
+
+The Beach Explore prototype above was confirmed, so the same pattern got
+rolled out to the remaining three sectors, plus a device-based switch so
+3D is the default experience on a PC but phones are completely untouched.
+
+- **`explore-shared.js`** — extracted from the original `beach-explore.js`
+  before building the second scene, so the ~150 lines of renderer/camera
+  setup, joystick+look-drag+keyboard controls, and camera-relative
+  movement-with-collision aren't duplicated four times. Every `*-explore.js`
+  now imports `{ THREE, createRenderer, createCamera, hookResize,
+  createSkyDome, createControls, stepCamera, revealUI }` from it and only
+  defines its own scene geometry. `beach-explore.js` was refactored onto
+  this module first and re-verified working before the others were built
+  on top of it.
+- **`entity-explore.js`** — "The Vitruvian Chamber": a square Renaissance
+  study room with Leonardo's circle-and-square construction inlaid flat in
+  the floor (a torus ring + box-edge square + radiating construction
+  lines), a central pedestal with a gold globe sculpture, an open oculus
+  ring in the ceiling, a draftsman's table with a scroll, and corner candle
+  stands. Reached from `entity-arena.html`.
+- **`education-explore.js`** — a walkable Wall Street: a street of
+  low-poly skyscrapers (gold window-light strips facing the street) running
+  toward a columned trading-floor building with a ticker sign, plus a
+  bronze charging-bull statue as the street's landmark. Reached from
+  `education.html`.
+- **`elixir-explore.js`** — "The Workshop": a maker's workshop interior
+  with a tool pegboard and a central workbench, surrounded by four corner
+  stations that hint at the sector's four hobbies — surfboard shaping
+  (blank + fin rack + shavings), coding (glowing monitor + keyboard),
+  electrical engineering (PCB + soldering iron + wire coil), and art
+  (easel + canvas + palette). Reached from `elixir.html`.
+- **Desktop auto-switches into 3D; phones are untouched.** Each of the
+  four 2D sector pages (`entity-arena.html`, `entrepreneur.html`,
+  `education.html`, `elixir.html`) carries a small inline script as the
+  very first thing in `<head>` — before the stylesheet even loads, to
+  avoid a flash of 2D content — that checks
+  `matchMedia('(min-width: 900px)') && matchMedia('(pointer: fine)')`.
+  Both have to be true (so a touch tablet like an iPad, which is wide but
+  `pointer: coarse`, is correctly *not* treated as a desktop) before it
+  `location.replace()`s straight into that sector's Explore page. On a
+  phone the check fails immediately and nothing else happens — no DOM
+  changes, no extra requests, identical to the page before this feature
+  existed.
+- **Opt-out is remembered for the session, both ways.** Each Explore
+  page's "Back to ..." chip sets a `sessionStorage` flag
+  (`gameoflife:prefer2D`) before navigating back, so a desktop visitor who
+  backs out of 3D isn't immediately bounced back into it. Each 2D page has
+  a hidden `🧊 3D` nav-link (`#explore3DLink`) that the same inline script
+  reveals only when it detects desktop-class *and* the opt-out flag is
+  set, giving that visitor a one-click way back into 3D if they want it.
+  The flag is per-tab/session (not persisted to localStorage) so a fresh
+  visit defaults back to 3D.
+- Verified with headless Playwright across three viewport/pointer
+  combinations (1280×800 no-touch = desktop, 390×844 touch = phone,
+  1024×768 touch = tablet) that: desktop auto-redirects on all four
+  sectors, phone stays on 2D with zero console errors and the 3D link
+  never rendered, tablet is correctly excluded from the desktop path, and
+  the full back-out-then-toggle-back-to-3D loop works and survives a page
+  reload within the same session.
+
 ## Entity re-theme: Colosseum -> Vitruvian Man
 
 A later request swapped Entity's visual theme from the Colosseum to
