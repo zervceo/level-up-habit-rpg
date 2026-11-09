@@ -2,6 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+(function(){
+  try{
+    var desktop = window.matchMedia('(min-width: 900px)').matches && window.matchMedia('(pointer: fine)').matches;
+    if(!desktop) return;
+    if(!sessionStorage.getItem('gameoflife:prefer2D')){
+      location.replace('elixir-explore.html');
+      return;
+    }
+    window.addEventListener('DOMContentLoaded', function(){
+      var el = document.getElementById('explore3DLink');
+      if(el) el.style.display = '';
+    });
+  }catch(e){}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>The Workshop — Elixir Sector</title>
 <meta name="description" content="Hobby mastery: surfboard shaping, coding, electrical engineering, and art.">
@@ -24,6 +40,7 @@
 <nav class="navbar">
   <a class="nav-link" href="index.html">🏠 HQ</a>
   <a class="nav-link active" href="elixir.html">🛠️ Elixir</a>
+  <a class="nav-link" id="explore3DLink" href="elixir-explore.html" style="display:none;">🧊 3D</a>
 </nav>
 
 <div class="wrap">
