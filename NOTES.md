@@ -1,5 +1,62 @@
 # Build notes / judgment calls
 
+## Beach Explore: a walkable 3D scene (Three.js, no CDN)
+
+A later request asked for the system to go 3D so sectors could be walked
+through visually. Scoped with the user down to: one sector first, as an
+optional "Explore" view that supplements the existing 2D pages rather than
+replacing them (the forms/buttons/lists for actual logging stay exactly as
+they are — "walk up and interact" doesn't work well for data entry in a
+quick low-poly scene). Entrepreneur/the Beach was picked as the first one.
+
+- **New files**: `beach-explore.html` (full-screen page) + `beach-explore.js`
+  (an ES module with all the Three.js scene/controls code) + `vendor/`
+  (see below). Reached via a "🏄 Explore the Beach" button on
+  `entrepreneur.html`; a "← Back to Surf Shack" button returns.
+- **Three.js is vendored into the repo (`vendor/three.module.min.js`),
+  not pulled from a CDN at runtime.** This build's sandbox network policy
+  blocks unpkg.com/jsdelivr.net/cdnjs.cloudflare.com outright (confirmed by
+  testing — all three returned a flat proxy denial), so a CDN `<script>`
+  import couldn't even be tested here, only `registry.npmjs.org` was
+  reachable. Rather than ship something untested, I downloaded the official
+  `three@0.160.0` npm package and vendored its ES module build directly —
+  which is arguably the better call anyway for the live site too: it keeps
+  the page working for any visitor whose own network/ad-blocker blocks
+  those CDNs, and keeps "plain static files, nothing external required at
+  runtime" true in spirit, not just for the hand-written code. The MIT
+  license text that ships with the package is alongside it
+  (`vendor/THREE_LICENSE.txt`).
+- **Low-poly, not realistic**, by design — boxes, cones, and cylinders for
+  the shack/palms/props, a canvas-gradient sky, and a cheap per-vertex sine
+  wave on a subdivided plane for the ocean (no shadow maps, no PBR
+  materials) — this is what makes it fast enough to run smoothly on a
+  phone, which matters more here than visual fidelity for a first pass.
+- **Controls**: an on-screen virtual joystick (also mouse-draggable, so it
+  doubles as the desktop control) for movement, drag-anywhere-else-on-screen
+  to look around, and WASD/arrow keys as a desktop keyboard alternative.
+  Movement is camera-relative (forward is always "the way you're currently
+  looking"), computed via Three.js's own Euler rotation rather than
+  hand-rolled trig, specifically to avoid a forward/look mismatch bug.
+- **Collision is a soft radius check against the shack**, not real physics
+  — you're pushed around its footprint if you walk into it, and your
+  position is clamped to a bounded sandy area so you can't wander into the
+  skybox. Good enough for an "explore and vibe" view; not a real game
+  engine.
+- **The stat chip in the corner pulls real data** (`allTimeScore()`,
+  `state.businesses.length`) from `app.js`, which loads as a classic
+  script immediately before the module script in `beach-explore.html` —
+  classic-script top-level consts/functions are visible to a later module
+  script via normal global scope lookup, so no refactor of app.js was
+  needed to share state with this new page.
+- **Reduced motion**: the ocean's per-frame wave animation is skipped
+  under `prefers-reduced-motion`; camera movement itself stays available
+  either way since it's a direct response to the user's own input, not
+  ambient motion.
+- Education (Wall Street), Entity (Vitruvian geometry), and Elixir
+  (workshop) would each get their own Explore scene later, following this
+  same pattern, once this first one's approach is confirmed to be the
+  right one.
+
 ## Entity re-theme: Colosseum -> Vitruvian Man
 
 A later request swapped Entity's visual theme from the Colosseum to
