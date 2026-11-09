@@ -19,7 +19,9 @@ device only; nothing is ever sent anywhere.
 - **🏖️ Entrepreneur** (`entrepreneur.html`) — your lone surf shack on the
   beach. Tracks ZERV, DeskGenie, and any future business: daily ZERV social
   posting, a weekly business goal, and per-business tasks + a running
-  journal.
+  journal. Includes **Beach Explore** (`beach-explore.html`): an optional
+  walkable low-poly 3D scene around the shack — a first look at bringing
+  the whole system into 3D, one sector at a time.
 - **🏦 Education** (`education.html`) — Wall Street trading floor themed.
   Classes and assignments with due dates, an upcoming-deadlines banner, and
   a finance/accounting/investing mastery ladder themed as Wall Street job
@@ -45,9 +47,10 @@ call made building this.
 
 ## Deploy to GitHub Pages
 
-1. Upload every file above, plus `style.css`, `app.js`, and this
-   `README.md`, to your repository root (relative links between pages
-   depend on them all being siblings).
+1. Upload every file above, plus `style.css`, `app.js`, this `README.md`,
+   and the `vendor/` folder (Three.js, used by Beach Explore), to your
+   repository root (relative links between pages depend on them all being
+   siblings, and `vendor/` keeping its name/location).
 2. In the repo, go to **Settings → Pages**.
 3. Under "Build and deployment", set **Source** to "Deploy from a branch",
    pick branch **main** and folder **/ (root)**, then **Save**.
