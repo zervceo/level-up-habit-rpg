@@ -3,40 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Medals — ZERV LEVEL UP</title>
-<meta name="description" content="Every medal you've earned — and the ones still to come.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2300FF41'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%23FF006E'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23FFBE0B'/%3E%3C/svg%3E">
+<title>Medals of Honor — Entity Sector</title>
+<meta name="description" content="Every medal earned across the whole system — and the ones still to come.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23D4AF37'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%23B91C1C'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="theme-entity">
 <div id="bgwash">
   <div class="sun" aria-hidden="true"></div>
   <div class="horizon-grid" aria-hidden="true"></div>
   <div class="waves-fg" aria-hidden="true">
     <svg viewBox="0 0 400 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#146c6e" opacity="0.85"/>
-      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#1A1A2E" opacity="0.95"/>
+      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#1f130c" opacity="0.85"/>
+      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#2B1B12" opacity="0.95"/>
     </svg>
   </div>
 </div>
 <div id="toastLayer"></div>
 
 <nav class="navbar">
-  <a class="nav-link" href="index.html">🌅 Lineup</a>
-  <a class="nav-link" href="chronicle.html">📋 Sessions</a>
-  <a class="nav-link active" href="honors.html">🏆 Medals</a>
+  <a class="nav-link" href="index.html">🏠 HQ</a>
+  <a class="nav-link" href="entity-arena.html">🏛️ Arena</a>
+  <a class="nav-link" href="chronicle.html">⚔️ Training</a>
+  <a class="nav-link active" href="honors.html">🏅 Medals</a>
 </nav>
 
 <div class="wrap">
   <header class="hero-compact">
-    <div class="zerv-badge" aria-hidden="true"></div>
+    <div class="sector-emblem" aria-hidden="true"><span class="emblem-icon">🏅</span></div>
     <div>
-      <h1 class="title">Medals</h1>
+      <h1 class="title">Medals of Honor</h1>
       <div class="subtitle" id="honorsSummary">0 of 0 earned</div>
     </div>
   </header>
 
   <div class="panel">
+    <div class="muted" style="margin-bottom:10px;">Medals span every sector — Entity, Entrepreneur, Education, and Elixir all feed this same wall of honor.</div>
     <div class="ach-grid" id="achGrid"></div>
   </div>
 
@@ -68,6 +70,7 @@ function renderAchievementsGrid(){
 
 checkAndUnlockAchievements();
 renderAchievementsGrid();
+initSceneInteractivity();
 </script>
 </body>
 </html>

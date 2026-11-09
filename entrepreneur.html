@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Surf Shack — Entrepreneur Sector</title>
+<meta name="description" content="Your lone surf shack on the beach — where ZERV, DeskGenie, and whatever's next get built.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2300FF41'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%23FF006E'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23FFBE0B'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="bgwash">
+  <div class="sun" aria-hidden="true"></div>
+  <div class="horizon-grid" aria-hidden="true"></div>
+  <div class="waves-fg" aria-hidden="true">
+    <svg viewBox="0 0 400 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#146c6e" opacity="0.85"/>
+      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#1A1A2E" opacity="0.95"/>
+    </svg>
+  </div>
+</div>
+<div id="toastLayer"></div>
+
+<nav class="navbar">
+  <a class="nav-link" href="index.html">🏠 HQ</a>
+  <a class="nav-link active" href="entrepreneur.html">🏖️ Surf Shack</a>
+</nav>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="zerv-badge" aria-hidden="true"></div>
+    <h1 class="title">The Surf Shack</h1>
+    <div class="subtitle">Entrepreneur Sector — ZERV, DeskGenie, and whatever's next</div>
+  </header>
+
+  <div class="scoreboard">
+    <div class="score-tile"><div class="num" id="scoreToday">0</div><div class="lbl">Today</div></div>
+    <div class="score-tile"><div class="num" id="scoreWeek">0</div><div class="lbl">This Week</div></div>
+    <div class="score-tile"><div class="num" id="scoreAllTime">0</div><div class="lbl">All-Time</div></div>
+  </div>
+
+  <!-- DAILY PRIORITY -->
+  <div class="panel">
+    <div class="ribbon priority-ribbon">🔥 Daily Priority</div>
+    <div id="dailyPriorityList"></div>
+  </div>
+
+  <!-- WEEKLY BUSINESS GOAL -->
+  <div class="panel bonus-card">
+    <div class="ribbon pink-ribbon">Weekly Business Goal</div>
+    <div class="bonus-desc">One big swing for the week. Bonus points, no penalty for skipping.</div>
+    <div id="businessGoalRow"></div>
+    <div class="muted" id="bizWeekLabel" style="margin-top:4px;"></div>
+  </div>
+
+  <!-- BUSINESSES -->
+  <div id="businessesWrap"></div>
+
+  <div class="panel" style="text-align:center;">
+    <button class="btn secondary" id="addBusinessBtn" style="width:100%;">➕ Start Tracking a New Business</button>
+  </div>
+
+  <footer>
+    ZERV LEVEL UP &middot; Entrepreneur Sector &middot; all data lives only in this browser (localStorage)
+  </footer>
+</div>
+
+<script src="app.js"></script>
+<script>
+function renderDailyPriority(){
+  const day = getDay(todayStr());
+  const el = document.getElementById("dailyPriorityList");
+  el.innerHTML = "";
+  for(const d of ENTREPRENEUR_DAILY){
+    const on = day.biz[d.id] && day.biz[d.id].on;
+    const card = document.createElement("div");
+    card.className = "row-card priority";
+    card.innerHTML = `
+      <div class="row-head">
+        <div class="row-title"><span class="row-icon">${d.icon}</span>${d.name} <span class="priority-tag">DAILY PRIORITY</span></div>
+        <div class="row-points ${on?'':'zero'}">${on?'+':''}${on?d.points:0}</div>
+      </div>
+      <div class="tier-row">
+        <button class="btn ${on?'secondary':''} small">${on?'✓ Posted Today':'Log +'+d.points}</button>
+      </div>`;
+    card.querySelector("button").onclick = () => toggleBizDaily(d.id);
+    el.appendChild(card);
+  }
+}
+function toggleBizDaily(id){
+  const day = getDay(todayStr());
+  const def = ENTREPRENEUR_DAILY.find(d=>d.id===id);
+  const wasOn = day.biz[id] && day.biz[id].on;
+  day.biz[id] = { on: !wasOn };
+  saveDay(todayStr());
+  popupAt((wasOn?"-":"+")+def.points, !wasOn);
+  renderDailyPriority();
+  renderScoreboard();
+  checkAndUnlockAchievements();
+}
+
+function renderBusinessGoal(){
+  const wk = weekStartOf(todayStr());
+  const w = getWeek(wk);
+  const g = WEEKLY_GOALS.find(g=>g.sector==="entrepreneur");
+  const el = document.getElementById("businessGoalRow");
+  const done = !!w[g.id];
+  el.innerHTML = `
+    <div class="weekly-goal-row">
+      <div class="wg-label">${g.icon} ${g.name} <span class="wg-points">(+${g.points})</span></div>
+      <button class="btn ${done?'secondary':''} small">${done?'✓ Done':'Mark Done'}</button>
+    </div>`;
+  el.querySelector("button").onclick = () => {
+    w[g.id] = !w[g.id];
+    saveWeek(wk);
+    if(w[g.id]) showToast(`🚀 ${g.name} complete! +${g.points}`);
+    renderBusinessGoal();
+    renderScoreboard();
+    checkAndUnlockAchievements();
+  };
+  document.getElementById("bizWeekLabel").textContent = `Week of ${wk}`;
+}
+
+function renderBusinesses(){
+  const wrap = document.getElementById("businessesWrap");
+  wrap.innerHTML = "";
+  for(const biz of state.businesses){
+    const panel = document.createElement("div");
+    panel.className = "panel";
+    const tasks = getBizTasks(biz.id);
+    const journal = getBizJournal(biz.id);
+    const doneCount = tasks.filter(t=>t.done).length;
+    panel.innerHTML = `
+      <div class="ribbon">🏢 ${biz.name}</div>
+      <div class="row-head" style="margin-bottom:10px;">
+        <span class="muted">${doneCount} / ${tasks.length} tasks complete</span>
+        <span class="row-actions">
+          <button class="btn ghost small" data-act="rename">Rename</button>
+          <button class="btn danger small" data-act="delete">Delete</button>
+        </span>
+      </div>
+      <h3 style="font-size:12px;color:var(--zerv-text);opacity:0.8;margin:10px 0 6px;">Tasks</h3>
+      <div class="add-row">
+        <input type="text" placeholder="New task..." data-task-input>
+        <button class="btn small" data-act="add-task">Add</button>
+      </div>
+      <div data-task-list></div>
+      <h3 style="font-size:12px;color:var(--zerv-text);opacity:0.8;margin:14px 0 6px;">Journal</h3>
+      <textarea placeholder="Notes, revenue updates, ideas..." data-journal-input></textarea>
+      <div style="text-align:right;margin:6px 0 10px;"><button class="btn small" data-act="add-journal">+ Log Entry (+${BUSINESS_JOURNAL_POINTS})</button></div>
+      <div data-journal-list></div>`;
+
+    const taskListEl = panel.querySelector("[data-task-list]");
+    taskListEl.innerHTML = tasks.length ? "" : `<div class="chronicle-empty">No tasks yet.</div>`;
+    for(const t of tasks){
+      const row = document.createElement("div");
+      row.className = "list-row" + (t.done ? " done" : "");
+      row.innerHTML = `
+        <div class="lr-main"><div class="lr-title ${t.done?'done':''}">${t.text}</div></div>
+        <div class="lr-actions">
+          ${t.done ? "" : `<button class="btn secondary small">✓ Done</button>`}
+          <button class="x-btn">×</button>
+        </div>`;
+      if(!t.done) row.querySelector(".btn").onclick = () => completeBizTask(biz.id, t.id);
+      row.querySelector(".x-btn").onclick = () => deleteBizTask(biz.id, t.id);
+      taskListEl.appendChild(row);
+    }
+
+    const journalListEl = panel.querySelector("[data-journal-list]");
+    const recent = journal.slice().sort((a,b)=>b.ts-a.ts).slice(0,8);
+    journalListEl.innerHTML = recent.length ? "" : `<div class="chronicle-empty">No journal entries yet.</div>`;
+    for(const j of recent){
+      const row = document.createElement("div");
+      row.className = "journal-item";
+      row.innerHTML = `<div>${j.text}</div><div class="ji-date">${new Date(j.ts).toLocaleString()}</div>`;
+      journalListEl.appendChild(row);
+    }
+
+    panel.querySelector('[data-act="add-task"]').onclick = () => {
+      const input = panel.querySelector("[data-task-input]");
+      if(!input.value.trim()) return;
+      tasks.push({ id: "t"+Date.now(), text: input.value.trim(), done:false, createdAt: todayStr() });
+      saveBizTasks(biz.id);
+      input.value = "";
+      renderBusinesses();
+    };
+    panel.querySelector('[data-act="add-journal"]').onclick = () => {
+      const ta = panel.querySelector("[data-journal-input]");
+      if(!ta.value.trim()) return;
+      journal.push({ id:"j"+Date.now(), text: ta.value.trim(), ts: Date.now() });
+      saveBizJournal(biz.id);
+      const day = getDay(todayStr());
+      day.biz._journalEntries = (day.biz._journalEntries||0) + 1;
+      saveDay(todayStr());
+      popupAt("+"+BUSINESS_JOURNAL_POINTS, true);
+      ta.value = "";
+      renderBusinesses();
+      renderScoreboard();
+      checkAndUnlockAchievements();
+    };
+    panel.querySelector('[data-act="rename"]').onclick = () => {
+      const name = prompt("Rename business:", biz.name);
+      if(name && name.trim()){ biz.name = name.trim(); saveBusinesses(); renderBusinesses(); }
+    };
+    panel.querySelector('[data-act="delete"]').onclick = () => {
+      if(!confirm(`Stop tracking "${biz.name}"? Its tasks and journal will be deleted too.`)) return;
+      state.businesses = state.businesses.filter(b=>b.id!==biz.id);
+      saveBusinesses();
+      delete state.bizTasks[biz.id]; delete state.bizJournal[biz.id];
+      localStorage.removeItem("gameoflife:business:tasks:"+biz.id);
+      localStorage.removeItem("gameoflife:business:journal:"+biz.id);
+      renderBusinesses();
+      checkAndUnlockAchievements();
+    };
+
+    wrap.appendChild(panel);
+  }
+}
+function completeBizTask(bizId, taskId){
+  const tasks = getBizTasks(bizId);
+  const t = tasks.find(t=>t.id===taskId);
+  if(!t || t.done) return;
+  t.done = true;
+  saveBizTasks(bizId);
+  const day = getDay(todayStr());
+  day.biz._tasksDone = (day.biz._tasksDone||0) + 1;
+  saveDay(todayStr());
+  popupAt("+"+BUSINESS_TASK_POINTS, true);
+  renderBusinesses();
+  renderScoreboard();
+  checkAndUnlockAchievements();
+}
+function deleteBizTask(bizId, taskId){
+  state.bizTasks[bizId] = getBizTasks(bizId).filter(t=>t.id!==taskId);
+  saveBizTasks(bizId);
+  renderBusinesses();
+}
+
+document.getElementById("addBusinessBtn").onclick = () => {
+  const name = prompt("Name your new business:");
+  if(!name || !name.trim()) return;
+  state.businesses.push({ id: "biz"+Date.now(), name: name.trim(), createdAt: todayStr() });
+  saveBusinesses();
+  renderBusinesses();
+  checkAndUnlockAchievements();
+};
+
+checkAndUnlockAchievements();
+renderScoreboard();
+renderDailyPriority();
+renderBusinessGoal();
+renderBusinesses();
+initSceneInteractivity();
+</script>
+</body>
+</html>

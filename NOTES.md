@@ -1,5 +1,104 @@
 # Build notes / judgment calls
 
+## Four-sector rebuild (Entity / Entrepreneur / Education / Elixir)
+
+A later request asked to reorganize everything into four themed sectors —
+a personal operating system rather than one habit tracker — while reusing
+this app's HTML structure. Judgment calls made implementing that:
+
+- **One shared day record, namespaced per sector.** Rather than giving each
+  sector its own separate "day," `defaultDay()` in `app.js` now holds
+  `{ deeds, vices, biz, study, craft, locked }` — Entity's physical/
+  spiritual actions, Entrepreneur's daily ZERV posts + business-task/
+  journal counters, Education's study-session minutes + assignment
+  counter, and Elixir's hobby-practice minutes + the board-shaping bonus,
+  all inside one record per calendar date. This keeps the "floor at zero"
+  rule meaningful system-wide: Entity's vices eat into the combined total
+  across every sector for that day, not just Entity's own slice, and day
+  locking freezes the whole day at once.
+- **The floor-at-zero rule now spans all four sectors.** `dayNetScore()`
+  sums Entity + Entrepreneur + Education + Elixir positive points, adds
+  Entity's vice deductions, and floors the result at zero — so logging
+  great work in, say, Education can't be wiped out by a bad night, but a
+  bad night also can't out-run a genuinely strong day across the system.
+- **Moved, not duplicated.** ZERV social posting moved from Entity's Deeds
+  into Entrepreneur (`ENTREPRENEUR_DAILY`, stored under `day.biz`) since
+  it's business marketing, not personal habit. Coding practice moved from
+  a flat Entity "Deed" into Elixir's Coding hobby (`day.craft`), since
+  Elixir is explicitly where hobby mastery lives now. "Shape a Board"
+  moved from a generic Entity bonus into Elixir's Surfboard Making hobby
+  specifically, since surfboard shaping is one of the four named Elixir
+  hobbies. Reading and Journaling stayed in Entity as generic self-growth
+  habits.
+- **Weekly Goals split across sectors, one shared storage shape.** The
+  original three weekly checkboxes (Schoolwork/Personal/Business) plus a
+  new fourth (Spiritual, to cover "spiritual relationship with God"
+  explicitly) still live in one `state.weeks[weekStart]` record exactly as
+  before — only *where they render* changed: Schoolwork shows on
+  Education, Business on Entrepreneur, Personal + Spiritual on Entity. The
+  old "Hat Trick" achievement (3-way) became "Grand Slam" (4-way).
+- **Sprint Quest is entirely self-configured, not guessed.** The brief
+  named "Division 1 sprinter by 21" as the goal but gave no event, gender,
+  or current time — guessing any of those would make the sector's
+  headline goal either wrong or presumptuous. Instead, `entity-arena.html`
+  has a one-time setup form (event, current PR, target time) and a running
+  log of times; the deadline itself (Dec 18, 2027 — the birthday after
+  the one coming up, since "19 now, turns 20 on Dec 18" implies 21 falls a
+  year after that) is the one fact that *was* fully specified, so that's
+  hardcoded as `SPRINT_DEADLINE` in `app.js`.
+- **"Prompt updates before due dates" is an in-app banner, not a push
+  notification.** A static site with no backend can't text or push-notify
+  you. `education.html` shows a persistent "Upcoming Deadlines" banner
+  (assignments due within 3 days or overdue) and fires a toast once per
+  page load if anything qualifies — real, but only as real as "you have to
+  open the app to see it." Said so explicitly in the page's footer rather
+  than overpromising.
+- **Elixir milestones are self-checked, not auto-verified.** There's no way
+  for a web app to confirm you've actually "mastered rail shaping" — so
+  each hobby's 7-step curriculum (hand-written, not generic placeholders)
+  is a checklist you tick off on your own judgment, stored in
+  `gameoflife:elixir:milestones`. Practice-time logging (which *does* earn
+  points) and milestone-checking (which doesn't, directly) are deliberately
+  separate mechanics.
+- **Business tasks/journal entries are one-way.** Marking a task "done" or
+  logging a journal entry awards points immediately and can't be undone
+  short of deleting the item outright (which doesn't claw back points) —
+  avoids having to track which specific day's counter to decrement if a
+  task gets un-checked later, and stays consistent with this app's general
+  "never take points away" philosophy.
+- **Finance-topic mastery is per-topic, not the overall rank.** Each of the
+  five finance topics in Education climbs its *own* Wall Street title
+  ladder (`MASTERY_TITLES`, driven by that topic's lifetime study points),
+  completely separate from the account-wide Grom→ZERV Legend rank shown on
+  HQ. Reaching "Managing Director" in Valuation doesn't affect your overall
+  rank directly — it only does so through the points you earned logging
+  the study sessions, same as any other sector.
+- **HQ is the one place for the full rank/board/gear widget.** It used to
+  appear on the Lineup/Entity page; now that Entity is one of four equal
+  sectors, the overall-system profile card lives only on HQ, and sector
+  pages show the shared Scoreboard (Today/Week/All-Time) plus their own
+  content, to avoid a confusing "is this the Entity rank or the whole
+  system's rank" ambiguity.
+- **Entrepreneur keeps the original ZERV color system and beach scene
+  as-is** (no `body.theme-*` override) since that sector *is* ZERV's own
+  brand — reusing it there isn't a placeholder, it's correct. The other
+  three sectors each got a full palette override (`body.theme-entity` /
+  `-education` / `-elixir` in `style.css`) that redefines the exact same
+  CSS variable names every existing component already uses, so no
+  component CSS had to change — panels, buttons, chips, and score tiles
+  all re-theme automatically.
+- **DeskGenie was pre-seeded alongside ZERV** as a second starter business
+  (per "ZERV, DeskGenie and all other businesses"), with an "Add a
+  business" flow for anything added later — nothing else about DeskGenie
+  was assumed beyond its name.
+- **File names were kept where the old content just got re-themed**
+  (`chronicle.html`, `honors.html`) so nothing already bookmarked or linked
+  breaks; genuinely new pages got sector-specific names
+  (`entity-arena.html`, `entrepreneur.html`, `education.html`,
+  `elixir.html`).
+
+## Original rework: medieval build -> ZERV LEVEL UP
+
 Everything below is a decision made while reworking this from the medieval
 "Game of Life: Path to Knighthood" build into **ZERV LEVEL UP**, where the
 request didn't fully pin things down. Most are easy to change directly in

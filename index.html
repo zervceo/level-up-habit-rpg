@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ZERV LEVEL UP</title>
-<meta name="description" content="Catch your wave. Stack your points. Build your empire.">
+<title>ZERV LEVEL UP — HQ</title>
+<meta name="description" content="Your personal command center: Entity, Entrepreneur, Education, and Elixir, all in one system.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2300FF41'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%23FF006E'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23FFBE0B'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -21,17 +21,11 @@
 </div>
 <div id="toastLayer"></div>
 
-<nav class="navbar">
-  <a class="nav-link active" href="index.html">🌅 Lineup</a>
-  <a class="nav-link" href="chronicle.html">📋 Sessions</a>
-  <a class="nav-link" href="honors.html">🏆 Medals</a>
-</nav>
-
 <div class="wrap">
   <header class="hero">
     <div class="zerv-badge" aria-hidden="true"></div>
     <h1 class="title">ZERV LEVEL UP</h1>
-    <div class="subtitle">Catch your wave. Stack your points. Build your empire.</div>
+    <div class="subtitle">HQ — four sectors, one system, built for Future Gino</div>
   </header>
 
   <!-- SCOREBOARD -->
@@ -41,9 +35,9 @@
     <div class="score-tile"><div class="num" id="scoreAllTime">0</div><div class="lbl">All-Time</div></div>
   </div>
 
-  <!-- SURFER PROFILE -->
+  <!-- OVERALL RANK -->
   <div class="panel">
-    <div class="ribbon">Surfer Profile</div>
+    <div class="ribbon">Overall Rank</div>
     <div class="surfer-card">
       <div>
         <div class="rank-name" id="rankName">Grom</div>
@@ -57,23 +51,36 @@
     <div class="progress-label" id="rankProgressLabel">0 / 2,500 to Rookie Rider</div>
   </div>
 
-  <!-- BOARD BONUS (read-only summary; log it from Sessions) -->
-  <div class="panel bonus-card">
-    <div class="ribbon pink-ribbon">Bonus Wave 🌊</div>
-    <div class="bonus-desc">Shaping a board is never required — it's a big bonus whenever you finish one.</div>
-    <div class="bonus-status" id="boardsShapedLabel">0 boards shaped, lifetime</div>
-    <a class="btn link-btn" href="chronicle.html">🪵 Log a Board</a>
-  </div>
-
-  <!-- QUICK NAV -->
-  <div class="panel" style="text-align:center;">
-    <div class="ribbon">Start Your Session</div>
-    <div class="muted" style="margin-bottom:10px;">Log today's Wins, check off your weekly goals, or revisit any day gone by.</div>
-    <a class="btn link-btn" href="chronicle.html" style="width:100%;">📋 Open Sessions</a>
+  <!-- PORTAL CARDS -->
+  <div class="portal-grid">
+    <a class="portal-card entity" href="entity-arena.html">
+      <div class="pc-icon">🏛️</div>
+      <div class="pc-title">Entity</div>
+      <div class="pc-desc">The Colosseum. Body and spirit — the Sprint Quest to Division 1 by 21.</div>
+      <div class="pc-stat" id="entityStat">—</div>
+    </a>
+    <a class="portal-card entrepreneur" href="entrepreneur.html">
+      <div class="pc-icon">🏖️</div>
+      <div class="pc-title">Entrepreneur</div>
+      <div class="pc-desc">The Surf Shack. ZERV, DeskGenie, and whatever's next.</div>
+      <div class="pc-stat" id="entrepreneurStat">—</div>
+    </a>
+    <a class="portal-card education" href="education.html">
+      <div class="pc-icon">🏦</div>
+      <div class="pc-title">Education</div>
+      <div class="pc-desc">The Trading Floor. Classes, deadlines, and finance mastery.</div>
+      <div class="pc-stat" id="educationStat">—</div>
+    </a>
+    <a class="portal-card elixir" href="elixir.html">
+      <div class="pc-icon">🛠️</div>
+      <div class="pc-title">Elixir</div>
+      <div class="pc-desc">The Workshop. Surfboards, code, electrical engineering, art.</div>
+      <div class="pc-stat" id="elixirStat">—</div>
+    </a>
   </div>
 
   <!-- MEDALS PREVIEW -->
-  <div class="panel">
+  <div class="panel" style="margin-top:14px;">
     <div class="ribbon">Recent Medals</div>
     <div class="honors-strip" id="honorsStrip"></div>
     <div style="text-align:center;margin-top:12px;">
@@ -89,21 +96,30 @@
 
 <script src="app.js"></script>
 <script>
-function renderBoardsSummary(){
+function renderSectorStats(){
   const agg = computeAggregates();
-  document.getElementById("boardsShapedLabel").textContent =
-    `${agg.boardsShaped} board${agg.boardsShaped===1?"":"s"} shaped, lifetime`;
+
+  const sprintDays = state.sprintGoal ? Math.max(0, daysBetween(todayStr(), SPRINT_DEADLINE)) : null;
+  document.getElementById("entityStat").textContent =
+    sprintDays !== null ? `${sprintDays.toLocaleString()} days to the goal` : "Set your Sprint Quest";
+
+  document.getElementById("entrepreneurStat").textContent =
+    `${state.businesses.length} business${state.businesses.length===1?"":"es"} tracked`;
+
+  const dueSoon = upcomingAssignments(7).length;
+  document.getElementById("educationStat").textContent =
+    dueSoon > 0 ? `${dueSoon} deadline${dueSoon===1?"":"s"} this week` : `${state.classes.length} class${state.classes.length===1?"":"es"} tracked`;
+
+  document.getElementById("elixirStat").textContent =
+    `${agg.hobbiesWithMilestone} / 4 hobbies started`;
 }
 
 function renderHonorsStrip(){
   const el = document.getElementById("honorsStrip");
   el.innerHTML = "";
   const unlockedIds = Object.keys(state.achievements).sort((a,b)=> (state.achievements[b]||"").localeCompare(state.achievements[a]||""));
-  const shown = ACHIEVEMENTS
-    .slice()
-    .sort((a,b) => (unlockedIds.indexOf(b.id) - unlockedIds.indexOf(a.id)))
-    .filter(a => unlockedIds.includes(a.id))
-    .slice(0, 6);
+  const shown = ACHIEVEMENTS.slice().filter(a => unlockedIds.includes(a.id))
+    .sort((a,b) => unlockedIds.indexOf(b.id) - unlockedIds.indexOf(a.id)).slice(0, 6);
   const rest = ACHIEVEMENTS.filter(a => !unlockedIds.includes(a.id)).slice(0, Math.max(0, 6 - shown.length));
   for(const a of [...shown, ...rest]){
     const unlocked = !!state.achievements[a.id];
@@ -117,8 +133,9 @@ function renderHonorsStrip(){
 checkAndUnlockAchievements();
 renderScoreboard();
 renderSurferProfile();
-renderBoardsSummary();
+renderSectorStats();
 renderHonorsStrip();
+initSceneInteractivity();
 </script>
 </body>
 </html>
