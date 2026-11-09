@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Workshop — Elixir Sector</title>
+<meta name="description" content="Hobby mastery: surfboard shaping, coding, electrical engineering, and art.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23FF8C42'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%233A86FF'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-elixir">
+<div id="bgwash">
+  <div class="sun" aria-hidden="true"></div>
+  <div class="horizon-grid" aria-hidden="true"></div>
+  <div class="waves-fg" aria-hidden="true">
+    <svg viewBox="0 0 400 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#1f160d" opacity="0.85"/>
+      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#2B1D12" opacity="0.95"/>
+    </svg>
+  </div>
+</div>
+<div id="toastLayer"></div>
+
+<nav class="navbar">
+  <a class="nav-link" href="index.html">🏠 HQ</a>
+  <a class="nav-link active" href="elixir.html">🛠️ Elixir</a>
+</nav>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="sector-emblem" aria-hidden="true"><span class="emblem-icon">🛠️</span></div>
+    <h1 class="title">The Workshop</h1>
+    <div class="subtitle">Elixir Sector — real progressions, toward real mastery</div>
+  </header>
+
+  <div class="scoreboard">
+    <div class="score-tile"><div class="num" id="scoreToday">0</div><div class="lbl">Today</div></div>
+    <div class="score-tile"><div class="num" id="scoreWeek">0</div><div class="lbl">This Week</div></div>
+    <div class="score-tile"><div class="num" id="scoreAllTime">0</div><div class="lbl">All-Time</div></div>
+  </div>
+
+  <div class="subtabs" id="hobbyTabs"></div>
+  <div id="hobbyContent"></div>
+
+  <footer>
+    ZERV LEVEL UP &middot; Elixir Sector &middot; all data lives only in this browser (localStorage)
+  </footer>
+</div>
+
+<script src="app.js"></script>
+<script>
+let activeHobby = HOBBIES[0].id;
+
+function renderHobbyTabs(){
+  const el = document.getElementById("hobbyTabs");
+  el.innerHTML = HOBBIES.map(h =>
+    `<button class="subtab-btn ${h.id===activeHobby?'active':''}" data-hobby="${h.id}">${h.icon} ${h.name.split(" ")[0]}</button>`
+  ).join("");
+  el.querySelectorAll(".subtab-btn").forEach(btn => {
+    btn.onclick = () => { activeHobby = btn.dataset.hobby; renderHobbyTabs(); renderHobbyContent(); };
+  });
+}
+
+function renderHobbyContent(){
+  const h = hobbyDef(activeHobby);
+  const day = getDay(todayStr());
+  const lifetime = Object.keys(state.days).reduce((s,date)=>s+dayCraftPoints(state.days[date], h.id), 0);
+  const { checked, total, name } = hobbyMasteryLevel(h.id);
+  const checkedIds = getElixirMilestones(h.id);
+  const cur = day.craft[h.id];
+
+  const wrap = document.getElementById("hobbyContent");
+  wrap.innerHTML = `
+    <div class="panel">
+      <div class="ribbon">${h.icon} ${h.name}</div>
+      <div class="mastery-row">
+        <div class="mastery-head">
+          <div class="mastery-title">Mastery Level</div>
+          <div class="mastery-level">${name}</div>
+        </div>
+        <div class="mastery-bar-track"><div class="mastery-bar-fill" style="width:${(checked/total)*100}%"></div></div>
+        <div class="mastery-sub">${checked} / ${total} milestones &middot; ${lifetime.toLocaleString()} lifetime practice points</div>
+      </div>
+      <h3 style="font-size:12px;color:var(--zerv-text);opacity:0.8;margin:14px 0 6px;">Log Practice Time</h3>
+      <div class="tier-row" id="practiceTiers"></div>
+      ${h.id === "surfboard_making" ? `
+        <hr class="sep">
+        <h3 style="font-size:12px;color:var(--zerv-text);opacity:0.8;margin:0 0 6px;">Bonus Wave 🌊</h3>
+        <div class="muted" style="margin-bottom:8px;">Not required, not weekly — just a big bonus whenever you finish shaping one.</div>
+        <button class="btn" id="shapeBoardBtn">🏄 Shape a Board (+${SHAPE_BOARD_BONUS.points})</button>
+        <div class="muted" id="boardsShapedLabel" style="margin-top:8px;"></div>
+      ` : ""}
+    </div>
+    <div class="panel">
+      <div class="ribbon pink-ribbon">Skill Progression</div>
+      <div class="muted" style="margin-bottom:10px;">Check off milestones as you genuinely reach them — self-assessed, no auto-verification, because only you know when you've actually got it.</div>
+      <div id="milestoneList"></div>
+    </div>`;
+
+  const tiersEl = document.getElementById("practiceTiers");
+  tiersEl.innerHTML = h.tiers.map(t =>
+    `<button class="tier-btn ${cur && cur.n===t.n ? 'active':''}" data-n="${t.n}" data-pts="${t.points}">${t.label} · +${t.points}</button>`
+  ).join("");
+  tiersEl.querySelectorAll(".tier-btn").forEach(btn => {
+    btn.onclick = () => logPractice(h.id, Number(btn.dataset.n), Number(btn.dataset.pts));
+  });
+
+  const msEl = document.getElementById("milestoneList");
+  msEl.innerHTML = h.milestones.map((m, i) => {
+    const isChecked = checkedIds.includes(i);
+    return `<div class="milestone-row" data-i="${i}">
+      <div class="milestone-check ${isChecked?'checked':''}">${isChecked?'✓':''}</div>
+      <div class="milestone-label ${isChecked?'checked':''}">${i+1}. ${m}</div>
+    </div>`;
+  }).join("");
+  msEl.querySelectorAll(".milestone-row").forEach(row => {
+    row.onclick = () => toggleMilestone(h.id, Number(row.dataset.i));
+  });
+
+  if(h.id === "surfboard_making"){
+    const totalBoards = Object.keys(state.days).reduce((s,date)=> s + ((state.days[date].craft[SHAPE_BOARD_BONUS.id]&&state.days[date].craft[SHAPE_BOARD_BONUS.id].entries)||[]).length, 0);
+    document.getElementById("boardsShapedLabel").textContent = `${totalBoards} board${totalBoards===1?"":"s"} shaped, lifetime`;
+    document.getElementById("shapeBoardBtn").onclick = shapeBoard;
+  }
+}
+
+function logPractice(hobbyId, n, points){
+  const day = getDay(todayStr());
+  const prevPoints = dayCraftPoints(day, hobbyId);
+  day.craft[hobbyId] = { n, points };
+  saveDay(todayStr());
+  const delta = points - prevPoints;
+  if(delta !== 0) popupAt((delta>0?"+":"")+delta, delta>0);
+  renderHobbyContent();
+  renderScoreboard();
+  checkAndUnlockAchievements();
+}
+function shapeBoard(){
+  const day = getDay(todayStr());
+  if(!day.craft[SHAPE_BOARD_BONUS.id]) day.craft[SHAPE_BOARD_BONUS.id] = { entries: [] };
+  day.craft[SHAPE_BOARD_BONUS.id].entries.push({ points: SHAPE_BOARD_BONUS.points, ts: Date.now() });
+  saveDay(todayStr());
+  popupAt("+"+SHAPE_BOARD_BONUS.points, true);
+  showToast("🏄 Board shaped! Bonus banked.");
+  renderHobbyContent();
+  renderScoreboard();
+  checkAndUnlockAchievements();
+}
+function toggleMilestone(hobbyId, index){
+  const arr = getElixirMilestones(hobbyId);
+  const pos = arr.indexOf(index);
+  if(pos === -1){ arr.push(index); showToast("🧰 Milestone checked off!"); }
+  else arr.splice(pos, 1);
+  saveElixirMilestones();
+  renderHobbyContent();
+  checkAndUnlockAchievements();
+}
+
+checkAndUnlockAchievements();
+renderScoreboard();
+renderHobbyTabs();
+renderHobbyContent();
+initSceneInteractivity();
+</script>
+</body>
+</html>

@@ -3,40 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Sessions — ZERV LEVEL UP</title>
-<meta name="description" content="Log today's Wins and Wipeouts, or backfill any day gone by.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2300FF41'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%23FF006E'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23FFBE0B'/%3E%3C/svg%3E">
+<title>Training Log — Entity Sector</title>
+<meta name="description" content="Log today's physical and spiritual Wins and Wipeouts, or backfill any day gone by.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23D4AF37'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%23B91C1C'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="theme-entity">
 <div id="bgwash">
   <div class="sun" aria-hidden="true"></div>
   <div class="horizon-grid" aria-hidden="true"></div>
   <div class="waves-fg" aria-hidden="true">
     <svg viewBox="0 0 400 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#146c6e" opacity="0.85"/>
-      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#1A1A2E" opacity="0.95"/>
+      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#1f130c" opacity="0.85"/>
+      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#2B1B12" opacity="0.95"/>
     </svg>
   </div>
 </div>
 <div id="toastLayer"></div>
 
 <nav class="navbar">
-  <a class="nav-link" href="index.html">🌅 Lineup</a>
-  <a class="nav-link active" href="chronicle.html">📋 Sessions</a>
-  <a class="nav-link" href="honors.html">🏆 Medals</a>
+  <a class="nav-link" href="index.html">🏠 HQ</a>
+  <a class="nav-link" href="entity-arena.html">🏛️ Arena</a>
+  <a class="nav-link active" href="chronicle.html">⚔️ Training</a>
+  <a class="nav-link" href="honors.html">🏅 Medals</a>
 </nav>
 
 <div class="wrap">
   <header class="hero-compact">
-    <div class="zerv-badge" aria-hidden="true"></div>
+    <div class="sector-emblem" aria-hidden="true"><span class="emblem-icon">⚔️</span></div>
     <div>
-      <h1 class="title">Sessions</h1>
-      <div class="subtitle">Log your Wins and Wipeouts for any day</div>
+      <h1 class="title">Training Log</h1>
+      <div class="subtitle">Body and spirit, logged day by day</div>
     </div>
   </header>
 
-  <!-- SCOREBOARD -->
   <div class="scoreboard">
     <div class="score-tile"><div class="num" id="scoreToday">0</div><div class="lbl">Today</div></div>
     <div class="score-tile"><div class="num" id="scoreWeek">0</div><div class="lbl">This Week</div></div>
@@ -58,22 +58,6 @@
     </div>
   </div>
 
-  <!-- WEEKLY GOALS (tied to the selected date's week) -->
-  <div class="panel bonus-card">
-    <div class="ribbon pink-ribbon">Weekly Goals</div>
-    <div class="bonus-desc">Bonus points whenever you check one off — no penalty for skipping a week.</div>
-    <div id="weeklyGoalsList"></div>
-    <div class="muted" id="weekLabel" style="margin-top:4px;"></div>
-  </div>
-
-  <!-- BOARD BONUS -->
-  <div class="panel bonus-card">
-    <div class="ribbon pink-ribbon">Bonus Wave 🌊</div>
-    <div class="bonus-desc">Not required, not weekly — just a big bonus whenever you shape a board.</div>
-    <button class="btn" id="shapeBoardBtn">🪵 Shape a Board (+1000)</button>
-    <div class="muted" id="boardsTodayLabel" style="margin-top:8px;"></div>
-  </div>
-
   <div class="panel">
     <div class="ribbon">Wins</div>
     <div id="deedsList"></div>
@@ -88,7 +72,7 @@
   </div>
 
   <footer>
-    ZERV LEVEL UP &middot; all data lives only in this browser (localStorage) &middot; nothing is ever sent anywhere
+    ZERV LEVEL UP &middot; Entity Sector &middot; all data lives only in this browser (localStorage)
   </footer>
 </div>
 
@@ -101,31 +85,10 @@ let selectedDate = todayStr();
 
 function render(){
   renderScoreboard();
-  renderWeeklyGoals();
   renderDateNav();
   renderDeeds();
   renderVices();
   renderChronicleLog();
-  renderBoardsToday();
-}
-
-function renderWeeklyGoals(){
-  const wk = weekStartOf(selectedDate);
-  const w = getWeek(wk);
-  const locked = getDay(selectedDate).locked;
-  const el = document.getElementById("weeklyGoalsList");
-  el.innerHTML = "";
-  for(const g of WEEKLY_GOALS){
-    const done = !!w[g.id];
-    const row = document.createElement("div");
-    row.className = "weekly-goal-row";
-    row.innerHTML = `
-      <div class="wg-label">${g.icon} ${g.name} <span class="wg-points">(+${g.points})</span></div>
-      <button class="btn ${done?'secondary':''} small" ${locked?'disabled':''}>${done?'✓ Done':'Mark Done'}</button>`;
-    row.querySelector("button").onclick = () => toggleWeeklyGoal(g.id);
-    el.appendChild(row);
-  }
-  document.getElementById("weekLabel").textContent = `Week of ${wk}`;
 }
 
 function renderDateNav(){
@@ -139,14 +102,6 @@ function renderDateNav(){
   document.getElementById("lockBadge").style.display = day.locked ? "flex" : "none";
   document.getElementById("lockDayBtn").disabled = day.locked;
   document.getElementById("lockDayBtn").textContent = day.locked ? "🔒 Sealed" : "Lock This Day's Score";
-  document.getElementById("shapeBoardBtn").disabled = day.locked;
-}
-
-function renderBoardsToday(){
-  const day = getDay(selectedDate);
-  const count = (day.deeds.shape_board && day.deeds.shape_board.entries || []).length;
-  document.getElementById("boardsTodayLabel").textContent =
-    count > 0 ? `${count} board${count===1?"":"s"} shaped on ${selectedDate}` : "None shaped on this day yet";
 }
 
 function renderDeeds(){
@@ -155,9 +110,8 @@ function renderDeeds(){
   const day = getDay(selectedDate);
   const locked = day.locked;
   for(const d of DEEDS){
-    if(d.bonus) continue; // Shape a Board has its own dedicated card above
     const card = document.createElement("div");
-    card.className = "row-card" + (d.priority ? " priority" : "");
+    card.className = "row-card";
     const pts = dayDeedPoints(day, d.id);
     let body = "";
     if(d.type === "flat"){
@@ -174,7 +128,7 @@ function renderDeeds(){
     }
     card.innerHTML = `
       <div class="row-head">
-        <div class="row-title"><span class="row-icon">${d.icon}</span>${d.name}${d.priority?' <span class="priority-tag">DAILY PRIORITY</span>':''}</div>
+        <div class="row-title"><span class="row-icon">${d.icon}</span>${d.name}</div>
         <div class="row-points ${pts>0?'':'zero'}">${pts>0?'+':''}${pts}</div>
       </div>
       ${body}`;
@@ -236,10 +190,6 @@ function renderChronicleLog(){
     } else if(d.type === "tiered" && rec.n){
       const t = d.tiers.find(t=>t.n===rec.n);
       items.push({ label:`${d.icon} ${d.name} (${t.label})`, points:rec.points, pos:true, remove:()=>clearTieredDeed(d.id) });
-    } else if(d.type === "repeatable"){
-      (rec.entries||[]).forEach((e,i) => {
-        items.push({ label:`${d.icon} ${d.name}`, points:e.points, pos:true, remove:()=>removeRepeatableDeed(d.id, i) });
-      });
     }
   }
   for(const v of VICES){
@@ -286,7 +236,6 @@ function guardLocked(){
 }
 function afterMutation(){
   checkAndUnlockAchievements();
-  renderSurferProfile();
   render();
 }
 
@@ -316,23 +265,6 @@ function clearTieredDeed(id){
   if(guardLocked()) return;
   const day = getDay(selectedDate);
   delete day.deeds[id];
-  saveDay(selectedDate);
-  afterMutation();
-}
-function addRepeatableDeed(id){
-  if(guardLocked()) return;
-  const day = getDay(selectedDate);
-  const def = deedDef(id);
-  if(!day.deeds[id]) day.deeds[id] = { entries: [] };
-  day.deeds[id].entries.push({ points: def.points, ts: Date.now() });
-  saveDay(selectedDate);
-  popupAt("+"+def.points, true);
-  afterMutation();
-}
-function removeRepeatableDeed(id, index){
-  if(guardLocked()) return;
-  const day = getDay(selectedDate);
-  if(day.deeds[id] && day.deeds[id].entries) day.deeds[id].entries.splice(index,1);
   saveDay(selectedDate);
   afterMutation();
 }
@@ -371,18 +303,6 @@ function removePurchase(index){
   afterMutation();
 }
 
-function toggleWeeklyGoal(goalId){
-  if(guardLocked()) return;
-  const wk = weekStartOf(selectedDate);
-  const w = getWeek(wk);
-  const wasDone = !!w[goalId];
-  w[goalId] = !wasDone;
-  saveWeek(wk);
-  const g = WEEKLY_GOALS.find(g=>g.id===goalId);
-  if(!wasDone) showToast(`🎯 ${g.name} complete! +${g.points}`);
-  afterMutation();
-}
-
 function lockSelectedDay(){
   const day = getDay(selectedDate);
   if(day.locked) return;
@@ -406,13 +326,13 @@ document.getElementById("prevDayBtn").onclick = () => goToDate(addDays(selectedD
 document.getElementById("nextDayBtn").onclick = () => goToDate(addDays(selectedDate, 1));
 document.getElementById("datePicker").onchange = (e) => { if(e.target.value) goToDate(e.target.value); };
 document.getElementById("lockDayBtn").onclick = lockSelectedDay;
-document.getElementById("shapeBoardBtn").onclick = () => addRepeatableDeed("shape_board");
 
 /* =========================================================================
    INIT
    ========================================================================= */
 checkAndUnlockAchievements();
 render();
+initSceneInteractivity();
 </script>
 </body>
 </html>

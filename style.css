@@ -70,8 +70,8 @@ a:hover{ color: var(--zerv-link-hover); text-decoration-color: var(--zerv-link-h
 .sun{
   position:absolute; left:50%; top:30%; width:52vmax; height:52vmax; transform:translate(-50%,-50%);
   border-radius:50%; overflow:hidden;
-  background: radial-gradient(circle at 50% 42%, #FFBE0B 0%, #FF006E 70%, #c40058 100%);
-  box-shadow: 0 0 120px rgba(255,190,11,0.65);
+  background: radial-gradient(circle at 50% 42%, var(--zerv-border) 0%, var(--zerv-link) 70%, var(--zerv-shadow) 100%);
+  box-shadow: 0 0 120px rgba(0,0,0,0.35);
   animation: sunPulse 8s ease-in-out infinite;
 }
 .sun::before{
@@ -335,6 +335,163 @@ hr.sep{ border:none; border-top:1.5px solid var(--zerv-border); margin:14px 0; }
 }
 
 footer{ text-align:center; color: var(--zerv-text); opacity:0.75; font-size:10.5px; margin-top:20px; line-height:1.7; }
+
+/* =========================================================================
+   SECTOR THEMES — each overrides the same token names used by every
+   existing component (panels, buttons, ribbons, chips, score tiles...),
+   so no component CSS needs to change per sector, only these variables.
+   Entrepreneur has no theme block: it IS the ZERV business, so it just
+   uses the default :root ZERV palette + beach scene as-is.
+   ========================================================================= */
+
+/* ===== Entity Sector — The Colosseum (physical + spiritual) ===== */
+body.theme-entity{
+  --zerv-bg: #D4A574; --zerv-heading: #D4AF37; --zerv-text: #F5E6C8;
+  --zerv-link: #B91C1C; --zerv-link-hover: #D4AF37; --zerv-border: #D4AF37; --zerv-shadow: #7A1F1F;
+  --btn-primary-bg: #B91C1C; --btn-primary-text: #D4AF37; --btn-primary-border: #D4AF37;
+  --btn-primary-hover-bg: #D4AF37; --btn-primary-hover-text: #2B1B12; --btn-primary-hover-border: #B91C1C;
+  --btn-secondary-bg: #D4AF37; --btn-secondary-text: #2B1B12; --btn-secondary-border: #B91C1C;
+  --btn-secondary-hover-bg: #B91C1C; --btn-secondary-hover-text: #F5E6C8; --btn-secondary-hover-border: #D4AF37;
+  --input-bg: #E8D4A8; --input-text: #2B1B12; --input-border: #D4AF37;
+  --variant-bg: #E8D4A8; --variant-text: #2B1B12; --variant-border: #2B1B12;
+  --variant-hover-bg: #D4AF37; --variant-hover-text: #2B1B12; --variant-hover-border: #B91C1C;
+  --navy: #2B1B12; --navy-2: #3D2A1C; --navy-3: #4A3524;
+  --good: #D4AF37; --bad: #B91C1C;
+}
+/* ===== Education Sector — Wall Street Trading Floor ===== */
+body.theme-education{
+  --zerv-bg: #0B3D91; --zerv-heading: #D4AF37; --zerv-text: #E8EEF7;
+  --zerv-link: #00C853; --zerv-link-hover: #D4AF37; --zerv-border: #D4AF37; --zerv-shadow: #062552;
+  --btn-primary-bg: #00C853; --btn-primary-text: #0A1F3D; --btn-primary-border: #D4AF37;
+  --btn-primary-hover-bg: #D4AF37; --btn-primary-hover-text: #0A1F3D; --btn-primary-hover-border: #00C853;
+  --btn-secondary-bg: #D4AF37; --btn-secondary-text: #0A1F3D; --btn-secondary-border: #00C853;
+  --btn-secondary-hover-bg: #00C853; --btn-secondary-hover-text: #0A1F3D; --btn-secondary-hover-border: #D4AF37;
+  --input-bg: #F0F4FA; --input-text: #0A1F3D; --input-border: #D4AF37;
+  --variant-bg: #F0F4FA; --variant-text: #0A1F3D; --variant-border: #0A1F3D;
+  --variant-hover-bg: #D4AF37; --variant-hover-text: #0A1F3D; --variant-hover-border: #00C853;
+  --navy: #0A1F3D; --navy-2: #122A4A; --navy-3: #1A3560;
+  --good: #00C853; --bad: #FF4D4D;
+}
+/* ===== Elixir Sector — The Workshop (hobby mastery) ===== */
+body.theme-elixir{
+  --zerv-bg: #6B4226; --zerv-heading: #FF8C42; --zerv-text: #F0E4D4;
+  --zerv-link: #3A86FF; --zerv-link-hover: #FF8C42; --zerv-border: #FF8C42; --zerv-shadow: #3D2817;
+  --btn-primary-bg: #FF8C42; --btn-primary-text: #2B1D12; --btn-primary-border: #3A86FF;
+  --btn-primary-hover-bg: #3A86FF; --btn-primary-hover-text: #F0E4D4; --btn-primary-hover-border: #FF8C42;
+  --btn-secondary-bg: #3A86FF; --btn-secondary-text: #F0E4D4; --btn-secondary-border: #FF8C42;
+  --btn-secondary-hover-bg: #FF8C42; --btn-secondary-hover-text: #2B1D12; --btn-secondary-hover-border: #3A86FF;
+  --input-bg: #E8DFC8; --input-text: #2B1D12; --input-border: #FF8C42;
+  --variant-bg: #E8DFC8; --variant-text: #2B1D12; --variant-border: #2B1D12;
+  --variant-hover-bg: #FF8C42; --variant-hover-text: #2B1D12; --variant-hover-border: #3A86FF;
+  --navy: #2B1D12; --navy-2: #3D2A1A; --navy-3: #4A3522;
+  --good: #3A86FF; --bad: #D64545;
+}
+
+/* ============ Sector emblem (per-theme logo, replaces .zerv-badge) ============ */
+.sector-emblem{
+  width: 96px; height:96px; margin: 0 auto 8px; border-radius:50%;
+  position:relative; overflow:hidden; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:40px;
+  background: conic-gradient(from 200deg, var(--navy-3), var(--zerv-bg), var(--zerv-heading), var(--zerv-link), var(--zerv-border), var(--navy-3));
+  box-shadow:
+    0 0 0 3px var(--navy), 0 0 0 6px var(--zerv-border),
+    0 10px 22px rgba(0,0,0,0.5),
+    inset -10px -10px 18px rgba(0,0,0,0.3),
+    inset 8px 8px 16px rgba(255,255,255,0.3);
+  animation: badgeSpin 24s linear infinite;
+  transition: transform .2s ease;
+}
+.sector-emblem:hover{ transform: scale(1.06); }
+.sector-emblem::before{
+  content:""; position:absolute; inset:15px; border-radius:50%;
+  background: var(--navy); border: 2px solid var(--zerv-border);
+}
+.sector-emblem .emblem-icon{ position:relative; z-index:1; animation: badgeCounterSpin 24s linear infinite; }
+header.hero-compact .sector-emblem{ width:46px; height:46px; margin:0; flex:0 0 auto; font-size:19px; }
+header.hero-compact .sector-emblem::before{ inset:7px; }
+@media (prefers-reduced-motion: reduce){ .sector-emblem, .sector-emblem .emblem-icon{ animation: none !important; } }
+
+/* ============ HQ portal cards ============ */
+.portal-grid{ display:grid; grid-template-columns: 1fr; gap:14px; }
+.portal-card{
+  display:block; text-decoration:none; border-radius:16px; padding:18px 16px; position:relative; overflow:hidden;
+  border:2px solid; transition: transform .15s ease; box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+.portal-card:hover{ transform: translateY(-3px) scale(1.01); }
+.portal-card .pc-icon{ font-size:34px; }
+.portal-card .pc-title{ font-family:'Bungee',sans-serif; font-size:17px; margin:6px 0 2px; color:#fff; }
+.portal-card .pc-desc{ font-size:12px; opacity:0.85; margin-bottom:8px; color:#fff; }
+.portal-card .pc-stat{ font-size:11px; font-weight:800; display:inline-block; padding:4px 10px; border-radius:20px; }
+.portal-card.entity{ background: linear-gradient(135deg, #2B1B12, #4A3524); border-color:#D4AF37; }
+.portal-card.entity .pc-stat{ background:#D4AF37; color:#2B1B12; }
+.portal-card.entrepreneur{ background: linear-gradient(135deg, #0d4a4d, #146c6e); border-color:#FFBE0B; }
+.portal-card.entrepreneur .pc-stat{ background:#FF006E; color:#fff; }
+.portal-card.education{ background: linear-gradient(135deg, #0A1F3D, #1A3560); border-color:#D4AF37; }
+.portal-card.education .pc-stat{ background:#00C853; color:#0A1F3D; }
+.portal-card.elixir{ background: linear-gradient(135deg, #2B1D12, #4A3522); border-color:#FF8C42; }
+.portal-card.elixir .pc-stat{ background:#3A86FF; color:#fff; }
+
+/* ============ Deadline banner (Education) ============ */
+.deadline-banner{ background: var(--btn-primary-bg); color: var(--btn-primary-text); border:2px solid var(--btn-primary-border); border-radius:12px; padding:12px 14px; margin-bottom:14px; }
+.deadline-banner .db-title{ font-family:'Bungee',sans-serif; font-size:13px; margin-bottom:6px; }
+.deadline-item{ display:flex; justify-content:space-between; gap:8px; font-size:12px; padding:5px 0; border-top:1px solid rgba(255,255,255,0.25); }
+.deadline-item:first-child{ border-top:none; }
+.deadline-item.overdue{ font-weight:800; }
+
+/* ============ Generic list rows (classes, assignments, businesses, tasks, journal) ============ */
+.list-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--navy-2); border:1.5px solid var(--zerv-border); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+.list-row.done{ opacity:0.55; }
+.list-row .lr-main{ flex:1; min-width:0; }
+.list-row .lr-title{ font-weight:700; font-size:13px; color: var(--zerv-text); }
+.list-row .lr-title.done{ text-decoration:line-through; }
+.list-row .lr-sub{ font-size:10.5px; opacity:0.75; margin-top:2px; color: var(--zerv-text); }
+.list-row .lr-actions{ display:flex; gap:6px; flex-shrink:0; align-items:center; }
+.add-row{ display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+.add-row input, .add-row select{ flex:1; min-width:100px; }
+select{
+  font-family:'Poppins',sans-serif; background: var(--input-bg); color: var(--input-text);
+  border:1.5px solid var(--input-border); border-radius:8px; padding:9px 10px; font-size:13px; min-height:40px;
+}
+textarea{
+  font-family:'Poppins',sans-serif; background: var(--input-bg); color: var(--input-text);
+  border:1.5px solid var(--input-border); border-radius:8px; padding:9px 10px; font-size:13px;
+  width:100%; min-height:64px; resize:vertical;
+}
+.journal-item{ background: rgba(0,0,0,0.3); border-radius:8px; padding:9px 10px; margin-bottom:6px; font-size:12px; color: var(--zerv-text); }
+.journal-item .ji-date{ font-size:9.5px; opacity:0.6; margin-top:3px; }
+
+/* ============ Mastery ladder (Education finance topics, Elixir hobbies) ============ */
+.mastery-row{ margin-bottom:16px; }
+.mastery-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; gap:8px; flex-wrap:wrap; }
+.mastery-title{ font-weight:700; font-size:13px; color: var(--zerv-text); display:flex; align-items:center; gap:6px; }
+.mastery-level{ font-size:10.5px; font-weight:800; padding:3px 10px; border-radius:20px; background: var(--zerv-heading); color: var(--navy); white-space:nowrap; }
+.mastery-bar-track{ background: rgba(0,0,0,0.4); border:1px solid var(--zerv-border); border-radius: 8px; height:12px; overflow:hidden; }
+.mastery-bar-fill{ height:100%; background: linear-gradient(90deg, var(--zerv-heading), var(--zerv-link)); transition: width .5s ease; }
+.mastery-sub{ font-size:10px; opacity:0.75; margin-top:4px; color: var(--zerv-text); }
+.mastery-row .tier-row{ margin-top:8px; }
+
+/* ============ Milestone checklist (Elixir) ============ */
+.milestone-row{ display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.12); cursor:pointer; }
+.milestone-row:last-child{ border-bottom:none; }
+.milestone-check{ width:22px; height:22px; border-radius:6px; border:2px solid var(--zerv-border); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; background:transparent; margin-top:1px; font-size:13px; }
+.milestone-check.checked{ background: var(--zerv-heading); color: var(--navy); }
+.milestone-label{ font-size:12.5px; flex:1; color: var(--zerv-text); }
+.milestone-label.checked{ opacity:0.65; text-decoration: line-through; }
+
+/* ============ Countdown widget (Sprint Quest) ============ */
+.countdown-wrap{ display:flex; gap:8px; justify-content:center; margin: 10px 0; flex-wrap:wrap; }
+.countdown-chip{ background: var(--navy-2); border:2px solid var(--zerv-border); border-radius:10px; padding:10px 8px; text-align:center; min-width:56px; }
+.countdown-chip .cd-num{ font-family:'Bungee',sans-serif; font-size:18px; color: var(--zerv-heading); }
+.countdown-chip .cd-lbl{ font-size:9px; opacity:0.8; text-transform:uppercase; color: var(--zerv-text); }
+
+/* ============ In-page sub-tabs ============ */
+.subtabs{ display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+.subtab-btn{
+  flex:1; min-width:84px; background: var(--navy-2); border:2px solid var(--zerv-border); color: var(--zerv-text);
+  padding:9px 6px; border-radius:10px; font-size:10.5px; font-weight:700; font-family:'Bungee',sans-serif; min-height:40px;
+}
+.subtab-btn.active{ background: var(--btn-primary-bg); color: var(--btn-primary-text); border-color: var(--btn-primary-border); }
 
 @media (max-width:400px){
   .scoreboard{ gap:6px; }

@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Trading Floor — Education Sector</title>
+<meta name="description" content="Classes, deadlines, and your climb from Intern to Managing Director in finance mastery.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23D4AF37'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%230B3D91'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-education">
+<div id="bgwash">
+  <div class="sun" aria-hidden="true"></div>
+  <div class="horizon-grid" aria-hidden="true"></div>
+  <div class="waves-fg" aria-hidden="true">
+    <svg viewBox="0 0 400 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#081a33" opacity="0.85"/>
+      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#0A1F3D" opacity="0.95"/>
+    </svg>
+  </div>
+</div>
+<div id="toastLayer"></div>
+
+<nav class="navbar">
+  <a class="nav-link" href="index.html">🏠 HQ</a>
+  <a class="nav-link active" href="education.html">📈 Education</a>
+</nav>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="sector-emblem" aria-hidden="true"><span class="emblem-icon">🏦</span></div>
+    <h1 class="title">The Trading Floor</h1>
+    <div class="subtitle">Education Sector — classes, deadlines, and the climb to Managing Director</div>
+  </header>
+
+  <div class="scoreboard">
+    <div class="score-tile"><div class="num" id="scoreToday">0</div><div class="lbl">Today</div></div>
+    <div class="score-tile"><div class="num" id="scoreWeek">0</div><div class="lbl">This Week</div></div>
+    <div class="score-tile"><div class="num" id="scoreAllTime">0</div><div class="lbl">All-Time</div></div>
+  </div>
+
+  <!-- DEADLINES -->
+  <div id="deadlineBannerWrap"></div>
+
+  <!-- WEEKLY SCHOOLWORK GOAL -->
+  <div class="panel bonus-card">
+    <div class="ribbon pink-ribbon">Weekly Schoolwork Goal</div>
+    <div class="bonus-desc">Caught up and ahead for the week. Bonus points, no penalty for skipping.</div>
+    <div id="schoolworkGoalRow"></div>
+    <div class="muted" id="eduWeekLabel" style="margin-top:4px;"></div>
+  </div>
+
+  <div class="subtabs">
+    <button class="subtab-btn active" data-tab="deadlines">📋 Classes</button>
+    <button class="subtab-btn" data-tab="mastery">📈 Mastery</button>
+  </div>
+
+  <!-- CLASSES & ASSIGNMENTS TAB -->
+  <div id="tab-deadlines">
+    <div class="panel">
+      <div class="ribbon">Your Classes</div>
+      <div class="add-row">
+        <input type="text" id="newClassInput" placeholder="Class name (e.g. Financial Accounting I)">
+        <button class="btn small" id="addClassBtn">Add</button>
+      </div>
+      <div id="classList"></div>
+    </div>
+    <div class="panel">
+      <div class="ribbon">Assignments &amp; Exams</div>
+      <div class="add-row">
+        <input type="text" id="newAssignTitle" placeholder="Assignment / exam title">
+      </div>
+      <div class="add-row">
+        <select id="newAssignClass"></select>
+        <input type="date" id="newAssignDue">
+        <button class="btn small" id="addAssignBtn">Add</button>
+      </div>
+      <div id="assignmentList"></div>
+    </div>
+  </div>
+
+  <!-- MASTERY TAB -->
+  <div id="tab-mastery" style="display:none;">
+    <div class="panel">
+      <div class="ribbon">Finance Mastery Ladder</div>
+      <div class="muted" style="margin-bottom:10px;">Log study time per topic. Each topic climbs its own Wall Street ladder: Intern → Analyst → Associate → VP → Director → Managing Director.</div>
+      <div id="masteryList"></div>
+    </div>
+  </div>
+
+  <footer>
+    ZERV LEVEL UP &middot; Education Sector &middot; all data lives only in this browser (localStorage)
+    <br><span class="muted">Heads up: this is a static site with no server, so "prompt updates before due dates" means an in-app banner when you open this page — not a push notification to your phone.</span>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+<script>
+function renderDeadlineBanner(){
+  const upcoming = upcomingAssignments(ASSIGNMENT_DUE_SOON_DAYS);
+  const overdue = state.assignments.filter(a => !a.done && a.dueDate < todayStr());
+  const wrap = document.getElementById("deadlineBannerWrap");
+  if(upcoming.length === 0){ wrap.innerHTML = ""; return; }
+  wrap.innerHTML = `<div class="deadline-banner">
+    <div class="db-title">⏰ Upcoming Deadlines</div>
+    ${upcoming.map(a => {
+      const isOverdue = a.dueDate < todayStr();
+      const daysOut = daysBetween(todayStr(), a.dueDate);
+      return `<div class="deadline-item ${isOverdue?'overdue':''}">
+        <span>${a.title} <span style="opacity:0.8;">(${classNameFor(a.classId)})</span></span>
+        <span>${isOverdue ? "OVERDUE" : (daysOut===0 ? "Due today" : `Due in ${daysOut}d`)}</span>
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+function renderSchoolworkGoal(){
+  const wk = weekStartOf(todayStr());
+  const w = getWeek(wk);
+  const g = WEEKLY_GOALS.find(g=>g.sector==="education");
+  const done = !!w[g.id];
+  const el = document.getElementById("schoolworkGoalRow");
+  el.innerHTML = `<div class="weekly-goal-row">
+    <div class="wg-label">${g.icon} ${g.name} <span class="wg-points">(+${g.points})</span></div>
+    <button class="btn ${done?'secondary':''} small">${done?'✓ Done':'Mark Done'}</button>
+  </div>`;
+  el.querySelector("button").onclick = () => {
+    w[g.id] = !w[g.id];
+    saveWeek(wk);
+    if(w[g.id]) showToast(`🎓 ${g.name} complete! +${g.points}`);
+    renderSchoolworkGoal();
+    renderScoreboard();
+    checkAndUnlockAchievements();
+  };
+  document.getElementById("eduWeekLabel").textContent = `Week of ${wk}`;
+}
+
+function renderClassSelect(){
+  const sel = document.getElementById("newAssignClass");
+  sel.innerHTML = state.classes.length
+    ? state.classes.map(c => `<option value="${c.id}">${c.name}</option>`).join("")
+    : `<option value="">Add a class first</option>`;
+}
+
+function renderClassList(){
+  const el = document.getElementById("classList");
+  el.innerHTML = state.classes.length ? "" : `<div class="chronicle-empty">No classes added yet.</div>`;
+  for(const c of state.classes){
+    const count = state.assignments.filter(a=>a.classId===c.id).length;
+    const row = document.createElement("div");
+    row.className = "list-row";
+    row.innerHTML = `<div class="lr-main"><div class="lr-title">🎓 ${c.name}</div><div class="lr-sub">${count} assignment${count===1?"":"s"}</div></div>
+      <div class="lr-actions"><button class="x-btn">×</button></div>`;
+    row.querySelector(".x-btn").onclick = () => {
+      if(!confirm(`Remove "${c.name}"? Its assignments will stay but show as unassigned.`)) return;
+      state.classes = state.classes.filter(x=>x.id!==c.id);
+      saveClasses();
+      renderClassList(); renderClassSelect(); renderAssignmentList();
+    };
+    el.appendChild(row);
+  }
+}
+
+function renderAssignmentList(){
+  const el = document.getElementById("assignmentList");
+  const sorted = state.assignments.slice().sort((a,b)=> (a.done - b.done) || a.dueDate.localeCompare(b.dueDate));
+  el.innerHTML = sorted.length ? "" : `<div class="chronicle-empty">No assignments yet.</div>`;
+  for(const a of sorted){
+    const row = document.createElement("div");
+    row.className = "list-row" + (a.done ? " done" : "");
+    const overdue = !a.done && a.dueDate < todayStr();
+    row.innerHTML = `
+      <div class="lr-main">
+        <div class="lr-title ${a.done?'done':''}">${a.title}</div>
+        <div class="lr-sub" ${overdue?'style="color:var(--bad);font-weight:700;"':''}>${classNameFor(a.classId)} &middot; due ${a.dueDate}${overdue?' (OVERDUE)':''}</div>
+      </div>
+      <div class="lr-actions">
+        ${a.done ? "" : `<button class="btn secondary small">✓ Done</button>`}
+        <button class="x-btn">×</button>
+      </div>`;
+    if(!a.done) row.querySelector(".btn").onclick = () => completeAssignment(a.id);
+    row.querySelector(".x-btn").onclick = () => {
+      state.assignments = state.assignments.filter(x=>x.id!==a.id);
+      saveAssignments();
+      renderAssignmentList(); renderDeadlineBanner(); renderClassList();
+    };
+    el.appendChild(row);
+  }
+}
+function completeAssignment(id){
+  const a = state.assignments.find(a=>a.id===id);
+  if(!a || a.done) return;
+  a.done = true;
+  saveAssignments();
+  const day = getDay(todayStr());
+  day.study._assignmentsDone = (day.study._assignmentsDone||0) + 1;
+  saveDay(todayStr());
+  popupAt("+"+ASSIGNMENT_DONE_POINTS, true);
+  renderAssignmentList(); renderDeadlineBanner(); renderClassList();
+  renderScoreboard();
+  checkAndUnlockAchievements();
+}
+
+function renderMasteryList(){
+  const el = document.getElementById("masteryList");
+  el.innerHTML = "";
+  const day = getDay(todayStr());
+  for(const t of FINANCE_TOPICS){
+    const lifetime = financeTopicLifetimePoints(t.id);
+    const { cur, next } = masteryTitleForScore(lifetime);
+    const cur_ = day.study[t.id];
+    const row = document.createElement("div");
+    row.className = "mastery-row";
+    const span = next ? next.score - cur.score : 1;
+    const into = next ? lifetime - cur.score : 1;
+    const pct = next ? Math.min(100, (into/span)*100) : 100;
+    row.innerHTML = `
+      <div class="mastery-head">
+        <div class="mastery-title">${t.icon} ${t.name}</div>
+        <div class="mastery-level">${cur.title}</div>
+      </div>
+      <div class="mastery-bar-track"><div class="mastery-bar-fill" style="width:${pct}%"></div></div>
+      <div class="mastery-sub">${next ? `${into.toLocaleString()} / ${span.toLocaleString()} to ${next.title}` : `${lifetime.toLocaleString()} lifetime — Managing Director reached`}</div>
+      <div class="tier-row">
+        ${t.tiers.map(tier => `<button class="tier-btn ${cur_ && cur_.n===tier.n?'active':''}" data-n="${tier.n}" data-pts="${tier.points}">${tier.label} · +${tier.points}</button>`).join("")}
+      </div>`;
+    row.querySelectorAll(".tier-btn").forEach(btn => {
+      btn.onclick = () => logStudy(t.id, Number(btn.dataset.n), Number(btn.dataset.pts));
+    });
+    el.appendChild(row);
+  }
+}
+function logStudy(topicId, n, points){
+  const day = getDay(todayStr());
+  const prevPoints = dayStudyPoints(day, topicId);
+  day.study[topicId] = { n, points };
+  saveDay(todayStr());
+  const delta = points - prevPoints;
+  if(delta !== 0) popupAt((delta>0?"+":"")+delta, delta>0);
+  renderMasteryList();
+  renderScoreboard();
+  checkAndUnlockAchievements();
+}
+
+document.getElementById("addClassBtn").onclick = () => {
+  const input = document.getElementById("newClassInput");
+  if(!input.value.trim()) return;
+  state.classes.push({ id:"cls"+Date.now(), name: input.value.trim() });
+  saveClasses();
+  input.value = "";
+  renderClassList(); renderClassSelect();
+};
+document.getElementById("addAssignBtn").onclick = () => {
+  const title = document.getElementById("newAssignTitle");
+  const classId = document.getElementById("newAssignClass").value;
+  const due = document.getElementById("newAssignDue").value;
+  if(!title.value.trim() || !due){ showToast("Give it a title and a due date."); return; }
+  state.assignments.push({ id:"asg"+Date.now(), classId, title: title.value.trim(), dueDate: due, done:false });
+  saveAssignments();
+  title.value = ""; document.getElementById("newAssignDue").value = "";
+  renderAssignmentList(); renderDeadlineBanner(); renderClassList();
+};
+
+document.querySelectorAll(".subtab-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".subtab-btn").forEach(b=>b.classList.toggle("active", b===btn));
+    document.getElementById("tab-deadlines").style.display = btn.dataset.tab==="deadlines" ? "" : "none";
+    document.getElementById("tab-mastery").style.display = btn.dataset.tab==="mastery" ? "" : "none";
+  };
+});
+
+checkAndUnlockAchievements();
+renderScoreboard();
+renderDeadlineBanner();
+renderSchoolworkGoal();
+renderClassSelect();
+renderClassList();
+renderAssignmentList();
+renderMasteryList();
+initSceneInteractivity();
+
+/* Toast once on load if anything is due within the alert window. */
+(function alertDueSoon(){
+  const upcoming = upcomingAssignments(ASSIGNMENT_DUE_SOON_DAYS);
+  if(upcoming.length){
+    const a = upcoming[0];
+    const overdue = a.dueDate < todayStr();
+    showToast(overdue ? `⏰ Overdue: ${a.title}` : `⏰ Due soon: ${a.title} (${a.dueDate})`);
+  }
+})();
+</script>
+</body>
+</html>
