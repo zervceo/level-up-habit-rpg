@@ -3,19 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>The Arena — Entity Sector</title>
-<meta name="description" content="Your physical and spiritual training ground. The Sprint Quest: Division 1 by 21.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23D4AF37'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%23B91C1C'/%3E%3C/svg%3E">
+<title>The Vitruvian Study — Entity Sector</title>
+<meta name="description" content="The ideal proportions of body and spirit. The Sprint Quest: Division 1 by 21.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23D8C9A3'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23B8860B' stroke-width='3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="theme-entity">
 <div id="bgwash">
-  <div class="sun" aria-hidden="true"></div>
-  <div class="horizon-grid" aria-hidden="true"></div>
-  <div class="waves-fg" aria-hidden="true">
-    <svg viewBox="0 0 400 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path class="wave-layer w2" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 V60 H0 Z" fill="#1f130c" opacity="0.85"/>
-      <path class="wave-layer" d="M0,40 Q50,22 100,40 T200,40 T300,40 T400,40 V60 H0 Z" fill="#2B1B12" opacity="0.95"/>
+  <div class="vitruvian-geo" aria-hidden="true">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="90" fill="none" stroke="var(--zerv-border)" stroke-width="1.2"/>
+      <rect x="36.35" y="36.35" width="127.3" height="127.3" fill="none" stroke="var(--zerv-border)" stroke-width="1.2"/>
+      <g stroke="var(--zerv-border)" stroke-width="0.5" opacity="0.5">
+        <line x1="100" y1="10" x2="100" y2="190"/>
+        <line x1="10" y1="100" x2="190" y2="100"/>
+        <line x1="36" y1="36" x2="164" y2="164"/>
+        <line x1="164" y1="36" x2="36" y2="164"/>
+      </g>
+      <g stroke="var(--zerv-link)" stroke-width="1.6" stroke-linecap="round" fill="none">
+        <circle cx="100" cy="48" r="9" stroke-width="1.4"/>
+        <line x1="100" y1="57" x2="100" y2="128"/>
+        <line x1="36" y1="75" x2="164" y2="75"/>
+        <line x1="100" y1="75" x2="164" y2="28"/>
+        <line x1="100" y1="75" x2="36" y2="28"/>
+        <line x1="100" y1="128" x2="90" y2="186"/>
+        <line x1="100" y1="128" x2="110" y2="186"/>
+        <line x1="100" y1="128" x2="152" y2="182"/>
+        <line x1="100" y1="128" x2="48" y2="182"/>
+      </g>
     </svg>
   </div>
 </div>
@@ -23,16 +38,16 @@
 
 <nav class="navbar">
   <a class="nav-link" href="index.html">🏠 HQ</a>
-  <a class="nav-link active" href="entity-arena.html">🏛️ Arena</a>
-  <a class="nav-link" href="chronicle.html">⚔️ Training</a>
+  <a class="nav-link active" href="entity-arena.html">📐 Study</a>
+  <a class="nav-link" href="chronicle.html">🖋️ Practice</a>
   <a class="nav-link" href="honors.html">🏅 Medals</a>
 </nav>
 
 <div class="wrap">
   <header class="hero">
-    <div class="sector-emblem" aria-hidden="true"><span class="emblem-icon">🏛️</span></div>
-    <h1 class="title">The Arena</h1>
-    <div class="subtitle">Entity Sector — body and spirit, under one roof</div>
+    <div class="sector-emblem" aria-hidden="true"><span class="emblem-icon">📐</span></div>
+    <h1 class="title">The Vitruvian Study</h1>
+    <div class="subtitle">Entity Sector — the ideal proportions of body and spirit</div>
   </header>
 
   <div class="scoreboard">
@@ -99,9 +114,9 @@
   </div>
 
   <div class="panel" style="text-align:center;">
-    <div class="ribbon">Enter the Training Yard</div>
+    <div class="ribbon">Take Up the Quill</div>
     <div class="muted" style="margin-bottom:10px;">Log today's physical Wins, your Wipeouts, and lock in the day.</div>
-    <a class="btn link-btn" href="chronicle.html" style="width:100%;">⚔️ Open Training Log</a>
+    <a class="btn link-btn" href="chronicle.html" style="width:100%;">🖋️ Open Practice Log</a>
   </div>
 
   <footer>

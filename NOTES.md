@@ -1,5 +1,36 @@
 # Build notes / judgment calls
 
+## Entity re-theme: Colosseum -> Vitruvian Man
+
+A later request swapped Entity's visual theme from the Colosseum to
+Leonardo's Vitruvian Man — a better fit for "ideal proportions of body and
+spirit" than gladiator framing. Nothing about the sector's mechanics,
+storage, or scoring changed, only `body.theme-entity`'s palette and the
+background art:
+
+- **Palette** moved from Roman red/gold to a drafting-desk Renaissance
+  set: aged parchment background, gold-leaf headings/borders, and sanguine
+  (red chalk) for links/primary buttons/accents — literally the colors on
+  Leonardo's own desk, not an arbitrary substitution.
+- **Background art**: replaced the sun/horizon-grid/waves layers (which
+  made sense for a Colosseum and even more for the beach, but not here)
+  with a new `.vitruvian-geo` component — Leonardo's circle-and-square
+  construction with a simplified line figure inside, drawn as one small
+  inline SVG reused identically across all three Entity pages, slowly
+  rotating like a drafting compass (skipped under reduced-motion, as
+  always). It's an original simplified rendition, not a trace of the
+  historical drawing, both because that's simpler to keep theme-colorable
+  and because it reads fine at this scale even simplified.
+- **Renamed the pages' copy and nav labels** to match: "The Arena" ->
+  "The Vitruvian Study", "Training Log" -> "Practice Log", nav icons
+  🏛️/⚔️ -> 📐/🖋️ (set-square and quill). Kept the file names
+  (`entity-arena.html`, `chronicle.html`, `honors.html`) unchanged so nothing
+  bookmarked breaks — only what's rendered on the page changed.
+- **Medals page kept its name** ("Medals of Honor") since achievements are
+  a system-wide concept that only happens to sit on an Entity-styled page;
+  trophies/medals don't clash with either theme, so there was no real need
+  to rename it to something Renaissance-specific.
+
 ## Four-sector rebuild (Entity / Entrepreneur / Education / Elixir)
 
 A later request asked to reorganize everything into four themed sectors —
