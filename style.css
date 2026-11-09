@@ -108,6 +108,22 @@ a:hover{ color: var(--zerv-link-hover); text-decoration-color: var(--zerv-link-h
   .sun, .horizon-grid, .wave-layer{ animation: none !important; }
 }
 
+/* ============ Vitruvian Man geometry (Entity sector background) ============
+   Replaces the sun/horizon-grid/waves with Leonardo's circle-and-square
+   construction and a simple line figure, in gold-leaf and sanguine ink on
+   aged parchment — "ideal proportions" standing in for "ideal self." */
+body.theme-entity .sun-layer, body.theme-entity .horizon-grid, body.theme-entity .waves-fg{ display:none; }
+.vitruvian-geo{ display:none; }
+body.theme-entity .vitruvian-geo{
+  display:block; position:absolute; left:50%; top:34%; width:84vmax; height:84vmax;
+  transform:translate(-50%,-50%);
+  animation: vitruvianTurn 90s linear infinite;
+  opacity:0.55;
+}
+body.theme-entity .vitruvian-geo svg{ width:100%; height:100%; overflow:visible; }
+@keyframes vitruvianTurn{ from{ transform:translate(-50%,-50%) rotate(0deg); } to{ transform:translate(-50%,-50%) rotate(360deg); } }
+@media (prefers-reduced-motion: reduce){ body.theme-entity .vitruvian-geo{ animation: none !important; } }
+
 .wrap{ max-width: 720px; margin:0 auto; padding: 0 12px 56px; position:relative; z-index:1; }
 
 /* ============ Sticky top navbar ============ */
@@ -176,6 +192,8 @@ header.hero-compact .subtitle{ margin:2px 0 0; text-align:left; }
 }
 .panel::before{ content:"🌊"; top:-10px; left:10px; }
 .panel::after{ content:"🏄"; bottom:-10px; right:10px; }
+body.theme-entity .panel::before{ content:"📐"; }
+body.theme-entity .panel::after{ content:"🖋️"; }
 
 .ribbon{
   display:inline-block; font-family:'Bungee', sans-serif; font-size: 12px; font-weight:400;
@@ -344,19 +362,21 @@ footer{ text-align:center; color: var(--zerv-text); opacity:0.75; font-size:10.5
    uses the default :root ZERV palette + beach scene as-is.
    ========================================================================= */
 
-/* ===== Entity Sector — The Colosseum (physical + spiritual) ===== */
+/* ===== Entity Sector — Vitruvian Man (physical + spiritual, ideal proportions) =====
+   Renaissance drafting-study palette: aged parchment, gold leaf, sanguine
+   (red chalk) ink — the colors Leonardo himself would have had on the desk. */
 body.theme-entity{
-  --zerv-bg: #D4A574; --zerv-heading: #D4AF37; --zerv-text: #F5E6C8;
-  --zerv-link: #B91C1C; --zerv-link-hover: #D4AF37; --zerv-border: #D4AF37; --zerv-shadow: #7A1F1F;
-  --btn-primary-bg: #B91C1C; --btn-primary-text: #D4AF37; --btn-primary-border: #D4AF37;
-  --btn-primary-hover-bg: #D4AF37; --btn-primary-hover-text: #2B1B12; --btn-primary-hover-border: #B91C1C;
-  --btn-secondary-bg: #D4AF37; --btn-secondary-text: #2B1B12; --btn-secondary-border: #B91C1C;
-  --btn-secondary-hover-bg: #B91C1C; --btn-secondary-hover-text: #F5E6C8; --btn-secondary-hover-border: #D4AF37;
-  --input-bg: #E8D4A8; --input-text: #2B1B12; --input-border: #D4AF37;
-  --variant-bg: #E8D4A8; --variant-text: #2B1B12; --variant-border: #2B1B12;
-  --variant-hover-bg: #D4AF37; --variant-hover-text: #2B1B12; --variant-hover-border: #B91C1C;
-  --navy: #2B1B12; --navy-2: #3D2A1C; --navy-3: #4A3524;
-  --good: #D4AF37; --bad: #B91C1C;
+  --zerv-bg: #D8C9A3; --zerv-heading: #B8860B; --zerv-text: #EFE3C4;
+  --zerv-link: #9C4A3C; --zerv-link-hover: #C9A227; --zerv-border: #C9A227; --zerv-shadow: #2A1D10;
+  --btn-primary-bg: #9C4A3C; --btn-primary-text: #EFE3C4; --btn-primary-border: #C9A227;
+  --btn-primary-hover-bg: #C9A227; --btn-primary-hover-text: #2A1D10; --btn-primary-hover-border: #9C4A3C;
+  --btn-secondary-bg: #C9A227; --btn-secondary-text: #2A1D10; --btn-secondary-border: #9C4A3C;
+  --btn-secondary-hover-bg: #9C4A3C; --btn-secondary-hover-text: #EFE3C4; --btn-secondary-hover-border: #C9A227;
+  --input-bg: #EDE1C0; --input-text: #2A1D10; --input-border: #C9A227;
+  --variant-bg: #EDE1C0; --variant-text: #2A1D10; --variant-border: #2A1D10;
+  --variant-hover-bg: #C9A227; --variant-hover-text: #2A1D10; --variant-hover-border: #9C4A3C;
+  --navy: #2A1D10; --navy-2: #3B2A18; --navy-3: #4A3521;
+  --good: #C9A227; --bad: #9C4A3C;
 }
 /* ===== Education Sector — Wall Street Trading Floor ===== */
 body.theme-education{
@@ -422,8 +442,8 @@ header.hero-compact .sector-emblem::before{ inset:7px; }
 .portal-card .pc-title{ font-family:'Bungee',sans-serif; font-size:17px; margin:6px 0 2px; color:#fff; }
 .portal-card .pc-desc{ font-size:12px; opacity:0.85; margin-bottom:8px; color:#fff; }
 .portal-card .pc-stat{ font-size:11px; font-weight:800; display:inline-block; padding:4px 10px; border-radius:20px; }
-.portal-card.entity{ background: linear-gradient(135deg, #2B1B12, #4A3524); border-color:#D4AF37; }
-.portal-card.entity .pc-stat{ background:#D4AF37; color:#2B1B12; }
+.portal-card.entity{ background: linear-gradient(135deg, #2A1D10, #4A3521); border-color:#C9A227; }
+.portal-card.entity .pc-stat{ background:#C9A227; color:#2A1D10; }
 .portal-card.entrepreneur{ background: linear-gradient(135deg, #0d4a4d, #146c6e); border-color:#FFBE0B; }
 .portal-card.entrepreneur .pc-stat{ background:#FF006E; color:#fff; }
 .portal-card.education{ background: linear-gradient(135deg, #0A1F3D, #1A3560); border-color:#D4AF37; }
