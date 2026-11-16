@@ -42,6 +42,13 @@ set of components, four color themes layered on top via CSS variables.
 
 ## Explore in 3D
 
+The scenes are modelled in Blender (`tools/blender/`, exported to `models/`)
+and every tracked thing is clickable: hover for a highlight, follow the
+floating markers (gold = still to do today, green = done), click or press
+**E**, and log deeds, posts, tasks, study time, practice and milestones
+without leaving the scene. It writes to the same local data as the 2D pages.
+
+
 Every sector has a walkable, low-poly 3D "Explore" view — a visual
 companion to its 2D page, not a replacement for it; logging habits, classes,
 and milestones all still happens on the 2D pages. **On a desktop or laptop

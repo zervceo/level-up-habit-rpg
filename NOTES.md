@@ -1,5 +1,46 @@
 # Build notes / judgment calls
 
+## Blender-authored 3D with clickable hotspots
+
+The four Explore scenes were rebuilt so the geometry is modelled in Blender
+and every sector's tracked things are objects you can click.
+
+- **No "Blender account" exists, and the sandbox can't reach a desktop
+  Blender**, so the pipeline runs Blender headlessly as the `bpy` Python
+  module: `tools/blender/lib.py` (a small modelling toolkit that takes
+  Three.js-style Y-up coordinates) + one `build_<sector>.py` per scene →
+  `models/<sector>.glb`. Re-run with `python tools/blender/build_entity.py`
+  (needs `pip install bpy`, Python 3.11) or `blender -b -P ...`. The scripts
+  also run in a normal Blender install, so they can be opened and edited
+  there. A Blender MCP is optional and not required by anything here.
+- **Naming is the contract**: an Empty named `HS_<id>` is a clickable
+  hotspot; a mesh named `KEEP_<x>` is never merged so JS can swap in a live
+  texture (coding monitors, oscilloscope, the Exchange's deadline marquee,
+  the rank-board surfboards). Everything else is merged per material to keep
+  draw calls low.
+- **Loader is vendored, no CDN**: `vendor/GLTFLoader.js`,
+  `BufferGeometryUtils.js`, `RoomEnvironment.js` from three@0.160.0 with
+  their imports rewritten to relative paths (same reasoning as the core
+  library). Models are 1.5–2 MB each, uncompressed on purpose (no Draco
+  decoder to host).
+- **`explore-interact.js`** gives every scene hover highlight, floating
+  quest markers (gold = still to do today, green = done), click or press **E**
+  to open a side panel. Panel buttons run the *same* writes as the 2D pages
+  (`day.deeds / biz / study / craft`, weekly flags, tasks, journal,
+  milestones, assignments) and then `checkAndUnlockAchievements()`, so
+  scores, medals and ranks stay consistent. A sealed (locked) day is
+  read-only in 3D for the Entity deeds, as in the Practice Log.
+- **What each sector's scene is for**: Entity = Vitruvian study (figure →
+  rank, five deed plinths, sprint lane + stopwatch, weekly-vows lectern);
+  Entrepreneur = surf shack beach (shack → businesses/tasks, IG + TikTok
+  stations, goal flagpole, journal table, a rack of 7 boards that unlock with
+  rank); Education = Wall Street (five finance-topic pavilions, Exchange →
+  deadlines/classes/schoolwork goal with a scrolling marquee of your real
+  deadlines, Charging Bull → rank); Elixir = workshop (four hobby bays +
+  mastery island).
+- **Phones are unchanged**: nothing about the device switch changed; the 3D
+  pages are still only reached automatically on desktop-class devices.
+
 ## Beach Explore: a walkable 3D scene (Three.js, no CDN)
 
 A later request asked for the system to go 3D so sectors could be walked
