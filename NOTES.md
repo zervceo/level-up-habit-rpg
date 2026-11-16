@@ -1,5 +1,33 @@
 # Build notes / judgment calls
 
+## Revenue targets (Entrepreneur)
+
+Growing a business needs an outcome number, not only effort, so the beach
+now has a **Revenue Stand** at the pier (click it, or press E).
+
+- **Data** (`app.js`, new localStorage keys only, nothing renamed):
+  `gameoflife:business:revenue:<bizId>` (entries: amount, date, note),
+  `gameoflife:business:revenueGoals` (monthly target per business) and
+  `gameoflife:business:revenueAwards` (which bonuses were already paid).
+- **Scoring**: logging revenue itself pays nothing (so entries can't be
+  padded for points). Crossing **25 / 50 / 75 / 100%** of a month's target
+  pays a one-time **+250 / +250 / +500 / +1000** per business per month,
+  stored on that day as `day.biz._revenuePoints` and counted in
+  `dayBizTotal`, so it follows the same never-negative daily floor as
+  everything else. Setting a target after revenue is already logged pays
+  the milestones already reached. Deleting an entry never claws points
+  back. Two new medals: First Dollar and Goal Getter.
+- **World**: four buoys along the pier light up at 25/50/75/100% of the
+  *combined* progress of every business that has a target, and the
+  lighthouse lamp lights when the combined target is hit. The panel itself
+  works per business.
+- **Phone is untouched**: the 2D Entrepreneur page's layout is unchanged;
+  revenue is logged in the 3D (desktop) scene. The shared score/rank/medals
+  do include the bonuses on every device. If you want a revenue card on the
+  2D page too, that's a small follow-up.
+- Amounts are plain numbers shown with a `$`; there's no currency or tax
+  handling.
+
 ## Blender-authored 3D with clickable hotspots
 
 The four Explore scenes were rebuilt so the geometry is modelled in Blender

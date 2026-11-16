@@ -82,6 +82,16 @@ const ENTREPRENEUR_DAILY = [
 ];
 const BUSINESS_TASK_POINTS = 100;   /* completing any business to-do */
 const BUSINESS_JOURNAL_POINTS = 50; /* logging a journal/notes entry */
+/* Revenue targets: income is logged per business, with an optional monthly
+   target. Crossing 25/50/75/100% of a month's target pays a one-time bonus
+   (per business, per month). Bonuses are never clawed back if an entry is
+   later deleted, in keeping with the "never negative" scoring rule. */
+const REVENUE_MILESTONES = [
+  { pct:25,  points:250 },
+  { pct:50,  points:250 },
+  { pct:75,  points:500 },
+  { pct:100, points:1000 }
+];
 
 /* =========================================================================
    EDUCATION — Wall Street Trading Floor. Classes, deadlines, mastery.
@@ -202,6 +212,10 @@ const ACHIEVEMENTS = [
     check:a => a.businessCount >= 2 },
   { id:"hustler", name:"Hustler", icon:"💼", desc:"Complete 50 business tasks, lifetime.",
     check:a => a.businessTasksDone >= 50 },
+  { id:"first_dollar", name:"First Dollar", icon:"💵", desc:"Log your first revenue.",
+    check:a => a.revenueEntries >= 1 },
+  { id:"revenue_goal", name:"Goal Getter", icon:"📈", desc:"Hit 100% of a monthly revenue target.",
+    check:a => a.revenueGoalsHit >= 1 },
   { id:"deadline_crusher", name:"Deadline Crusher", icon:"⏰", desc:"Complete 10 assignments, lifetime.",
     check:a => a.assignmentsDone >= 10 },
   { id:"wall_street_bound", name:"Wall Street Bound", icon:"🏙️", desc:"Reach Managing Director mastery in any finance topic.",
@@ -238,6 +252,9 @@ const CLASSES_KEY = "gameoflife:edu:classes";
 const ASSIGNMENTS_KEY = "gameoflife:edu:assignments";
 const ELIXIR_MILESTONES_KEY = "gameoflife:elixir:milestones";
 const SPRINT_GOAL_KEY = "gameoflife:entity:sprintGoal";
+const REVENUE_PREFIX = "gameoflife:business:revenue:";
+const REVENUE_GOALS_KEY = "gameoflife:business:revenueGoals";
+const REVENUE_AWARDS_KEY = "gameoflife:business:revenueAwards";
 
 function defaultDay(){ return { deeds:{}, vices:{}, biz:{}, study:{}, craft:{}, locked:false }; }
 function defaultWeek(){ return { schoolwork:false, personalGoal:false, spiritualGoal:false, businessGoal:false }; }
@@ -247,7 +264,8 @@ const state = {
   businesses: [], bizTasks: {}, bizJournal: {},
   classes: [], assignments: [],
   elixirMilestones: {},
-  sprintGoal: null
+  sprintGoal: null,
+  revenue: {}, revenueGoals: {}, revenueAwards: {}
 };
 
 function loadAll(){
@@ -265,6 +283,8 @@ function loadAll(){
       try{ state.bizTasks[key.slice(BIZ_TASKS_PREFIX.length)] = JSON.parse(localStorage.getItem(key)) || []; }catch(e){}
     } else if(key.startsWith(BIZ_JOURNAL_PREFIX)){
       try{ state.bizJournal[key.slice(BIZ_JOURNAL_PREFIX.length)] = JSON.parse(localStorage.getItem(key)) || []; }catch(e){}
+    } else if(key.startsWith(REVENUE_PREFIX)){
+      try{ state.revenue[key.slice(REVENUE_PREFIX.length)] = JSON.parse(localStorage.getItem(key)) || []; }catch(e){}
     }
   }
   try{ state.achievements = JSON.parse(localStorage.getItem(ACH_KEY)) || {}; }catch(e){ state.achievements = {}; }
@@ -280,6 +300,8 @@ function loadAll(){
   try{ state.assignments = JSON.parse(localStorage.getItem(ASSIGNMENTS_KEY)) || []; }catch(e){ state.assignments = []; }
   try{ state.elixirMilestones = JSON.parse(localStorage.getItem(ELIXIR_MILESTONES_KEY)) || {}; }catch(e){ state.elixirMilestones = {}; }
   try{ state.sprintGoal = JSON.parse(localStorage.getItem(SPRINT_GOAL_KEY)) || null; }catch(e){ state.sprintGoal = null; }
+  try{ state.revenueGoals = JSON.parse(localStorage.getItem(REVENUE_GOALS_KEY)) || {}; }catch(e){ state.revenueGoals = {}; }
+  try{ state.revenueAwards = JSON.parse(localStorage.getItem(REVENUE_AWARDS_KEY)) || {}; }catch(e){ state.revenueAwards = {}; }
   if(!localStorage.getItem(PROFILE_KEY)){
     localStorage.setItem(PROFILE_KEY, JSON.stringify({ schemaVersion:3, createdAt: new Date().toISOString() }));
   }
@@ -294,6 +316,9 @@ function saveClasses(){ localStorage.setItem(CLASSES_KEY, JSON.stringify(state.c
 function saveAssignments(){ localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(state.assignments)); }
 function saveElixirMilestones(){ localStorage.setItem(ELIXIR_MILESTONES_KEY, JSON.stringify(state.elixirMilestones)); }
 function saveSprintGoal(){ localStorage.setItem(SPRINT_GOAL_KEY, JSON.stringify(state.sprintGoal)); }
+function saveRevenue(bizId){ localStorage.setItem(REVENUE_PREFIX + bizId, JSON.stringify(state.revenue[bizId] || [])); }
+function saveRevenueGoals(){ localStorage.setItem(REVENUE_GOALS_KEY, JSON.stringify(state.revenueGoals)); }
+function saveRevenueAwards(){ localStorage.setItem(REVENUE_AWARDS_KEY, JSON.stringify(state.revenueAwards)); }
 
 function getDay(date){ if(!state.days[date]) state.days[date] = defaultDay(); return state.days[date]; }
 function getWeek(weekStart){ if(!state.weeks[weekStart]) state.weeks[weekStart] = defaultWeek(); return state.weeks[weekStart]; }
@@ -366,6 +391,7 @@ function dayBizTotal(day){
   let total = ENTREPRENEUR_DAILY.reduce((s,d)=>s + dayBizPoints(day, d.id), 0);
   total += (day.biz._tasksDone || 0) * BUSINESS_TASK_POINTS;
   total += (day.biz._journalEntries || 0) * BUSINESS_JOURNAL_POINTS;
+  total += day.biz._revenuePoints || 0;
   return total;
 }
 
@@ -485,6 +511,59 @@ function sprintHasImprovement(){
 }
 
 /* =========================================================================
+   REVENUE HELPERS — per-business income log, monthly target, milestone pay
+   ========================================================================= */
+function getRevenue(bizId){ if(!state.revenue[bizId]) state.revenue[bizId] = []; return state.revenue[bizId]; }
+function monthKeyOf(dateString){ return dateString.slice(0,7); }
+function bizMonthRevenue(bizId, monthKey){
+  const m = monthKey || monthKeyOf(todayStr());
+  return getRevenue(bizId).filter(e => monthKeyOf(e.date) === m).reduce((s,e)=>s + e.amount, 0);
+}
+function bizLifetimeRevenue(bizId){ return getRevenue(bizId).reduce((s,e)=>s + e.amount, 0); }
+function revenueMilestoneEarned(bizId, pct, monthKey){
+  return !!state.revenueAwards[`${bizId}|${monthKey || monthKeyOf(todayStr())}|${pct}`];
+}
+/* Pays any not-yet-paid milestones for this business's current month onto
+   today's day record. Returns the milestones just earned. */
+function settleRevenueMilestones(bizId){
+  const target = state.revenueGoals[bizId];
+  const earned = [];
+  if(!(target > 0)) return earned;
+  const month = monthKeyOf(todayStr());
+  const total = bizMonthRevenue(bizId, month);
+  for(const m of REVENUE_MILESTONES){
+    const key = `${bizId}|${month}|${m.pct}`;
+    if(total >= target * m.pct / 100 && !state.revenueAwards[key]){
+      state.revenueAwards[key] = true;
+      const day = getDay(todayStr());
+      day.biz._revenuePoints = (day.biz._revenuePoints || 0) + m.points;
+      earned.push(m);
+    }
+  }
+  if(earned.length){ saveRevenueAwards(); saveDay(todayStr()); }
+  return earned;
+}
+function logRevenue(bizId, amount, note){
+  amount = Math.round(Number(amount) * 100) / 100;
+  if(!(amount > 0)) return null;
+  const entry = { id:"r"+Date.now()+Math.random().toString(36).slice(2,6), amount, date: todayStr(), note: (note || "").trim(), ts: Date.now() };
+  getRevenue(bizId).push(entry);
+  saveRevenue(bizId);
+  return { entry, earned: settleRevenueMilestones(bizId) };
+}
+function deleteRevenue(bizId, entryId){
+  state.revenue[bizId] = getRevenue(bizId).filter(e => e.id !== entryId);
+  saveRevenue(bizId);
+}
+function setRevenueGoal(bizId, target){
+  target = Math.round(Number(target) * 100) / 100;
+  if(!(target > 0)){ delete state.revenueGoals[bizId]; saveRevenueGoals(); return []; }
+  state.revenueGoals[bizId] = target;
+  saveRevenueGoals();
+  return settleRevenueMilestones(bizId);
+}
+
+/* =========================================================================
    ACHIEVEMENT AGGREGATES — scans the entire stored history every call.
    ========================================================================= */
 function computeAggregates(){
@@ -501,6 +580,8 @@ function computeAggregates(){
     schoolworkStreak: computeWeeklyGoalStreak("schoolwork", weekStartOf(todayStr())),
     businessCount: state.businesses.length,
     businessTasksDone: Object.values(state.bizTasks).reduce((s,arr)=>s + arr.filter(t=>t.done).length, 0),
+    revenueEntries: Object.values(state.revenue).reduce((s,arr)=>s + arr.length, 0),
+    revenueGoalsHit: Object.keys(state.revenueAwards).filter(k => k.endsWith("|100")).length,
     assignmentsDone: state.assignments.filter(a=>a.done).length,
     hasMDTopic: FINANCE_TOPICS.some(t => financeTopicLifetimePoints(t.id) >= MASTERY_TITLES[MASTERY_TITLES.length-1].score),
     hobbiesWithMilestone: HOBBIES.filter(h => getElixirMilestones(h.id).length >= 1).length,
