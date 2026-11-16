@@ -1,9 +1,12 @@
 /* =========================================================================
-   Elixir Explore — The Workshop. A walkable maker's workshop interior
-   with four corner stations hinting at the sector's hobbies: surfboard
-   shaping, coding, electrical engineering, and art.
+   Elixir Explore — the Workshop. Geometry is authored in Blender
+   (tools/blender/build_elixir.py -> models/elixir.glb): four hobby bays
+   around a central mastery island. Each bay opens that hobby's practice
+   log + milestone checklist, wired to the same data as elixir.html.
    ========================================================================= */
-import { THREE, createRenderer, createCamera, hookResize, createSkyDome, createControls, stepCamera, revealUI } from "./explore-shared.js";
+import { THREE, createRenderer, createCamera, hookResize, createSkyDome, createControls, stepCamera, revealUI,
+         loadGLB, applyRoomEnvironment, prepareModel, failUI } from "./explore-shared.js";
+import { h, ui, createInteraction, afterAction, pop, toast, rankCard } from "./explore-interact.js";
 
 const canvas = document.getElementById("three-canvas");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -11,179 +14,29 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 const renderer = createRenderer(canvas);
 const scene = new THREE.Scene();
 const camera = createCamera();
-camera.position.set(0, 1.7, 16);
+camera.position.set(0, 1.7, 19);
 hookResize(camera, renderer);
 
-/* Warm sawdust-lit interior, barely visible through the skylights */
-createSkyDome(scene, [
-  [0, "#1a0f08"], [0.5, "#4a3522"], [1, "#FF8C42"]
-], 0x3D2A1A, 18, 80);
+createSkyDome(scene, [[0, "#1a0f08"], [0.5, "#4a3522"], [1, "#FF8C42"]], 0x3d2a1a, 120, 400);
+applyRoomEnvironment(renderer, scene, 0.35);
 
-/* ---------- lights ---------- */
-scene.add(new THREE.HemisphereLight(0xFFD9A8, 0x2B1D12, 0.85));
-const overhead = new THREE.DirectionalLight(0xFFE3B8, 1.0);
-overhead.position.set(10, 30, 10);
-scene.add(overhead);
-const warmGlow = new THREE.PointLight(0xFF8C42, 0.7, 36);
-warmGlow.position.set(0, 5, 0);
-scene.add(warmGlow);
+/* ---------- light: a "sun" parked just under the ceiling so the roof doesn't shadow the room ---------- */
+scene.add(new THREE.HemisphereLight(0xffe9c8, 0x4a3322, 0.8));
+const sun = new THREE.DirectionalLight(0xffe2b0, 2.0);
+sun.position.set(-10, 7.6, 12);
+sun.target.position.set(6, 0, -8);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 0.5, far: 60 });
+sun.shadow.bias = -0.0005;
+scene.add(sun, sun.target);
 
-const ROOM = 20;
-const WALL_H = 7;
-
-/* ---------- floor (wood planks) ---------- */
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(ROOM * 2, ROOM * 2),
-  new THREE.MeshLambertMaterial({ color: 0x6B4226 })
-);
-floor.rotation.x = -Math.PI / 2;
-scene.add(floor);
-const plankLine = new THREE.MeshLambertMaterial({ color: 0x4A3522 });
-for(let i = -ROOM; i <= ROOM; i += 2.5){
-  const line = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.01, ROOM * 2), plankLine);
-  line.position.set(i, 0.005, 0);
-  scene.add(line);
+const pendants = [];
+for(const [x, z] of [[-12, -14], [12, -14], [-14, 6], [14, 6], [0, -4], [0, 12]]){
+  const l = new THREE.PointLight(0xffc766, 9, 16, 1.5);
+  l.position.set(x, 4.9, z);
+  scene.add(l); pendants.push(l);
 }
-
-/* ---------- walls ---------- */
-const wallMat = new THREE.MeshLambertMaterial({ color: 0x4A3522 });
-function wall(w, h, d, x, y, z){
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
-  m.position.set(x, y, z);
-  scene.add(m);
-}
-wall(ROOM * 2 + 2, WALL_H, 1, 0, WALL_H / 2, -ROOM);
-wall(ROOM * 2 + 2, WALL_H, 1, 0, WALL_H / 2, ROOM);
-wall(1, WALL_H, ROOM * 2 + 2, -ROOM, WALL_H / 2, 0);
-wall(1, WALL_H, ROOM * 2 + 2, ROOM, WALL_H / 2, 0);
-
-/* pegboard with hanging tool silhouettes on the back wall */
-const pegboard = new THREE.Mesh(new THREE.PlaneGeometry(10, 4), new THREE.MeshLambertMaterial({ color: 0x3D2A1A }));
-pegboard.position.set(0, 4, -ROOM + 0.52);
-scene.add(pegboard);
-const toolMat = new THREE.MeshLambertMaterial({ color: 0xF0E4D4 });
-[-3.5, -1.2, 1.2, 3.5].forEach((x, i) => {
-  const tool = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.4 + (i % 2) * 0.4, 0.1), toolMat);
-  tool.position.set(x, 4.2, -ROOM + 0.58);
-  scene.add(tool);
-});
-
-/* ---------- ceiling with skylight strip ---------- */
-const ceiling = new THREE.Mesh(
-  new THREE.PlaneGeometry(ROOM * 2, ROOM * 2),
-  new THREE.MeshLambertMaterial({ color: 0x3D2A1A, side: THREE.DoubleSide })
-);
-ceiling.rotation.x = Math.PI / 2;
-ceiling.position.y = WALL_H;
-scene.add(ceiling);
-const skylight = new THREE.Mesh(new THREE.PlaneGeometry(4, ROOM * 1.6), new THREE.MeshBasicMaterial({ color: 0xFFE3B8 }));
-skylight.rotation.x = Math.PI / 2;
-skylight.position.y = WALL_H - 0.02;
-scene.add(skylight);
-
-const collidables = [];
-function benchBase(x, z, w = 3.2, d = 1.6, color = 0x8a5a3c){
-  const bench = new THREE.Group();
-  const top = new THREE.Mesh(new THREE.BoxGeometry(w, 0.15, d), new THREE.MeshLambertMaterial({ color }));
-  top.position.y = 1.0;
-  bench.add(top);
-  for(const lx of [-w / 2 + 0.2, w / 2 - 0.2]){
-    for(const lz of [-d / 2 + 0.2, d / 2 - 0.2]){
-      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.0, 6), new THREE.MeshLambertMaterial({ color: 0x3D2A1A }));
-      leg.position.set(lx, 0.5, lz);
-      bench.add(leg);
-    }
-  }
-  bench.position.set(x, 0, z);
-  scene.add(bench);
-  collidables.push({ x, z, radius: Math.max(w, d) / 2 + 0.5 });
-  return bench;
-}
-
-/* ---------- 1. surfboard shaping station ---------- */
-const shapeStation = benchBase(-13, -13);
-const boardBlank = new THREE.Mesh(new THREE.BoxGeometry(0.55, 2.1, 0.1), new THREE.MeshLambertMaterial({ color: 0xFF006E }));
-boardBlank.position.set(-13, 1.9, -13.4);
-boardBlank.rotation.z = 0.08;
-scene.add(boardBlank);
-const finRackPost = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.4, 6), new THREE.MeshLambertMaterial({ color: 0x3D2A1A }));
-finRackPost.position.set(-13 + 1.5, 1.2, -13);
-scene.add(finRackPost);
-const shavings = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.2, 8), new THREE.MeshLambertMaterial({ color: 0xE8DFC8 }));
-shavings.position.set(-13 + 0.9, 0.1, -12.4);
-scene.add(shavings);
-
-/* ---------- 2. coding station ---------- */
-const codeStation = benchBase(13, -13);
-const monitor = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.75, 0.06), new THREE.MeshBasicMaterial({ color: 0x3A86FF }));
-monitor.position.set(13, 1.65, -13.3);
-scene.add(monitor);
-const monitorStand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.3, 0.08), new THREE.MeshLambertMaterial({ color: 0x2B1D12 }));
-monitorStand.position.set(13, 1.22, -13.3);
-scene.add(monitorStand);
-const keyboard = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.04, 0.22), new THREE.MeshLambertMaterial({ color: 0xF0E4D4 }));
-keyboard.position.set(13, 1.08, -12.9);
-scene.add(keyboard);
-const chair = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.08, 10), new THREE.MeshLambertMaterial({ color: 0x3A2A1A }));
-chair.position.set(13, 0.55, -11.7);
-scene.add(chair);
-const chairPost = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.5, 6), new THREE.MeshLambertMaterial({ color: 0x2B1D12 }));
-chairPost.position.set(13, 0.3, -11.7);
-scene.add(chairPost);
-
-/* ---------- 3. electrical engineering station ---------- */
-const eeStation = benchBase(-13, 13);
-const pcb = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.04, 0.6), new THREE.MeshLambertMaterial({ color: 0x1F8A5F }));
-pcb.position.set(-13, 1.09, 13);
-scene.add(pcb);
-const solderIron = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 6), new THREE.MeshLambertMaterial({ color: 0x1A1A2E }));
-solderIron.rotation.z = Math.PI / 3;
-solderIron.position.set(-12.4, 1.22, 13.3);
-scene.add(solderIron);
-const solderTip = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.15, 6), new THREE.MeshBasicMaterial({ color: 0xFFBE0B }));
-solderTip.rotation.z = Math.PI / 3;
-solderTip.position.set(-12.14, 1.0, 13.44);
-scene.add(solderTip);
-const wireCoil = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.04, 8, 16), new THREE.MeshLambertMaterial({ color: 0x3A86FF }));
-wireCoil.rotation.x = Math.PI / 2;
-wireCoil.position.set(-13.7, 1.12, 12.7);
-scene.add(wireCoil);
-
-/* ---------- 4. art station ---------- */
-const easelGroup = new THREE.Group();
-const easelMat = new THREE.MeshLambertMaterial({ color: 0x8a5a3c });
-for(const side of [-1, 1]){
-  const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.0, 6), easelMat);
-  leg.position.set(side * 0.5, 1.0, 0.3 * side);
-  leg.rotation.z = side * 0.18;
-  easelGroup.add(leg);
-}
-const backLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.0, 6), easelMat);
-backLeg.position.set(0, 1.0, -0.5);
-backLeg.rotation.x = -0.2;
-easelGroup.add(backLeg);
-const canvasFrame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.06), new THREE.MeshLambertMaterial({ color: 0xF0E4D4 }));
-canvasFrame.position.set(0, 1.5, 0.15);
-canvasFrame.rotation.x = -0.1;
-easelGroup.add(canvasFrame);
-const paintSplotch = new THREE.Mesh(new THREE.CircleGeometry(0.3, 10), new THREE.MeshBasicMaterial({ color: 0xFF006E }));
-paintSplotch.position.set(0.1, 1.55, 0.19);
-paintSplotch.rotation.x = -0.1;
-easelGroup.add(paintSplotch);
-easelGroup.position.set(13, 0, 13);
-scene.add(easelGroup);
-collidables.push({ x: 13, z: 13, radius: 1.3 });
-const palette = new THREE.Mesh(new THREE.CircleGeometry(0.35, 12), new THREE.MeshLambertMaterial({ color: 0xE8DFC8 }));
-palette.rotation.x = -Math.PI / 2;
-palette.position.set(13 - 1.4, 1.02, 13.6);
-scene.add(palette);
-benchBase(13, 13.6, 2.2, 1.2);
-
-/* ---------- central workbench island (the main collidable landmark) ---------- */
-const island = benchBase(0, 0, 4.4, 2.2, 0x6b4a2a);
-const vice = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.3), new THREE.MeshLambertMaterial({ color: 0x1A1A2E }));
-vice.position.set(0, 1.22, 0.6);
-scene.add(vice);
 
 /* ---------- controls ---------- */
 const controls = createControls({
@@ -191,37 +44,220 @@ const controls = createControls({
   zoneEl: document.getElementById("joystick-zone"),
   nubEl: document.getElementById("joystick-nub")
 });
-const WALL_MARGIN = ROOM - 2;
+const collidables = [
+  ...[-13.5, -12, -10.5].map((x) => ({ x, z: -18.8, radius: 1.0 })), { x: -8.8, z: -19.7, radius: 0.9 },   // shaping bay
+  ...[9.5, 12, 14.5].map((x) => ({ x, z: -19.4, radius: 1.6 })), { x: 15.8, z: -19.7, radius: 0.9 }, { x: 12, z: -17.4, radius: 0.5 }, // coding
+  ...[3.5, 6, 8.5].map((z) => ({ x: -19.4, z, radius: 1.6 })),                                              // electrical
+  { x: 18.5, z: 7.9, radius: 1.1 }, { x: 18.5, z: 4.1, radius: 1.1 }, { x: 19.6, z: 9.4, radius: 1.6 }, { x: 19.8, z: 2.4, radius: 0.8 }, // art
+  ...[-1.8, 0, 1.8].map((x) => ({ x, z: -4, radius: 1.9 }))                                                  // island
+];
 
 /* =========================================================================
-   LOOP
+   Hotspot content — mirrors elixir.html's own handlers
    ========================================================================= */
-let lastT = performance.now();
+const today = () => getDay(todayStr());
+function lifetimePractice(id){
+  let n = 0;
+  for(const d in state.days) n += dayCraftPoints(state.days[d], id);
+  return n;
+}
+function boardsShaped(){
+  return Object.keys(state.days).reduce((s, d) => s + ((state.days[d].craft[SHAPE_BOARD_BONUS.id] && state.days[d].craft[SHAPE_BOARD_BONUS.id].entries) || []).length, 0);
+}
+
+function hobbySpot(id, blurb){
+  const hob = hobbyDef(id);
+  return {
+    title: hob.name, icon: hob.icon, sub: blurb,
+    status: () => (dayCraftPoints(today(), id) > 0 ? "done" : "todo"),
+    link: { href: "elixir.html", label: "Open the Workshop →" },
+    render(body, api){
+      const { checked, total, name } = hobbyMasteryLevel(id);
+      body.append(ui.big(name), ui.bar((checked / total) * 100, `${checked} / ${total} milestones · ${lifetimePractice(id).toLocaleString()} lifetime practice points`));
+      const cur = today().craft[id];
+      body.append(ui.sec("Log practice time today"),
+        ui.btns(...hob.tiers.map((t) => ui.btn(`${t.label} · +${t.points}`, () => {
+          const prev = dayCraftPoints(today(), id);
+          today().craft[id] = { n: t.n, points: t.points };
+          saveDay(todayStr());
+          const delta = t.points - prev;
+          if(delta) pop((delta > 0 ? "+" : "") + delta, delta > 0);
+          afterAction(); api.changed();
+        }, { on: !!(cur && cur.n === t.n) }))));
+      if(id === "surfboard_making"){
+        body.append(ui.sec("Bonus wave 🌊"), ui.muted("Not required, not weekly — a big bonus whenever you finish shaping one."),
+          ui.btns(ui.btn(`🏄 Shape a Board (+${SHAPE_BOARD_BONUS.points})`, () => {
+            const day = today();
+            if(!day.craft[SHAPE_BOARD_BONUS.id]) day.craft[SHAPE_BOARD_BONUS.id] = { entries: [] };
+            day.craft[SHAPE_BOARD_BONUS.id].entries.push({ points: SHAPE_BOARD_BONUS.points, ts: Date.now() });
+            saveDay(todayStr());
+            pop("+" + SHAPE_BOARD_BONUS.points, true);
+            toast("🏄 Board shaped! Bonus banked.");
+            afterAction(); api.changed();
+          })),
+          ui.muted(`${boardsShaped()} board${boardsShaped() === 1 ? "" : "s"} shaped, lifetime`));
+      }
+      const done = getElixirMilestones(id);
+      body.append(ui.sec("Skill progression"), ui.muted("Self-assessed — check one off when you genuinely reach it."));
+      hob.milestones.forEach((m, i) => {
+        const on = done.includes(i);
+        body.append(ui.row(`${i + 1}. ${m}`, null, ui.btn(on ? "✓" : "○", () => {
+          const arr = getElixirMilestones(id);
+          const pos = arr.indexOf(i);
+          if(pos === -1){ arr.push(i); toast("🧰 Milestone checked off!"); } else arr.splice(pos, 1);
+          saveElixirMilestones();
+          afterAction(); api.changed();
+        }, { on }), on));
+      });
+    }
+  };
+}
+
+const SPOTS = {
+  HS_hobby_surfboard_making: hobbySpot("surfboard_making", "Shaping bay · foam, resin & fins"),
+  HS_hobby_coding: hobbySpot("coding", "Code corner · from first syntax to shipped systems"),
+  HS_hobby_electrical: hobbySpot("electrical", "Circuit lab · Ohm's law to original products"),
+  HS_hobby_art: hobbySpot("art", "Art studio · fundamentals to a signature piece"),
+  HS_hub: {
+    title: "Mastery Island", icon: "🛠️", sub: "All four crafts at a glance",
+    status: () => "info",
+    link: { href: "elixir.html", label: "Open the Workshop →" },
+    render(body){
+      body.append(rankCard());
+      body.append(ui.sec(`Today's practice · +${dayCraftTotal(today()).toLocaleString()}`));
+      for(const hob of HOBBIES){
+        const { checked, total, name } = hobbyMasteryLevel(hob.id);
+        body.append(ui.row(`${hob.icon} ${hob.name}`, `${checked}/${total} milestones · today +${dayCraftPoints(today(), hob.id)}`, h("b", null, name)));
+      }
+    }
+  }
+};
+
+const statFn = () => {
+  const all = allTimeScore();
+  const started = HOBBIES.filter((x) => getElixirMilestones(x.id).length >= 1).length;
+  return `${all.toLocaleString()} pts<small>${started}/${HOBBIES.length} hobbies started</small>`;
+};
+
+/* ---------- live screens ---------- */
+const screens = {};
+function setScreen(mesh, draw, w = 512, hgt = 300){
+  const c = document.createElement("canvas");
+  c.width = w; c.height = hgt;
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  mesh.material = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false });
+  const ctx = c.getContext("2d");
+  const s = { ctx, tex, draw, w, h: hgt };
+  draw(ctx, w, hgt, 0);
+  tex.needsUpdate = true;
+  return s;
+}
+function wrap(ctx, text, x, y, maxW, lh){
+  let line = "";
+  for(const word of text.split(" ")){
+    const t = line ? line + " " + word : word;
+    if(ctx.measureText(t).width > maxW && line){ ctx.fillText(line, x, y); y += lh; line = word; } else line = t;
+  }
+  ctx.fillText(line, x, y);
+  return y + lh;
+}
+function drawMilestone(ctx, w, hgt){
+  const hob = hobbyDef("coding");
+  const done = getElixirMilestones("coding");
+  const next = hob.milestones.findIndex((_, i) => !done.includes(i));
+  ctx.fillStyle = "#0a1a2e"; ctx.fillRect(0, 0, w, hgt);
+  ctx.fillStyle = "#3A86FF"; ctx.font = "700 24px monospace"; ctx.fillText("// NEXT MILESTONE", 22, 40);
+  ctx.fillStyle = "#e8f1ff"; ctx.font = "700 30px 'Poppins', sans-serif";
+  const msg = next === -1 ? "All milestones reached. Architect something new." : `${next + 1}. ${hob.milestones[next]}`;
+  wrap(ctx, msg, 22, 96, w - 44, 40);
+  ctx.fillStyle = "#6cffa8"; ctx.font = "700 22px monospace";
+  ctx.fillText(`> ${done.length}/${hob.milestones.length} complete`, 22, hgt - 26);
+}
+function drawCode(ctx, w, hgt){
+  ctx.fillStyle = "#0b1020"; ctx.fillRect(0, 0, w, hgt);
+  const cols = ["#6cffa8", "#8fc4ff", "#ffbe0b", "#ff8c42", "#e8f1ff", "#c792ea"];
+  let seed = 7;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  ctx.font = "20px monospace";
+  for(let i = 0; i < 11; i++){
+    let x = 24 + Math.floor(rnd() * 3) * 22;
+    for(let k = 0; k < 1 + Math.floor(rnd() * 4); k++){
+      const len = 40 + Math.floor(rnd() * 110);
+      ctx.fillStyle = cols[Math.floor(rnd() * cols.length)];
+      ctx.fillRect(x, 28 + i * 24, len, 10);
+      x += len + 14;
+    }
+  }
+}
+function drawTerminal(ctx, w, hgt){
+  const hob = hobbyDef("coding");
+  const n = getElixirMilestones("coding").length;
+  ctx.fillStyle = "#06140c"; ctx.fillRect(0, 0, w, hgt);
+  ctx.fillStyle = "#6cffa8"; ctx.font = "700 24px monospace";
+  ctx.fillText("$ zerv build --craft coding", 20, 42);
+  ctx.fillText(`✓ ${n} / ${hob.milestones.length} milestones`, 20, 84);
+  ctx.fillText(`✓ practice today: +${dayCraftPoints(getDay(todayStr()), "coding")}`, 20, 120);
+  ctx.strokeStyle = "#6cffa8"; ctx.lineWidth = 3; ctx.strokeRect(20, 160, w - 40, 36);
+  ctx.fillRect(24, 164, (w - 48) * (n / hob.milestones.length), 28);
+  ctx.fillText("$ _", 20, 250);
+}
+function drawScope(ctx, w, hgt, t){
+  ctx.fillStyle = "#02140c"; ctx.fillRect(0, 0, w, hgt);
+  ctx.strokeStyle = "rgba(60,255,140,.25)"; ctx.lineWidth = 1;
+  for(let i = 0; i <= 8; i++){ ctx.beginPath(); ctx.moveTo(i * w / 8, 0); ctx.lineTo(i * w / 8, hgt); ctx.stroke(); }
+  for(let i = 0; i <= 6; i++){ ctx.beginPath(); ctx.moveTo(0, i * hgt / 6); ctx.lineTo(w, i * hgt / 6); ctx.stroke(); }
+  ctx.strokeStyle = "#3dff8a"; ctx.lineWidth = 3; ctx.beginPath();
+  for(let x = 0; x <= w; x += 3){
+    const y = hgt / 2 + Math.sin(x * 0.035 + t * 4) * hgt * 0.28 + Math.sin(x * 0.09 + t * 2) * hgt * 0.08;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+function refreshScreens(){
+  for(const k of ["code0", "code1", "code2"]){
+    const s = screens[k];
+    if(!s) continue;
+    s.draw(s.ctx, s.w, s.h, 0);
+    s.tex.needsUpdate = true;
+  }
+}
+
+/* =========================================================================
+   Boot
+   ========================================================================= */
+let ix = null;
+loadGLB("models/elixir.glb").then((gltf) => {
+  scene.add(gltf.scene);
+  const named = prepareModel(gltf.scene);
+  if(named.KEEP_screen_code_0) screens.code0 = setScreen(named.KEEP_screen_code_0, drawMilestone);
+  if(named.KEEP_screen_code_1) screens.code1 = setScreen(named.KEEP_screen_code_1, drawCode);
+  if(named.KEEP_screen_code_2) screens.code2 = setScreen(named.KEEP_screen_code_2, drawTerminal);
+  if(named.KEEP_screen_scope) screens.scope = setScreen(named.KEEP_screen_scope, drawScope, 256, 192);
+  ix = createInteraction({ scene, camera, canvas, uiRoot: document.getElementById("explore-ui"), statFn, onChange: refreshScreens });
+  for(const name in SPOTS) ix.register(named[name], SPOTS[name]);
+  ix.changed();
+  window.__ex = { camera, controls, ix, scene };
+  revealUI();
+  requestAnimationFrame(animate);
+}).catch((e) => { console.error(e); failUI("The model file didn't load."); });
+
+let lastT = performance.now(), frame = 0;
 function animate(t){
   requestAnimationFrame(animate);
   const dt = Math.min(0.05, (t - lastT) / 1000);
   lastT = t;
+  frame++;
 
-  stepCamera(camera, controls, dt, {
-    boundX: WALL_MARGIN, boundZMin: -WALL_MARGIN, boundZMax: WALL_MARGIN, collidables
-  });
+  stepCamera(camera, controls, dt, { boundX: 20.6, boundZMin: -20.6, boundZMax: 20.6, collidables });
 
   if(!reducedMotion){
-    const flicker = 1 + Math.sin(t * 0.005) * 0.1;
-    warmGlow.intensity = 0.7 * flicker;
+    pendants.forEach((l, i) => { l.intensity = 9 * (1 + Math.sin(t * 0.003 + i * 1.9) * 0.03); });
+    if(screens.scope && frame % 4 === 0){
+      screens.scope.draw(screens.scope.ctx, screens.scope.w, screens.scope.h, t / 1000);
+      screens.scope.tex.needsUpdate = true;
+    }
   }
-
+  if(ix) ix.update(t);
   renderer.render(scene, camera);
 }
-requestAnimationFrame(animate);
-
-/* =========================================================================
-   UI handoff
-   ========================================================================= */
-revealUI();
-try{
-  const all = allTimeScore();
-  const started = HOBBIES.filter(h => getElixirMilestones(h.id).length >= 1).length;
-  document.getElementById("exploreStat").innerHTML =
-    `${all.toLocaleString()} pts<small>${started}/${HOBBIES.length} hobbies started</small>`;
-}catch(e){ /* app.js state not available — stat chip just stays blank */ }

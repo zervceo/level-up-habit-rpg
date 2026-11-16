@@ -7,11 +7,17 @@
    same way everywhere.
    ========================================================================= */
 import * as THREE from "./vendor/three.module.min.js";
+import { GLTFLoader } from "./vendor/GLTFLoader.js";
+import { RoomEnvironment } from "./vendor/RoomEnvironment.js";
 
 export function createRenderer(canvas){
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
   return renderer;
 }
 
@@ -99,7 +105,8 @@ export function createControls({ canvas, zoneEl, nubEl }){
   canvas.addEventListener("pointerup", endLook);
   canvas.addEventListener("pointercancel", endLook);
 
-  window.addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; });
+  const typing = (e) => e.target && e.target.matches && e.target.matches("input,textarea,select");
+  window.addEventListener("keydown", (e) => { if(!typing(e)) keys[e.key.toLowerCase()] = true; });
   window.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
 
   function getMove(){
@@ -157,6 +164,39 @@ export function revealUI(){
   const ui = document.getElementById("explore-ui");
   if(loading) loading.style.display = "none";
   if(ui) ui.style.display = "block";
+}
+
+/* ---------- Blender-authored models (.glb exported by tools/blender) ---------- */
+export function loadGLB(url){
+  return new Promise((resolve, reject) => new GLTFLoader().load(url, resolve, undefined, reject));
+}
+
+/* Soft image-based lighting so the PBR materials from Blender read as
+   materials instead of flat colour. Generated procedurally (no HDR file). */
+export function applyRoomEnvironment(renderer, scene, strength = 0.35){
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.userData.envStrength = strength;
+}
+
+/* Shadows + env strength on every mesh; returns a name -> node map so a
+   scene can find HS_* hotspot groups and KEEP_* special meshes. */
+export function prepareModel(root, { shadows = true, envStrength } = {}){
+  const named = {};
+  root.traverse((o) => {
+    if(o.name) named[o.name] = o;
+    if(o.isMesh){
+      if(shadows){ o.castShadow = true; o.receiveShadow = true; }
+      const es = envStrength ?? (root.userData.envStrength ?? 0.35);
+      if(o.material && "envMapIntensity" in o.material) o.material.envMapIntensity = es;
+    }
+  });
+  return named;
+}
+
+export function failUI(msg){
+  const el = document.getElementById("loadingNotice");
+  if(el) el.innerHTML = `<div>Couldn't load the 3D scene</div><div class="sub">${msg}</div><a class="back-chip" href="javascript:history.back()">← Go back</a>`;
 }
 
 export { THREE };

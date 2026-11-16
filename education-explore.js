@@ -1,9 +1,12 @@
 /* =========================================================================
-   Education Explore — a walkable low-poly Wall Street. A canyon of
-   skyscrapers running toward a columned trading-floor building at the
-   far end, with a charging bull statue as the street's landmark.
+   Education Explore — Wall Street at dusk. Geometry is authored in Blender
+   (tools/blender/build_education.py -> models/education.glb). Each finance
+   topic is a street pavilion, the Exchange holds your deadlines + weekly
+   schoolwork goal, and the Charging Bull shows your overall rank.
    ========================================================================= */
-import { THREE, createRenderer, createCamera, hookResize, createSkyDome, createControls, stepCamera, revealUI } from "./explore-shared.js";
+import { THREE, createRenderer, createCamera, hookResize, createSkyDome, createControls, stepCamera, revealUI,
+         loadGLB, applyRoomEnvironment, prepareModel, failUI } from "./explore-shared.js";
+import { h, ui, createInteraction, afterAction, pop, toast, rankCard, weeklyGoalRow } from "./explore-interact.js";
 
 const canvas = document.getElementById("three-canvas");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -11,144 +14,31 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 const renderer = createRenderer(canvas);
 const scene = new THREE.Scene();
 const camera = createCamera();
-camera.position.set(0, 1.7, 46);
+camera.position.set(0, 1.7, 45);
 hookResize(camera, renderer);
 
-/* Cold city-dusk sky — navy fading to a gold haze near the skyline */
-createSkyDome(scene, [
-  [0, "#040a1c"], [0.5, "#0B3D91"], [1, "#D4AF37"]
-], 0x0B3D91, 40, 160);
+createSkyDome(scene, [[0, "#04081a"], [0.45, "#14357a"], [0.8, "#b8665a"], [1, "#f0b36a"]], 0x1c2f5c, 70, 240);
+applyRoomEnvironment(renderer, scene, 0.4);
 
-/* ---------- lights ---------- */
-scene.add(new THREE.HemisphereLight(0xE8EEF7, 0x0A1F3D, 0.85));
-const moon = new THREE.DirectionalLight(0xE8EEF7, 0.9);
-moon.position.set(-30, 60, 20);
-scene.add(moon);
-const neon = new THREE.PointLight(0x00C853, 0.8, 50);
-neon.position.set(0, 10, -40);
-scene.add(neon);
+/* ---------- light ---------- */
+scene.add(new THREE.HemisphereLight(0x9bb4ff, 0x1a1a2e, 0.65));
+const moon = new THREE.DirectionalLight(0xcfd8ff, 1.5);
+moon.position.set(-35, 70, 25);
+moon.target.position.set(0, 0, -5);
+moon.castShadow = true;
+moon.shadow.mapSize.set(2048, 2048);
+Object.assign(moon.shadow.camera, { left: -45, right: 45, top: 80, bottom: -80, near: 10, far: 200 });
+moon.shadow.bias = -0.0006;
+scene.add(moon, moon.target);
 
-/* ---------- street ---------- */
-const STREET_LEN = 90; /* z runs from +45 (start) to -45 (far end) */
-const STREET_W = 14;
-const street = new THREE.Mesh(
-  new THREE.PlaneGeometry(STREET_W, STREET_LEN),
-  new THREE.MeshLambertMaterial({ color: 0x1A1A2E })
-);
-street.rotation.x = -Math.PI / 2;
-scene.add(street);
-
-const gold = new THREE.MeshLambertMaterial({ color: 0xD4AF37 });
-const centerLine = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.02, STREET_LEN - 4), gold);
-centerLine.position.y = 0.011;
-scene.add(centerLine);
-
-const sidewalkMat = new THREE.MeshLambertMaterial({ color: 0x9aa3b5 });
-[-1, 1].forEach((side) => {
-  const sw = new THREE.Mesh(new THREE.BoxGeometry(4, 0.2, STREET_LEN), sidewalkMat);
-  sw.position.set(side * (STREET_W / 2 + 2), 0.1, 0);
-  scene.add(sw);
-});
-
-/* ---------- skyscraper canyon ---------- */
-const bodyMats = [0x0A1F3D, 0x122A4A, 0x1A3560].map(c => new THREE.MeshLambertMaterial({ color: c }));
-const windowMat = new THREE.MeshBasicMaterial({ color: 0xD4AF37 });
-const collidables = [];
-
-function skyscraper(x, z, w, h, d){
-  const g = new THREE.Group();
-  const mat = bodyMats[Math.floor(Math.random() * bodyMats.length)];
-  const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-  body.position.y = h / 2;
-  g.add(body);
-  /* a few lit-window strips, cheap: thin emissive-looking planes on the street-facing face */
-  const faceX = x < 0 ? w / 2 + 0.05 : -w / 2 - 0.05;
-  for(let i = 0; i < 4; i++){
-    const strip = new THREE.Mesh(new THREE.PlaneGeometry(d * 0.7, 0.4), windowMat);
-    strip.position.set(faceX, h * (0.2 + i * 0.2), 0);
-    strip.rotation.y = x < 0 ? Math.PI / 2 : -Math.PI / 2;
-    g.add(strip);
-  }
-  g.position.set(x, 0, z);
-  scene.add(g);
-  collidables.push({ x, z, radius: Math.max(w, d) / 2 + 0.6 });
+const warm = [];
+function glow(x, y, z, color, intensity, dist){
+  const l = new THREE.PointLight(color, intensity, dist, 1.5);
+  l.position.set(x, y, z); scene.add(l); warm.push({ l, base: intensity });
 }
-const SIDE_X = STREET_W / 2 + 5;
-const zSlots = [-38, -26, -14, -2, 10, 22, 34];
-zSlots.forEach((z, i) => {
-  const hL = 14 + ((i * 7) % 20);
-  const hR = 14 + ((i * 11) % 22);
-  skyscraper(-SIDE_X, z, 7, hL, 7);
-  skyscraper(SIDE_X, z, 7, hR, 7);
-});
-
-/* ---------- trading-floor building (the landmark, far end of the street) ---------- */
-const exchange = new THREE.Group();
-const facade = new THREE.Mesh(new THREE.BoxGeometry(16, 10, 6), new THREE.MeshLambertMaterial({ color: 0xF0F4FA }));
-facade.position.y = 5;
-exchange.add(facade);
-const pediment = new THREE.Mesh(new THREE.ConeGeometry(10, 2.5, 4), new THREE.MeshLambertMaterial({ color: 0xD4AF37 }));
-pediment.position.y = 10 + 1.25;
-pediment.rotation.y = Math.PI / 4;
-pediment.scale.set(1.15, 1, 0.5);
-exchange.add(pediment);
-for(let i = 0; i < 6; i++){
-  const col = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 8, 10), new THREE.MeshLambertMaterial({ color: 0xE8EEF7 }));
-  col.position.set(-6.5 + i * 2.6, 4, 3.1);
-  exchange.add(col);
-}
-const ticker = new THREE.Mesh(new THREE.BoxGeometry(12, 0.8, 0.2), new THREE.MeshBasicMaterial({ color: 0x00C853 }));
-ticker.position.set(0, 2.2, 3.2);
-exchange.add(ticker);
-exchange.position.set(0, 0, -44);
-scene.add(exchange);
-collidables.push({ x: 0, z: -44, radius: 9 });
-
-/* ---------- charging bull statue (street landmark, collidable) ---------- */
-const bronze = new THREE.MeshLambertMaterial({ color: 0xB5812E });
-const bronzeDark = new THREE.MeshLambertMaterial({ color: 0x8A6324 });
-const bull = new THREE.Group();
-const bullBody = new THREE.Mesh(new THREE.CapsuleGeometry(1.1, 1.8, 4, 8), bronze);
-bullBody.rotation.z = Math.PI / 2;
-bullBody.position.y = 1.6;
-bull.add(bullBody);
-const bullHead = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.1, 8), bronze);
-bullHead.rotation.x = Math.PI / 2;
-bullHead.position.set(0, 1.5, 1.7);
-bull.add(bullHead);
-for(const side of [-1, 1]){
-  const horn = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.6, 6), gold);
-  horn.position.set(side * 0.35, 2.0, 2.0);
-  horn.rotation.x = -0.6;
-  horn.rotation.z = side * 0.3;
-  bull.add(horn);
-}
-for(const [lx, lz] of [[-0.5, 0.8], [0.5, 0.8], [-0.5, -0.8], [0.5, -0.8]]){
-  const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 1.4, 6), bronzeDark);
-  leg.position.set(lx, 0.7, lz);
-  bull.add(leg);
-}
-bull.position.set(0, 0, 18);
-bull.rotation.y = Math.PI;
-scene.add(bull);
-collidables.push({ x: 0, z: 18, radius: 2.2 });
-
-/* ---------- street lamps ---------- */
-function lamp(x, z){
-  const g = new THREE.Group();
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 4, 6), new THREE.MeshLambertMaterial({ color: 0x1A1A2E }));
-  pole.position.y = 2;
-  g.add(pole);
-  const lightBulb = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), new THREE.MeshBasicMaterial({ color: 0xFFE3B8 }));
-  lightBulb.position.y = 4.1;
-  g.add(lightBulb);
-  g.position.set(x, 0, z);
-  scene.add(g);
-}
-[-28, -8, 12, 32].forEach((z) => {
-  lamp(-STREET_W / 2 - 0.5, z);
-  lamp(STREET_W / 2 + 0.5, z);
-});
+glow(0, 7, 31, 0xffc878, 14, 24);            // bull
+glow(0, 12, -36, 0xffd9a0, 22, 36);          // Exchange
+for(const [x, z] of [[-10.5, 20], [10.5, 6], [-10.5, -8], [10.5, -20], [-10.5, -30]]) glow(x, 4.2, z, 0xfff0c8, 5, 11);
 
 /* ---------- controls ---------- */
 const controls = createControls({
@@ -156,36 +46,198 @@ const controls = createControls({
   zoneEl: document.getElementById("joystick-zone"),
   nubEl: document.getElementById("joystick-nub")
 });
+const TREES = [[-10.5, 14], [10.5, 30], [-10.5, -14], [10.5, -2], [10.5, -26], [-10.5, 36], [10.5, 41]];
+const CARS = [[-5.6, 36], [5.6, 24], [-5.6, 12], [5.6, -4], [-5.6, -14], [5.6, -26]];
+const collidables = [
+  ...[[-10.5, 20], [10.5, 6], [-10.5, -8], [10.5, -20], [-10.5, -30]].map(([x, z]) => ({ x, z, radius: 2.5 })),
+  ...[28, 31, 34].map((z) => ({ x: 0, z, radius: 3.3 })),
+  ...CARS.map(([x, z]) => ({ x, z, radius: 2.2 })),
+  ...TREES.map(([x, z]) => ({ x, z, radius: 0.9 }))
+];
 
 /* =========================================================================
-   LOOP
+   Hotspot content — mirrors education.html's own handlers
    ========================================================================= */
+const today = () => getDay(todayStr());
+
+function topicSpot(id, blurb){
+  const t = topicDef(id);
+  return {
+    title: t.name, icon: t.icon, sub: blurb,
+    status: () => (dayStudyPoints(today(), id) > 0 ? "done" : "todo"),
+    link: { href: "education.html", label: "Open the Trading Floor →" },
+    render(body, api){
+      const lifetime = financeTopicLifetimePoints(id);
+      const { cur, next } = masteryTitleForScore(lifetime);
+      const span = next ? next.score - cur.score : 1;
+      const into = next ? lifetime - cur.score : 1;
+      body.append(ui.big(cur.title),
+        ui.bar(next ? (into / span) * 100 : 100,
+          next ? `${into.toLocaleString()} / ${span.toLocaleString()} to ${next.title}` : `${lifetime.toLocaleString()} lifetime — Managing Director reached`));
+      const curRec = today().study[id];
+      body.append(ui.sec("Log study time today"),
+        ui.btns(...t.tiers.map((tier) => ui.btn(`${tier.label} · +${tier.points}`, () => {
+          const prev = dayStudyPoints(today(), id);
+          today().study[id] = { n: tier.n, points: tier.points };
+          saveDay(todayStr());
+          const delta = tier.points - prev;
+          if(delta) pop((delta > 0 ? "+" : "") + delta, delta > 0);
+          afterAction(); api.changed();
+        }, { on: !!(curRec && curRec.n === tier.n) }))));
+      body.append(ui.sec("The ladder"),
+        ...MASTERY_TITLES.map((m, i) => ui.row(m.title, `${m.score.toLocaleString()}+ lifetime pts`,
+          m.title === cur.title ? h("b", null, "◀ you") : null, lifetime >= m.score && m.title !== cur.title)));
+    }
+  };
+}
+
+function classCountRows(){
+  return state.classes.map((c) => {
+    const all = state.assignments.filter((a) => a.classId === c.id);
+    return ui.row(c.name, `${all.filter((a) => !a.done).length} open · ${all.filter((a) => a.done).length} done`);
+  });
+}
+
+const SPOTS = {
+  HS_topic_accounting: topicSpot("accounting", "Finance mastery · Wall Street ladder"),
+  HS_topic_statements: topicSpot("statements", "Finance mastery · Wall Street ladder"),
+  HS_topic_corp_finance: topicSpot("corp_finance", "Finance mastery · Wall Street ladder"),
+  HS_topic_investing: topicSpot("investing", "Finance mastery · Wall Street ladder"),
+  HS_topic_valuation: topicSpot("valuation", "Finance mastery · Wall Street ladder"),
+
+  HS_exchange: {
+    title: "The Trading Floor", icon: "🏛️", sub: "Deadlines, classes & your weekly schoolwork goal",
+    status: () => {
+      const urgent = upcomingAssignments(ASSIGNMENT_DUE_SOON_DAYS).length > 0;
+      return urgent || !getWeek(weekStartOf(todayStr())).schoolwork ? "todo" : "done";
+    },
+    link: { href: "education.html", label: "Open the Trading Floor →" },
+    render(body, api){
+      body.append(ui.sec("This week"), weeklyGoalRow("schoolwork", api));
+      const open = state.assignments.filter((a) => !a.done).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+      body.append(ui.sec(`Deadlines · ${open.length} open`));
+      if(!open.length) body.append(ui.muted("Nothing due. You're ahead of the market. 📈"));
+      for(const a of open.slice(0, 7)){
+        const overdue = a.dueDate < todayStr();
+        const out = daysBetween(todayStr(), a.dueDate);
+        const when = overdue ? "OVERDUE" : out === 0 ? "Due today" : `Due in ${out}d`;
+        body.append(ui.row(a.title, `${classNameFor(a.classId)} · ${when}`,
+          ui.btn("✓ Done", () => {
+            const x = state.assignments.find((q) => q.id === a.id);
+            if(!x || x.done) return;
+            x.done = true;
+            saveAssignments();
+            const day = today();
+            day.study._assignmentsDone = (day.study._assignmentsDone || 0) + 1;
+            saveDay(todayStr());
+            pop("+" + ASSIGNMENT_DONE_POINTS, true);
+            afterAction(); api.changed();
+          })));
+      }
+      if(open.length > 7) body.append(ui.muted(`+${open.length - 7} more on the Trading Floor page`));
+
+      body.append(ui.sec("Add an assignment"));
+      if(!state.classes.length){
+        const ci = h("input", { class: "ix-in", type: "text", placeholder: "Add your first class (e.g. Econ 101)" });
+        const addClass = () => {
+          if(!ci.value.trim()) return;
+          state.classes.push({ id: "cls" + Date.now(), name: ci.value.trim() });
+          saveClasses(); api.changed();
+        };
+        ci.addEventListener("keydown", (e) => { if(e.key === "Enter") addClass(); });
+        body.append(h("div", { style: "display:flex;gap:6px" }, ci, ui.btn("Add class", addClass)));
+      } else {
+        const cls = h("select", { class: "ix-in" }, ...state.classes.map((c) => h("option", { value: c.id }, c.name)));
+        const title = h("input", { class: "ix-in", type: "text", placeholder: "Assignment title" });
+        const due = h("input", { class: "ix-in", type: "date" });
+        body.append(cls, h("div", { style: "height:6px" }), title, h("div", { style: "height:6px" }), due,
+          ui.btns(ui.btn("Add assignment", () => {
+            if(!title.value.trim() || !due.value){ toast("Give it a title and a due date."); return; }
+            state.assignments.push({ id: "asg" + Date.now(), classId: cls.value, title: title.value.trim(), dueDate: due.value, done: false });
+            saveAssignments(); api.changed();
+          })));
+        body.append(ui.sec("Classes"), ...classCountRows());
+      }
+    }
+  },
+
+  HS_bull: {
+    title: "The Charging Bull", icon: "🐂", sub: "Your overall rank across all four sectors",
+    status: () => "info",
+    link: { href: "index.html", label: "Open HQ →" },
+    render(body){
+      body.append(rankCard());
+      body.append(ui.sec("Finance titles"),
+        ...FINANCE_TOPICS.map((t) => ui.row(`${t.icon} ${t.name}`, null, h("b", null, masteryTitleForScore(financeTopicLifetimePoints(t.id)).cur.title))));
+    }
+  }
+};
+
+const statFn = () => {
+  const all = allTimeScore();
+  const n = state.classes.length;
+  return `${all.toLocaleString()} pts<small>${n} class${n === 1 ? "" : "es"} tracked</small>`;
+};
+
+/* ---------- the Exchange marquee: your deadlines, scrolling ---------- */
+let ticker = null, tickerTex = null;
+const TICK_VISIBLE = 1664;     // px that fit the 26m x 1m band at 64px tall
+function paintTicker(){
+  if(!ticker) return;
+  const open = state.assignments.filter((a) => !a.done).sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 6);
+  const t = todayStr();
+  const parts = open.map((a) => {
+    const out = daysBetween(t, a.dueDate);
+    return `${a.title} (${classNameFor(a.classId)}) ${a.dueDate < t ? "OVERDUE" : out === 0 ? "DUE TODAY" : "in " + out + "d"}`;
+  });
+  const msg = (parts.length ? "▶ DEADLINES  " + parts.join("   ◆   ") : "▶ NO DEADLINES — YOU'RE AHEAD OF THE MARKET") +
+    `   ◆   ZERV LEVEL UP  ${allTimeScore().toLocaleString()} PTS   ◆   `;
+  const c = document.createElement("canvas");
+  const ctx = c.getContext("2d");
+  ctx.font = "700 40px 'Poppins', sans-serif";
+  const P = Math.max(TICK_VISIBLE, Math.ceil(ctx.measureText(msg).width) + 40);
+  c.width = P * 2; c.height = 64;
+  ctx.fillStyle = "#031a0c"; ctx.fillRect(0, 0, c.width, 64);
+  ctx.font = "700 40px 'Poppins', sans-serif";
+  ctx.fillStyle = "#3dff8a"; ctx.textBaseline = "middle";
+  ctx.fillText(msg, 10, 34); ctx.fillText(msg, P + 10, 34);
+  if(tickerTex) tickerTex.dispose();
+  tickerTex = new THREE.CanvasTexture(c);
+  tickerTex.colorSpace = THREE.SRGBColorSpace;
+  tickerTex.wrapS = THREE.RepeatWrapping;
+  tickerTex.repeat.set(TICK_VISIBLE / c.width, 1);
+  tickerTex.userData.period = P / c.width;
+  ticker.material = new THREE.MeshBasicMaterial({ map: tickerTex, toneMapped: false });
+}
+
+/* =========================================================================
+   Boot
+   ========================================================================= */
+let ix = null;
+loadGLB("models/education.glb").then((gltf) => {
+  scene.add(gltf.scene);
+  const named = prepareModel(gltf.scene);
+  ticker = named.KEEP_ticker || null;
+  ix = createInteraction({ scene, camera, canvas, uiRoot: document.getElementById("explore-ui"), statFn, onChange: paintTicker });
+  for(const name in SPOTS) ix.register(named[name], SPOTS[name]);
+  ix.changed();
+  window.__ex = { camera, controls, ix, scene };
+  revealUI();
+  requestAnimationFrame(animate);
+}).catch((e) => { console.error(e); failUI("The model file didn't load."); });
+
 let lastT = performance.now();
 function animate(t){
   requestAnimationFrame(animate);
   const dt = Math.min(0.05, (t - lastT) / 1000);
   lastT = t;
 
-  stepCamera(camera, controls, dt, {
-    boundX: STREET_W / 2 + 5.5, boundZMin: -48, boundZMax: 44, collidables
-  });
+  stepCamera(camera, controls, dt, { boundX: 12.6, boundZMin: -27.5, boundZMax: 47, collidables });
 
-  if(!reducedMotion){
-    const flicker = 1 + Math.sin(t * 0.004) * 0.15;
-    neon.intensity = 0.8 * flicker;
+  if(tickerTex && !reducedMotion){
+    tickerTex.offset.x = (tickerTex.offset.x + dt * 0.012) % tickerTex.userData.period;
   }
-
+  if(!reducedMotion) warm.forEach((w, i) => { w.l.intensity = w.base * (1 + Math.sin(t * 0.004 + i * 1.3) * 0.05); });
+  if(ix) ix.update(t);
   renderer.render(scene, camera);
 }
-requestAnimationFrame(animate);
-
-/* =========================================================================
-   UI handoff
-   ========================================================================= */
-revealUI();
-try{
-  const all = allTimeScore();
-  const n = (typeof state !== "undefined" && state.classes) ? state.classes.length : 0;
-  document.getElementById("exploreStat").innerHTML =
-    `${all.toLocaleString()} pts<small>${n} class${n===1?"":"es"} tracked</small>`;
-}catch(e){ /* app.js state not available — stat chip just stays blank */ }

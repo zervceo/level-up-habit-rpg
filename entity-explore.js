@@ -1,9 +1,12 @@
 /* =========================================================================
-   Entity Explore — The Vitruvian Chamber. A walkable Renaissance study
-   room built around Leonardo's circle-and-square construction, inlaid
-   in the floor, with a central pedestal and study-desk props.
+   Entity Explore — The Vitruvian Study. Geometry is authored in Blender
+   (tools/blender/build_entity.py -> models/entity.glb); this file lights
+   it, makes the HS_* groups clickable, and wires each one to the same data
+   the 2D Study / Practice Log use.
    ========================================================================= */
-import { THREE, createRenderer, createCamera, hookResize, createSkyDome, createControls, stepCamera, revealUI } from "./explore-shared.js";
+import { THREE, createRenderer, createCamera, hookResize, createSkyDome, createControls, stepCamera, revealUI,
+         loadGLB, applyRoomEnvironment, prepareModel, failUI } from "./explore-shared.js";
+import { h, ui, createInteraction, todayLocked, afterAction, pop, toast, rankCard, weeklyGoalRow } from "./explore-interact.js";
 
 const canvas = document.getElementById("three-canvas");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -11,139 +14,56 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 const renderer = createRenderer(canvas);
 const scene = new THREE.Scene();
 const camera = createCamera();
-camera.position.set(0, 1.7, 18);
+camera.position.set(0, 1.7, 20.5);
 hookResize(camera, renderer);
 
-/* Dusk-parchment sky, barely visible through the oculus */
-createSkyDome(scene, [
-  [0, "#140d08"], [0.5, "#3b2a18"], [1, "#9C4A3C"]
-], 0x3b2a18, 20, 90);
+createSkyDome(scene, [[0, "#2a4a86"], [0.5, "#7a9ccf"], [1, "#f3d3a0"]], 0x2a1d10, 70, 260);
+applyRoomEnvironment(renderer, scene, 0.32);
 
-/* ---------- lights ---------- */
-scene.add(new THREE.HemisphereLight(0xC9A227, 0x2A1D10, 0.75));
-const beam = new THREE.DirectionalLight(0xFFE3B8, 1.15);
-beam.position.set(0, 40, 0);
-scene.add(beam);
-const warmFill = new THREE.PointLight(0xC9A227, 0.6, 40);
-warmFill.position.set(0, 6, 0);
-scene.add(warmFill);
+/* ---------- light: warm interior + a real sunbeam through the oculus ---------- */
+scene.add(new THREE.HemisphereLight(0xfff1d6, 0x3b2a18, 0.7));
+const sun = new THREE.DirectionalLight(0xffe3b8, 2.6);
+sun.position.set(-3.49, 40, -2.32);
+sun.target.position.set(3, 0, 2);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -26, right: 26, top: 26, bottom: -26, near: 1, far: 90 });
+sun.shadow.bias = -0.0004;
+scene.add(sun, sun.target);
 
-const ROOM = 26; /* half-size of the square chamber interior */
-const WALL_H = 9;
-
-/* ---------- floor ---------- */
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(ROOM * 2, ROOM * 2),
-  new THREE.MeshLambertMaterial({ color: 0x3B2A18 })
-);
-floor.rotation.x = -Math.PI / 2;
-scene.add(floor);
-
-/* ---------- the circle-and-square inlay, flat on the floor ---------- */
-const gold = new THREE.MeshLambertMaterial({ color: 0xC9A227 });
-const sanguine = new THREE.MeshLambertMaterial({ color: 0x9C4A3C });
-const ring = new THREE.Mesh(new THREE.TorusGeometry(9, 0.1, 8, 48), gold);
-ring.rotation.x = Math.PI / 2;
-ring.position.y = 0.02;
-scene.add(ring);
-
-function floorSquareEdge(len, x, z, rotY){
-  const edge = new THREE.Mesh(new THREE.BoxGeometry(len, 0.04, 0.2), gold);
-  edge.position.set(x, 0.02, z);
-  edge.rotation.y = rotY;
-  scene.add(edge);
-}
-const sq = 9 * 1.41; /* square tangent to the circle */
-floorSquareEdge(sq, 0, -sq / 2, 0);
-floorSquareEdge(sq, 0, sq / 2, 0);
-floorSquareEdge(sq, -sq / 2, 0, Math.PI / 2);
-floorSquareEdge(sq, sq / 2, 0, Math.PI / 2);
-
-/* radiating construction lines */
-for(let i = 0; i < 8; i++){
-  const ang = (i / 8) * Math.PI * 2;
-  const line = new THREE.Mesh(new THREE.BoxGeometry(9, 0.02, 0.06), sanguine);
-  line.position.set(Math.cos(ang) * 4.5, 0.015, Math.sin(ang) * 4.5);
-  line.rotation.y = -ang;
-  scene.add(line);
+const candleLights = [];
+for(const [x, z] of [[-19, -2.0], [-19, 2.0], [19, 8]]){
+  const l = new THREE.PointLight(0xffa24a, 6, 12, 1.6);
+  l.position.set(x, 1.9, z);
+  scene.add(l); candleLights.push(l);
 }
 
-/* ---------- central pedestal (the collidable landmark) ---------- */
-const pedestal = new THREE.Group();
-const plinth = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.3, 1.3, 16), new THREE.MeshLambertMaterial({ color: 0xEFE3C4 }));
-plinth.position.y = 0.65;
-pedestal.add(plinth);
-const globe = new THREE.Mesh(new THREE.SphereGeometry(0.7, 20, 16), gold);
-globe.position.y = 1.3 + 0.7;
-pedestal.add(globe);
-const globeRing = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.04, 8, 32), sanguine);
-globeRing.position.y = globe.position.y;
-globeRing.rotation.x = Math.PI / 2.3;
-pedestal.add(globeRing);
-scene.add(pedestal);
-
-/* ---------- walls ---------- */
-const wallMat = new THREE.MeshLambertMaterial({ color: 0xD8C9A3 });
-function wall(w, h, d, x, y, z){
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
-  m.position.set(x, y, z);
-  scene.add(m);
-  return m;
+/* the visible shaft of sunlight + drifting dust */
+const shaftTop = new THREE.Vector3(0, 18.5, 0), shaftBot = new THREE.Vector3(3, 0, 2);
+const shaftLen = shaftTop.distanceTo(shaftBot);
+const shaftQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), shaftTop.clone().sub(shaftBot).normalize());
+for(const [k, op] of [[1.0, 0.035], [0.82, 0.03], [0.62, 0.03], [0.4, 0.03]]){
+  const shaft = new THREE.Mesh(
+    new THREE.CylinderGeometry(4.7 * k, 5.0 * k, shaftLen, 40, 1, true),
+    new THREE.MeshBasicMaterial({ color: 0xffe8b8, transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, fog: false })
+  );
+  shaft.position.copy(shaftTop).add(shaftBot).multiplyScalar(0.5);
+  shaft.quaternion.copy(shaftQuat);
+  scene.add(shaft);
 }
-wall(ROOM * 2 + 2, WALL_H, 1, 0, WALL_H / 2, -ROOM);
-wall(ROOM * 2 + 2, WALL_H, 1, 0, WALL_H / 2, ROOM);
-wall(1, WALL_H, ROOM * 2 + 2, -ROOM, WALL_H / 2, 0);
-wall(1, WALL_H, ROOM * 2 + 2, ROOM, WALL_H / 2, 0);
 
-/* window insets on the walls for visual interest */
-const windowMat = new THREE.MeshBasicMaterial({ color: 0x9C4A3C });
-[-14, 14].forEach((x) => {
-  const win = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 4), windowMat);
-  win.position.set(x, 5, -ROOM + 0.51);
-  scene.add(win);
-});
-
-/* ---------- ceiling with an oculus (open circle) ---------- */
-const ceiling = new THREE.Mesh(
-  new THREE.RingGeometry(5, ROOM * 1.5, 24),
-  new THREE.MeshLambertMaterial({ color: 0xEFE3C4, side: THREE.DoubleSide })
-);
-ceiling.rotation.x = Math.PI / 2;
-ceiling.position.y = WALL_H;
-scene.add(ceiling);
-
-/* ---------- draftsman's table + scrolls (a side prop) ---------- */
-const table = new THREE.Group();
-const tableTop = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.15, 1.6), new THREE.MeshLambertMaterial({ color: 0x6b4a2a }));
-tableTop.position.y = 1.0;
-tableTop.rotation.x = -0.18;
-table.add(tableTop);
-for(let i = 0; i < 4; i++){
-  const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.0, 6), new THREE.MeshLambertMaterial({ color: 0x4a3521 }));
-  leg.position.set((i % 2 ? 1.3 : -1.3), 0.5, (i < 2 ? 0.6 : -0.6));
-  table.add(leg);
+const MOTES = 220;
+const moteGeo = new THREE.BufferGeometry();
+const motePos = new Float32Array(MOTES * 3), moteSeed = [];
+for(let i = 0; i < MOTES; i++){
+  const t = Math.random(), a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * 4.5;
+  const c = shaftBot.clone().lerp(shaftTop, t);
+  motePos.set([c.x + Math.cos(a) * r, c.y, c.z + Math.sin(a) * r], i * 3);
+  moteSeed.push({ s: 0.15 + Math.random() * 0.25, p: Math.random() * 6.28 });
 }
-const scroll = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.2, 8), new THREE.MeshLambertMaterial({ color: 0xEFE3C4 }));
-scroll.rotation.z = Math.PI / 2;
-scroll.position.set(0.3, 1.15, 0);
-table.add(scroll);
-table.position.set(-18, 0, -16);
-table.rotation.y = 0.6;
-scene.add(table);
-
-/* candle stands along the walls */
-function candle(x, z){
-  const g = new THREE.Group();
-  const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.1, 1.6, 6), gold);
-  stand.position.y = 0.8;
-  g.add(stand);
-  const flame = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.2, 6), new THREE.MeshBasicMaterial({ color: 0xFFBE0B }));
-  flame.position.y = 1.65;
-  g.add(flame);
-  g.position.set(x, 0, z);
-  scene.add(g);
-}
-[[-22, -22], [22, -22], [-22, 22], [22, 22]].forEach(([x, z]) => candle(x, z));
+moteGeo.setAttribute("position", new THREE.BufferAttribute(motePos, 3));
+const motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({ color: 0xfff1cc, size: 0.07, transparent: true, opacity: 0.55, depthWrite: false, fog: false }));
+scene.add(motes);
 
 /* ---------- controls ---------- */
 const controls = createControls({
@@ -151,41 +71,210 @@ const controls = createControls({
   zoneEl: document.getElementById("joystick-zone"),
   nubEl: document.getElementById("joystick-nub")
 });
-const WALL_MARGIN = ROOM - 2;
+const BOUND = 21.6;
 const collidables = [
-  { x: 0, z: 0, radius: 2.0 },
-  { x: -18, z: -16, radius: 2.0 }
+  { x: 0, z: 0, radius: 3.2 },
+  ...[18, 90, 162, 234, 306].map((d) => {
+    const a = d * Math.PI / 180;
+    return { x: 12.3 * Math.sin(a), z: -12.3 * Math.cos(a), radius: 1.15 };
+  }),
+  { x: 16.6, z: 9.2, radius: 1.1 },      // sprint kiosk
+  { x: -19, z: 0, radius: 2.7 },         // lectern + candelabras
+  { x: -16, z: -19, radius: 2.4 }        // drafting table
 ];
 
 /* =========================================================================
-   LOOP
+   Hotspot content — each mirrors what the 2D pages already do
    ========================================================================= */
+const today = () => getDay(todayStr());
+function guard(){
+  if(todayLocked()){ toast("🔒 Today is sealed and can't be edited."); return true; }
+  return false;
+}
+function daysThisWeekLogged(id){
+  const wk = weekStartOf(todayStr());
+  let n = 0;
+  for(let i = 0; i < 7; i++){
+    const d = state.days[addDays(wk, i)];
+    if(d && dayDeedPoints(d, id) > 0) n++;
+  }
+  return n;
+}
+
+function deedSpot(id, blurb){
+  const def = deedDef(id);
+  return {
+    title: def.name, icon: def.icon, sub: blurb,
+    status: () => (dayDeedPoints(today(), id) > 0 ? "done" : "todo"),
+    link: { href: "chronicle.html", label: "Open the full Practice Log →" },
+    render(body, api){
+      const day = today();
+      const pts = dayDeedPoints(day, id);
+      const locked = !!day.locked;
+      body.append(ui.big(pts > 0 ? `+${pts}` : "—"), ui.muted("points from this deed today"));
+      if(locked) body.append(ui.lock());
+      body.append(ui.sec("Log it"));
+      if(def.type === "flat"){
+        const on = !!(day.deeds[id] && day.deeds[id].on);
+        body.append(ui.row(on ? "Logged today" : "Not logged yet", `+${def.points} pts`,
+          ui.btn(on ? "✓ Logged" : `Log +${def.points}`, () => {
+            if(guard()) return;
+            const was = !!(today().deeds[id] && today().deeds[id].on);
+            today().deeds[id] = { on: !was };
+            saveDay(todayStr());
+            pop((was ? "-" : "+") + def.points, !was);
+            afterAction(); api.changed();
+          }, { on, disabled: locked })));
+      } else {
+        const cur = day.deeds[id];
+        body.append(ui.btns(
+          ...def.tiers.map((t) => ui.btn(`${t.label} · +${t.points}`, () => {
+            if(guard()) return;
+            const prev = dayDeedPoints(today(), id);
+            today().deeds[id] = { n: t.n, points: t.points };
+            saveDay(todayStr());
+            const delta = t.points - prev;
+            if(delta) pop((delta > 0 ? "+" : "") + delta, delta > 0);
+            afterAction(); api.changed();
+          }, { on: !!(cur && cur.n === t.n), disabled: locked })),
+          cur ? ui.btn("clear", () => {
+            if(guard()) return;
+            delete today().deeds[id];
+            saveDay(todayStr());
+            afterAction(); api.changed();
+          }, { alt: true, disabled: locked }) : null));
+      }
+      body.append(ui.sec("This week"), ui.bar((daysThisWeekLogged(id) / 7) * 100, `${daysThisWeekLogged(id)} of 7 days logged`));
+    }
+  };
+}
+
+const SPOTS = {
+  HS_vitruvian: {
+    title: "The Vitruvian Figure", icon: "📐", sub: "Your overall standing in ZERV LEVEL UP",
+    status: () => "info",
+    link: { href: "entity-arena.html", label: "Open the Study →" },
+    render(body){
+      body.append(rankCard());
+      const t = todayStr();
+      body.append(ui.sec("Scores"),
+        ui.row("Today", null, h("b", null, dayNetScore(t).toLocaleString())),
+        ui.row("This week", null, h("b", null, weekNetScore(weekStartOf(t)).toLocaleString())),
+        ui.row("Medals earned", null, h("b", null, `${Object.keys(state.achievements).length} / ${ACHIEVEMENTS.length}`)));
+      const { idx } = rankInfoForScore(allTimeScore());
+      body.append(ui.sec("Rank ladder"),
+        ...RANK_TIERS.map((r, i) => ui.row(`${r.boardIcon} ${r.rank}`, `${r.score.toLocaleString()}+ pts · ${r.board}`, i === idx ? h("b", null, "◀ you") : null, i < idx)));
+    }
+  },
+  HS_deed_sprint_training: deedSpot("sprint_training", "Physical · flat bonus"),
+  HS_deed_strength_training: deedSpot("strength_training", "Physical · flat bonus"),
+  HS_deed_surf_session: deedSpot("surf_session", "Physical · flat bonus"),
+  HS_deed_reading: deedSpot("reading", "Spiritual · tiered by minutes"),
+  HS_deed_journaling: deedSpot("journaling", "Spiritual · tiered by minutes"),
+
+  HS_sprint: {
+    title: "Sprint Quest", icon: "⏱️", sub: "Division 1 by your 21st birthday",
+    status: () => (state.sprintGoal && state.sprintGoal.event ? "info" : "todo"),
+    link: { href: "entity-arena.html", label: "Open the Study →" },
+    render(body, api){
+      const days = Math.max(0, daysBetween(todayStr(), SPRINT_DEADLINE));
+      body.append(ui.big(days.toLocaleString()), ui.muted(`days until ${SPRINT_DEADLINE} (your 21st birthday)`));
+      const g = state.sprintGoal;
+      if(!(g && g.event)){
+        const ev = h("select", { class: "ix-in" }, ...["60m", "100m", "200m", "400m"].map((e) => h("option", { value: e, selected: e === "100m" }, e)));
+        const cur = h("input", { class: "ix-in", type: "number", step: "0.01", min: "0", placeholder: "Current PR (seconds)" });
+        const tgt = h("input", { class: "ix-in", type: "number", step: "0.01", min: "0", placeholder: "Target / D1 time (seconds)" });
+        body.append(ui.sec("Set your Sprint Quest"), ev, h("div", { style: "height:6px" }), cur, h("div", { style: "height:6px" }), tgt,
+          ui.btns(ui.btn("Set my Sprint Quest", () => {
+            const targetPR = Number(tgt.value), currentPR = Number(cur.value);
+            if(!targetPR || targetPR <= 0){ toast("Enter a target time to continue."); return; }
+            state.sprintGoal = { event: ev.value, unit: "sec", targetPR, history: currentPR > 0 ? [{ date: todayStr(), time: currentPR }] : [] };
+            saveSprintGoal();
+            toast("⚡ Sprint Quest set. Let's move.");
+            afterAction(); api.changed();
+          })));
+        return;
+      }
+      const best = sprintBestTime();
+      body.append(ui.sec(`${g.event} · target ${g.targetPR}s`),
+        ui.row("Best time", null, h("b", null, best !== null ? `${best}s` : "not logged yet")));
+      if(best !== null){
+        const start = g.history[0].time;
+        const span = Math.max(0.01, start - g.targetPR);
+        body.append(ui.bar(Math.min(100, (Math.max(0, start - best) / span) * 100),
+          best <= g.targetPR ? "🎉 Target hit or beaten!" : `${(best - g.targetPR).toFixed(2)}s to go`));
+      } else body.append(ui.muted("Log your first time to start tracking progress."));
+      const inp = h("input", { class: "ix-in", type: "number", step: "0.01", min: "0", placeholder: "New time logged today (seconds)" });
+      body.append(ui.sec("Log a time"), inp, ui.btns(ui.btn("🏁 Log time", () => {
+        const time = Number(inp.value);
+        if(!time || time <= 0) return;
+        const prev = sprintBestTime();
+        g.history.push({ date: todayStr(), time });
+        saveSprintGoal();
+        toast(prev === null || time < prev ? `🏅 New PR: ${time}s!` : `Time logged: ${time}s`);
+        afterAction(); api.changed();
+      })));
+      const recent = g.history.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+      if(recent.length) body.append(ui.sec("Recent"), ...recent.map((x) => ui.row(x.date, null, h("b", null, `${x.time}s`))));
+    }
+  },
+
+  HS_weekly: {
+    title: "Weekly Vows", icon: "🙏", sub: "Personal + spiritual · bonus points, no penalty for skipping",
+    status: () => {
+      const w = getWeek(weekStartOf(todayStr()));
+      return w.personalGoal && w.spiritualGoal ? "done" : "todo";
+    },
+    link: { href: "entity-arena.html", label: "Open the Study →" },
+    render(body, api){
+      body.append(ui.sec("This week"), weeklyGoalRow("personalGoal", api), weeklyGoalRow("spiritualGoal", api));
+      const wk = weekStartOf(todayStr());
+      body.append(ui.sec("Streaks"),
+        ui.row("🎯 Personal Goal", null, h("b", null, `${computeWeeklyGoalStreak("personalGoal", wk)} wk`)),
+        ui.row("🙏 Spiritual Goal", null, h("b", null, `${computeWeeklyGoalStreak("spiritualGoal", wk)} wk`)));
+    }
+  }
+};
+
+const statFn = () => {
+  const all = allTimeScore();
+  return `${all.toLocaleString()} pts<small>${rankInfoForScore(all).cur.rank}</small>`;
+};
+
+/* =========================================================================
+   Boot: load the Blender model, then run
+   ========================================================================= */
+let ix = null;
+loadGLB("models/entity.glb").then((gltf) => {
+  scene.add(gltf.scene);
+  const named = prepareModel(gltf.scene);
+  ix = createInteraction({ scene, camera, canvas, uiRoot: document.getElementById("explore-ui"), statFn });
+  for(const name in SPOTS) ix.register(named[name], SPOTS[name]);
+  ix.changed();
+  window.__ex = { camera, controls, ix, scene };
+  revealUI();
+  requestAnimationFrame(animate);
+}).catch((e) => { console.error(e); failUI("The model file didn't load."); });
+
 let lastT = performance.now();
 function animate(t){
   requestAnimationFrame(animate);
   const dt = Math.min(0.05, (t - lastT) / 1000);
   lastT = t;
 
-  stepCamera(camera, controls, dt, {
-    boundX: WALL_MARGIN, boundZMin: -WALL_MARGIN, boundZMax: WALL_MARGIN, collidables
-  });
+  stepCamera(camera, controls, dt, { boundX: BOUND, boundZMin: -BOUND, boundZMax: BOUND, collidables });
 
   if(!reducedMotion){
-    const flicker = 1 + Math.sin(t * 0.006) * 0.08;
-    warmFill.intensity = 0.6 * flicker;
+    candleLights.forEach((l, i) => { l.intensity = 6 * (1 + Math.sin(t * 0.007 + i * 2.1) * 0.08 + Math.sin(t * 0.0173 + i) * 0.04); });
+    const p = moteGeo.attributes.position;
+    for(let i = 0; i < MOTES; i++){
+      const m = moteSeed[i];
+      p.setY(i, p.getY(i) - m.s * dt);
+      p.setX(i, p.getX(i) + Math.sin(t * 0.0006 + m.p) * 0.12 * dt);
+      if(p.getY(i) < 0.3) p.setY(i, 18.2);
+    }
+    p.needsUpdate = true;
   }
-
+  if(ix) ix.update(t);
   renderer.render(scene, camera);
 }
-requestAnimationFrame(animate);
-
-/* =========================================================================
-   UI handoff
-   ========================================================================= */
-revealUI();
-try{
-  const all = allTimeScore();
-  const { cur } = rankInfoForScore(all);
-  document.getElementById("exploreStat").innerHTML =
-    `${all.toLocaleString()} pts<small>${cur.rank}</small>`;
-}catch(e){ /* app.js state not available — stat chip just stays blank */ }
