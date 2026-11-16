@@ -70,7 +70,7 @@ def build(out):
             box((2 * H - 1, 1.6, .14), (0, .8, .07), brick, name='brickband')
             box((2 * H - 1, .12, .2), (0, 1.62, .1), darkwood, name='wcap')
     # ceiling, trusses, skylights
-    box((2 * H, .3, 2 * H), (0, WALL + .15, 0), beam, name='ceiling')
+    box((2 * H, .3, 2 * H), (0, WALL + .15, 0), M('ceil', 0xB9A27F, .95), name='ceiling')
     for z in range(-20, 21, 5):
         box((2 * H, .45, .4), (0, WALL - .2, z), beam, name='truss')
     for x in range(-20, 21, 8):

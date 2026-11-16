@@ -208,7 +208,8 @@ export function createInteraction({ scene, camera, canvas, uiRoot, statFn, onCha
     ray.far = 60;
     const hits = ray.intersectObjects(scene.children, true);
     for(const hit of hits){
-      if(hit.object.isSprite) continue;
+      const mat = hit.object.material;
+      if(hit.object.isSprite || hit.object.isPoints || (mat && mat.depthWrite === false)) continue;   // light shafts, dust, glows aren't solid
       const s = spotOf(hit.object);
       if(s && hit.distance <= Math.min(maxDist, s.reach)) return s;
       return null;                 // something solid is in front
@@ -325,5 +326,5 @@ export function createInteraction({ scene, camera, canvas, uiRoot, statFn, onCha
     }
   }
 
-  return { register, update, changed, open, close, spots, api };
+  return { register, update, changed, open, close, spots, api, pick };
 }

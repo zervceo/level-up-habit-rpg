@@ -232,7 +232,7 @@ function animate(t){
   const dt = Math.min(0.05, (t - lastT) / 1000);
   lastT = t;
 
-  stepCamera(camera, controls, dt, { boundX: 12.6, boundZMin: -35.5, boundZMax: 47, collidables });
+  stepCamera(camera, controls, dt, { boundX: 12.6, boundZMin: -27.5, boundZMax: 47, collidables });
 
   if(tickerTex && !reducedMotion){
     tickerTex.offset.x = (tickerTex.offset.x + dt * 0.012) % tickerTex.userData.period;

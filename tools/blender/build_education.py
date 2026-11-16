@@ -126,7 +126,7 @@ def build(out):
     with group('HS_exchange', at=(0, 0, -46)):
         for i in range(7):
             box((34 - i * 1.2, .28, 14 - i * .9 + 4), (0, .14 + i * .28, 7.5 - i * .45), limestone, name='step')
-        box((30, 15.6, 17), (0, 1.96 + 7.8, -.5), limestone, name='body')
+        box((30, 15.6, 17), (0, 1.96 + 7.8, -4.5), limestone, name='body')
         box((32, 1.6, 4.4), (0, 1.96 + 15.6 + .8, 1.9), limestone, name='entab')
         box((32.2, .35, 4.6), (0, 1.96 + 15.6 + 1.7, 1.9), gold, name='entab_gold')
         prism([(-16, 0), (16, 0), (0, 5.2)], 4.0, (0, 1.96 + 17.4, 1.9), limestone, name='pediment')
@@ -137,11 +137,11 @@ def build(out):
             lathe([(1.15, 0), (1.15, .35), (.82, .45), (.76, 1.0), (.74, 12.2), (.8, 12.5), (1.05, 12.7), (1.05, 13.2), (.0, 13.2)],
                   (cx, 1.96, 6.2), limestone, seg=18, name='col')
         box((30, 1.8, 3.4), (0, 1.96 + 14.8 + 1.0, 6.2), limestone, name='colcap')
-        box((14, 8.5, .4), (0, 1.96 + 4.5, 8.3 - 1.2), black, name='door_hole')
-        box((15.2, .5, .6), (0, 1.96 + 8.9, 7.1), gold, name='lintel')
-        quad(13.2, 8.0, (0, 1.96 + 4.3, 7.5 - .6), M('hall', 0x2B1D0D, .8, emit=0x7A4510, strength=1.2), name='hallglow')
+        box((14, 8.5, .4), (0, 1.96 + 4.5, 4.1), black, name='door_hole')
+        box((15.2, .5, .6), (0, 1.96 + 8.9, 4.3), gold, name='lintel')
+        quad(13.2, 8.0, (0, 1.96 + 4.3, 4.32), M('hall', 0x2B1D0D, .8, emit=0x7A4510, strength=1.2), name='hallglow')
         for k in range(4):
-            box((.1, 8.0, .12), (-4.95 + k * 3.3, 1.96 + 4.3, 7.0), gold, name='doormull')
+            box((.1, 8.0, .12), (-4.95 + k * 3.3, 1.96 + 4.3, 4.34), gold, name='doormull')
         text('THE TRADING FLOOR', 1.05, (0, 1.96 + 16.45, 4.3), gold, extrude=.12, name='exname')
         box((26.4, 1.25, .12), (0, 1.96 + 12.9, 4.6), black, name='tickerframe')
         quad(26.0, 1.0, (0, 1.96 + 12.9, 4.68), M('tickerblank', 0x0A0A0A, .3, emit=0x0A3A1A, strength=1.0), name='KEEP_ticker')
