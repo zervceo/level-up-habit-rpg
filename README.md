@@ -1,57 +1,98 @@
 # ZERV LEVEL UP
 
-A self-improvement scorekeeper for building ZERV, training for the track,
-leveling up your coding, and staying on top of school and personal goals —
-skinned as a retro surf arcade game in ZERV's own colors. Log your **Wins**
-and **Wipeouts** each day, rise from Grom to ZERV Legend, check off weekly
-goals, and earn **Medals** along the way.
+Your personal operating system, split into four sectors that all roll up
+into one shared rank and score. Skinned as four distinct worlds — a
+Colosseum, a surf shack, a Wall Street trading floor, and a late-night
+workshop — because different parts of life deserve different energy, but
+they're still all one system.
 
-It's a small static site (three pages — Lineup, Sessions, Medals — sharing
-one stylesheet and one script) and runs entirely in your browser: no build
-step, no server, no account. All progress is saved to `localStorage` on your
+It's a small static site (no build step, no server, no account) that runs
+entirely in your browser. All progress is saved to `localStorage` on your
 device only; nothing is ever sent anywhere.
 
-- `index.html` — **Lineup**: your Surfer Profile (rank/board/gear), the
-  scoreboard, a Bonus Wave summary, and a peek at recent Medals.
-- `chronicle.html` — **Sessions**: where you actually log Wins and Wipeouts,
-  navigate to any past day, check off this week's goals, and log a shaped
-  board.
-- `honors.html` — **Medals**: the full achievement gallery.
-- `style.css`, `app.js` — shared styling and game logic used by all three pages.
+## The four sectors
+
+- **🏛️ Entity** (`entity-arena.html`, `chronicle.html`, `honors.html`) —
+  Colosseum-themed, re-skinned around Leonardo's Vitruvian Man. Physical
+  and spiritual habits, vices, weekly personal/spiritual goals, and the
+  **Sprint Quest**: a self-configured countdown and PR tracker toward
+  Division 1 sprinting by your 21st birthday. Explore in 3D at
+  **The Vitruvian Chamber** (`entity-explore.html`).
+- **🏖️ Entrepreneur** (`entrepreneur.html`) — your lone surf shack on the
+  beach. Tracks ZERV, DeskGenie, and any future business: daily ZERV social
+  posting, a weekly business goal, and per-business tasks + a running
+  journal. Explore in 3D at **Beach Explore** (`beach-explore.html`).
+- **🏦 Education** (`education.html`) — Wall Street trading floor themed.
+  Classes and assignments with due dates, an upcoming-deadlines banner, and
+  a finance/accounting/investing mastery ladder themed as Wall Street job
+  titles (Intern → Analyst → Associate → VP → Director → Managing Director).
+  Explore in 3D by walking the street at **Education Explore**
+  (`education-explore.html`).
+- **🛠️ Elixir** (`elixir.html`) — a maker's workshop. Real, curated
+  skill-progression curricula for surfboard shaping, coding, electrical
+  engineering, and art, each with concrete milestones from beginner to
+  mastery, plus practice-session logging. Explore in 3D at
+  **Elixir Explore** (`elixir-explore.html`).
+
+**🏠 HQ** (`index.html`) ties it together: your overall rank, a snapshot of
+all four sectors, and your most recent Medals.
+
+`style.css` and `app.js` are shared by every page — one scoring engine, one
+set of components, four color themes layered on top via CSS variables.
+
+## Explore in 3D
+
+The scenes are modelled in Blender (`tools/blender/`, exported to `models/`)
+and every tracked thing is clickable: hover for a highlight, follow the
+floating markers (gold = still to do today, green = done), click or press
+**E**, and log deeds, posts, tasks, study time, practice and milestones
+without leaving the scene. It writes to the same local data as the 2D pages.
+
+
+Every sector has a walkable, low-poly 3D "Explore" view — a visual
+companion to its 2D page, not a replacement for it; logging habits, classes,
+and milestones all still happens on the 2D pages. **On a desktop or laptop
+(a wide screen with a mouse), visiting a sector's 2D page auto-switches you
+straight into its 3D Explore view; on a phone or tablet nothing changes —
+you see exactly the 2D page you always have.** A "← Back" button on each
+Explore page returns you to 2D and remembers that choice for the rest of
+your browser session (so it won't bounce you straight back into 3D); a
+small "🧊 3D" link then appears in the 2D page's nav bar if you want to
+jump back in. Movement is a drag-anywhere virtual joystick (also usable
+with a mouse) plus drag-to-look, with WASD/arrow keys as a desktop
+keyboard alternative. 3D code is shared across all four scenes via
+`explore-shared.js`; see `NOTES.md` for the full build notes.
 
 ## Scoring, in one sentence
 
-Every day's score is floored at zero — Wipeouts can only cancel out that
-day's Wins down to zero, they can never drag your Week or All-Time total
-into negative territory. See `NOTES.md` for the full reasoning.
+Every day's combined score — across every sector at once — is floored at
+zero. Vices (logged under Entity) can only cancel out that day's Wins down
+to zero; they can never drag your Week or All-Time total into negative
+territory. See `NOTES.md` for the full reasoning and every other judgment
+call made building this.
 
 ## Deploy to GitHub Pages
 
-1. Create a new repository on GitHub (public or private) — or reuse an
-   existing one; this app is self-contained and happy to live in a
-   subfolder-free repo root alongside other projects.
-2. Upload all the files above (`index.html`, `chronicle.html`, `honors.html`,
-   `style.css`, `app.js`, and this `README.md`) to the repository — drag and
-   drop them into the GitHub web UI, or `git push` them. Keep them all in the
-   repo root so the relative links between pages resolve.
-3. In the repo, go to **Settings → Pages**.
-4. Under "Build and deployment", set **Source** to "Deploy from a branch",
+1. Upload every file above, plus `style.css`, `app.js`, `explore-shared.js`,
+   this `README.md`, and the `vendor/` folder (Three.js, used by all four
+   Explore scenes), to your repository root (relative links between pages
+   depend on them all being siblings, and `vendor/` keeping its
+   name/location).
+2. In the repo, go to **Settings → Pages**.
+3. Under "Build and deployment", set **Source** to "Deploy from a branch",
    pick branch **main** and folder **/ (root)**, then **Save**.
-5. Wait a minute or two — GitHub will give you a URL like
-   `https://<your-username>.github.io/<repo-name>/`. That's your app.
+4. Your app is live at `https://<your-username>.github.io/<repo-name>/`.
 
 ## Add it to your phone's home screen
 
 - **iPhone (Safari):** open the URL, tap the Share icon, then "Add to Home Screen."
 - **Android (Chrome):** open the URL, tap the ⋮ menu, then "Add to Home screen."
 
-Once added, it launches full-screen like a normal app.
-
 ## Data & privacy
 
-Your Sessions, scores, and Medals are stored only in this browser's
-`localStorage`, under keys like `gameoflife:day:2026-10-27` (the key prefix
-is unchanged from an earlier version of this app, so existing progress
-carries forward). Clearing your browser data (or switching browsers/devices)
-will lose this data — there is no cloud sync. See `NOTES.md` for the
-judgment calls made while building this.
+Everything is stored only in this browser's `localStorage`, under keys
+like `gameoflife:day:2026-11-08`, `gameoflife:business:list`, and
+`gameoflife:edu:classes` (the `gameoflife:*` prefix is unchanged from an
+earlier version of this app, so existing progress carries forward).
+Clearing your browser data or switching devices loses it — there's no
+cloud sync.

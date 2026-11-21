@@ -41,6 +41,292 @@ surfing clips." Judgment calls made implementing that:
   click-the-badge sparkle burst easter egg. All of it — parallax, pulses,
   sparkles, and every background animation — is skipped entirely under
   `prefers-reduced-motion: reduce`.
+## Blender-authored 3D with clickable hotspots
+
+The four Explore scenes were rebuilt so the geometry is modelled in Blender
+and every sector's tracked things are objects you can click.
+
+- **No "Blender account" exists, and the sandbox can't reach a desktop
+  Blender**, so the pipeline runs Blender headlessly as the `bpy` Python
+  module: `tools/blender/lib.py` (a small modelling toolkit that takes
+  Three.js-style Y-up coordinates) + one `build_<sector>.py` per scene →
+  `models/<sector>.glb`. Re-run with `python tools/blender/build_entity.py`
+  (needs `pip install bpy`, Python 3.11) or `blender -b -P ...`. The scripts
+  also run in a normal Blender install, so they can be opened and edited
+  there. A Blender MCP is optional and not required by anything here.
+- **Naming is the contract**: an Empty named `HS_<id>` is a clickable
+  hotspot; a mesh named `KEEP_<x>` is never merged so JS can swap in a live
+  texture (coding monitors, oscilloscope, the Exchange's deadline marquee,
+  the rank-board surfboards). Everything else is merged per material to keep
+  draw calls low.
+- **Loader is vendored, no CDN**: `vendor/GLTFLoader.js`,
+  `BufferGeometryUtils.js`, `RoomEnvironment.js` from three@0.160.0 with
+  their imports rewritten to relative paths (same reasoning as the core
+  library). Models are 1.5–2 MB each, uncompressed on purpose (no Draco
+  decoder to host).
+- **`explore-interact.js`** gives every scene hover highlight, floating
+  quest markers (gold = still to do today, green = done), click or press **E**
+  to open a side panel. Panel buttons run the *same* writes as the 2D pages
+  (`day.deeds / biz / study / craft`, weekly flags, tasks, journal,
+  milestones, assignments) and then `checkAndUnlockAchievements()`, so
+  scores, medals and ranks stay consistent. A sealed (locked) day is
+  read-only in 3D for the Entity deeds, as in the Practice Log.
+- **What each sector's scene is for**: Entity = Vitruvian study (figure →
+  rank, five deed plinths, sprint lane + stopwatch, weekly-vows lectern);
+  Entrepreneur = surf shack beach (shack → businesses/tasks, IG + TikTok
+  stations, goal flagpole, journal table, a rack of 7 boards that unlock with
+  rank); Education = Wall Street (five finance-topic pavilions, Exchange →
+  deadlines/classes/schoolwork goal with a scrolling marquee of your real
+  deadlines, Charging Bull → rank); Elixir = workshop (four hobby bays +
+  mastery island).
+- **Phones are unchanged**: nothing about the device switch changed; the 3D
+  pages are still only reached automatically on desktop-class devices.
+
+## Beach Explore: a walkable 3D scene (Three.js, no CDN)
+
+A later request asked for the system to go 3D so sectors could be walked
+through visually. Scoped with the user down to: one sector first, as an
+optional "Explore" view that supplements the existing 2D pages rather than
+replacing them (the forms/buttons/lists for actual logging stay exactly as
+they are — "walk up and interact" doesn't work well for data entry in a
+quick low-poly scene). Entrepreneur/the Beach was picked as the first one.
+
+- **New files**: `beach-explore.html` (full-screen page) + `beach-explore.js`
+  (an ES module with all the Three.js scene/controls code) + `vendor/`
+  (see below). Reached via a "🏄 Explore the Beach" button on
+  `entrepreneur.html`; a "← Back to Surf Shack" button returns.
+- **Three.js is vendored into the repo (`vendor/three.module.min.js`),
+  not pulled from a CDN at runtime.** This build's sandbox network policy
+  blocks unpkg.com/jsdelivr.net/cdnjs.cloudflare.com outright (confirmed by
+  testing — all three returned a flat proxy denial), so a CDN `<script>`
+  import couldn't even be tested here, only `registry.npmjs.org` was
+  reachable. Rather than ship something untested, I downloaded the official
+  `three@0.160.0` npm package and vendored its ES module build directly —
+  which is arguably the better call anyway for the live site too: it keeps
+  the page working for any visitor whose own network/ad-blocker blocks
+  those CDNs, and keeps "plain static files, nothing external required at
+  runtime" true in spirit, not just for the hand-written code. The MIT
+  license text that ships with the package is alongside it
+  (`vendor/THREE_LICENSE.txt`).
+- **Low-poly, not realistic**, by design — boxes, cones, and cylinders for
+  the shack/palms/props, a canvas-gradient sky, and a cheap per-vertex sine
+  wave on a subdivided plane for the ocean (no shadow maps, no PBR
+  materials) — this is what makes it fast enough to run smoothly on a
+  phone, which matters more here than visual fidelity for a first pass.
+- **Controls**: an on-screen virtual joystick (also mouse-draggable, so it
+  doubles as the desktop control) for movement, drag-anywhere-else-on-screen
+  to look around, and WASD/arrow keys as a desktop keyboard alternative.
+  Movement is camera-relative (forward is always "the way you're currently
+  looking"), computed via Three.js's own Euler rotation rather than
+  hand-rolled trig, specifically to avoid a forward/look mismatch bug.
+- **Collision is a soft radius check against the shack**, not real physics
+  — you're pushed around its footprint if you walk into it, and your
+  position is clamped to a bounded sandy area so you can't wander into the
+  skybox. Good enough for an "explore and vibe" view; not a real game
+  engine.
+- **The stat chip in the corner pulls real data** (`allTimeScore()`,
+  `state.businesses.length`) from `app.js`, which loads as a classic
+  script immediately before the module script in `beach-explore.html` —
+  classic-script top-level consts/functions are visible to a later module
+  script via normal global scope lookup, so no refactor of app.js was
+  needed to share state with this new page.
+- **Reduced motion**: the ocean's per-frame wave animation is skipped
+  under `prefers-reduced-motion`; camera movement itself stays available
+  either way since it's a direct response to the user's own input, not
+  ambient motion.
+- Education (Wall Street), Entity (Vitruvian geometry), and Elixir
+  (workshop) would each get their own Explore scene later, following this
+  same pattern, once this first one's approach is confirmed to be the
+  right one.
+
+## All sectors go 3D, desktop-only
+
+The Beach Explore prototype above was confirmed, so the same pattern got
+rolled out to the remaining three sectors, plus a device-based switch so
+3D is the default experience on a PC but phones are completely untouched.
+
+- **`explore-shared.js`** — extracted from the original `beach-explore.js`
+  before building the second scene, so the ~150 lines of renderer/camera
+  setup, joystick+look-drag+keyboard controls, and camera-relative
+  movement-with-collision aren't duplicated four times. Every `*-explore.js`
+  now imports `{ THREE, createRenderer, createCamera, hookResize,
+  createSkyDome, createControls, stepCamera, revealUI }` from it and only
+  defines its own scene geometry. `beach-explore.js` was refactored onto
+  this module first and re-verified working before the others were built
+  on top of it.
+- **`entity-explore.js`** — "The Vitruvian Chamber": a square Renaissance
+  study room with Leonardo's circle-and-square construction inlaid flat in
+  the floor (a torus ring + box-edge square + radiating construction
+  lines), a central pedestal with a gold globe sculpture, an open oculus
+  ring in the ceiling, a draftsman's table with a scroll, and corner candle
+  stands. Reached from `entity-arena.html`.
+- **`education-explore.js`** — a walkable Wall Street: a street of
+  low-poly skyscrapers (gold window-light strips facing the street) running
+  toward a columned trading-floor building with a ticker sign, plus a
+  bronze charging-bull statue as the street's landmark. Reached from
+  `education.html`.
+- **`elixir-explore.js`** — "The Workshop": a maker's workshop interior
+  with a tool pegboard and a central workbench, surrounded by four corner
+  stations that hint at the sector's four hobbies — surfboard shaping
+  (blank + fin rack + shavings), coding (glowing monitor + keyboard),
+  electrical engineering (PCB + soldering iron + wire coil), and art
+  (easel + canvas + palette). Reached from `elixir.html`.
+- **Desktop auto-switches into 3D; phones are untouched.** Each of the
+  four 2D sector pages (`entity-arena.html`, `entrepreneur.html`,
+  `education.html`, `elixir.html`) carries a small inline script as the
+  very first thing in `<head>` — before the stylesheet even loads, to
+  avoid a flash of 2D content — that checks
+  `matchMedia('(min-width: 900px)') && matchMedia('(pointer: fine)')`.
+  Both have to be true (so a touch tablet like an iPad, which is wide but
+  `pointer: coarse`, is correctly *not* treated as a desktop) before it
+  `location.replace()`s straight into that sector's Explore page. On a
+  phone the check fails immediately and nothing else happens — no DOM
+  changes, no extra requests, identical to the page before this feature
+  existed.
+- **Opt-out is remembered for the session, both ways.** Each Explore
+  page's "Back to ..." chip sets a `sessionStorage` flag
+  (`gameoflife:prefer2D`) before navigating back, so a desktop visitor who
+  backs out of 3D isn't immediately bounced back into it. Each 2D page has
+  a hidden `🧊 3D` nav-link (`#explore3DLink`) that the same inline script
+  reveals only when it detects desktop-class *and* the opt-out flag is
+  set, giving that visitor a one-click way back into 3D if they want it.
+  The flag is per-tab/session (not persisted to localStorage) so a fresh
+  visit defaults back to 3D.
+- Verified with headless Playwright across three viewport/pointer
+  combinations (1280×800 no-touch = desktop, 390×844 touch = phone,
+  1024×768 touch = tablet) that: desktop auto-redirects on all four
+  sectors, phone stays on 2D with zero console errors and the 3D link
+  never rendered, tablet is correctly excluded from the desktop path, and
+  the full back-out-then-toggle-back-to-3D loop works and survives a page
+  reload within the same session.
+
+## Entity re-theme: Colosseum -> Vitruvian Man
+
+A later request swapped Entity's visual theme from the Colosseum to
+Leonardo's Vitruvian Man — a better fit for "ideal proportions of body and
+spirit" than gladiator framing. Nothing about the sector's mechanics,
+storage, or scoring changed, only `body.theme-entity`'s palette and the
+background art:
+
+- **Palette** moved from Roman red/gold to a drafting-desk Renaissance
+  set: aged parchment background, gold-leaf headings/borders, and sanguine
+  (red chalk) for links/primary buttons/accents — literally the colors on
+  Leonardo's own desk, not an arbitrary substitution.
+- **Background art**: replaced the sun/horizon-grid/waves layers (which
+  made sense for a Colosseum and even more for the beach, but not here)
+  with a new `.vitruvian-geo` component — Leonardo's circle-and-square
+  construction with a simplified line figure inside, drawn as one small
+  inline SVG reused identically across all three Entity pages, slowly
+  rotating like a drafting compass (skipped under reduced-motion, as
+  always). It's an original simplified rendition, not a trace of the
+  historical drawing, both because that's simpler to keep theme-colorable
+  and because it reads fine at this scale even simplified.
+- **Renamed the pages' copy and nav labels** to match: "The Arena" ->
+  "The Vitruvian Study", "Training Log" -> "Practice Log", nav icons
+  🏛️/⚔️ -> 📐/🖋️ (set-square and quill). Kept the file names
+  (`entity-arena.html`, `chronicle.html`, `honors.html`) unchanged so nothing
+  bookmarked breaks — only what's rendered on the page changed.
+- **Medals page kept its name** ("Medals of Honor") since achievements are
+  a system-wide concept that only happens to sit on an Entity-styled page;
+  trophies/medals don't clash with either theme, so there was no real need
+  to rename it to something Renaissance-specific.
+
+## Four-sector rebuild (Entity / Entrepreneur / Education / Elixir)
+
+A later request asked to reorganize everything into four themed sectors —
+a personal operating system rather than one habit tracker — while reusing
+this app's HTML structure. Judgment calls made implementing that:
+
+- **One shared day record, namespaced per sector.** Rather than giving each
+  sector its own separate "day," `defaultDay()` in `app.js` now holds
+  `{ deeds, vices, biz, study, craft, locked }` — Entity's physical/
+  spiritual actions, Entrepreneur's daily ZERV posts + business-task/
+  journal counters, Education's study-session minutes + assignment
+  counter, and Elixir's hobby-practice minutes + the board-shaping bonus,
+  all inside one record per calendar date. This keeps the "floor at zero"
+  rule meaningful system-wide: Entity's vices eat into the combined total
+  across every sector for that day, not just Entity's own slice, and day
+  locking freezes the whole day at once.
+- **The floor-at-zero rule now spans all four sectors.** `dayNetScore()`
+  sums Entity + Entrepreneur + Education + Elixir positive points, adds
+  Entity's vice deductions, and floors the result at zero — so logging
+  great work in, say, Education can't be wiped out by a bad night, but a
+  bad night also can't out-run a genuinely strong day across the system.
+- **Moved, not duplicated.** ZERV social posting moved from Entity's Deeds
+  into Entrepreneur (`ENTREPRENEUR_DAILY`, stored under `day.biz`) since
+  it's business marketing, not personal habit. Coding practice moved from
+  a flat Entity "Deed" into Elixir's Coding hobby (`day.craft`), since
+  Elixir is explicitly where hobby mastery lives now. "Shape a Board"
+  moved from a generic Entity bonus into Elixir's Surfboard Making hobby
+  specifically, since surfboard shaping is one of the four named Elixir
+  hobbies. Reading and Journaling stayed in Entity as generic self-growth
+  habits.
+- **Weekly Goals split across sectors, one shared storage shape.** The
+  original three weekly checkboxes (Schoolwork/Personal/Business) plus a
+  new fourth (Spiritual, to cover "spiritual relationship with God"
+  explicitly) still live in one `state.weeks[weekStart]` record exactly as
+  before — only *where they render* changed: Schoolwork shows on
+  Education, Business on Entrepreneur, Personal + Spiritual on Entity. The
+  old "Hat Trick" achievement (3-way) became "Grand Slam" (4-way).
+- **Sprint Quest is entirely self-configured, not guessed.** The brief
+  named "Division 1 sprinter by 21" as the goal but gave no event, gender,
+  or current time — guessing any of those would make the sector's
+  headline goal either wrong or presumptuous. Instead, `entity-arena.html`
+  has a one-time setup form (event, current PR, target time) and a running
+  log of times; the deadline itself (Dec 18, 2027 — the birthday after
+  the one coming up, since "19 now, turns 20 on Dec 18" implies 21 falls a
+  year after that) is the one fact that *was* fully specified, so that's
+  hardcoded as `SPRINT_DEADLINE` in `app.js`.
+- **"Prompt updates before due dates" is an in-app banner, not a push
+  notification.** A static site with no backend can't text or push-notify
+  you. `education.html` shows a persistent "Upcoming Deadlines" banner
+  (assignments due within 3 days or overdue) and fires a toast once per
+  page load if anything qualifies — real, but only as real as "you have to
+  open the app to see it." Said so explicitly in the page's footer rather
+  than overpromising.
+- **Elixir milestones are self-checked, not auto-verified.** There's no way
+  for a web app to confirm you've actually "mastered rail shaping" — so
+  each hobby's 7-step curriculum (hand-written, not generic placeholders)
+  is a checklist you tick off on your own judgment, stored in
+  `gameoflife:elixir:milestones`. Practice-time logging (which *does* earn
+  points) and milestone-checking (which doesn't, directly) are deliberately
+  separate mechanics.
+- **Business tasks/journal entries are one-way.** Marking a task "done" or
+  logging a journal entry awards points immediately and can't be undone
+  short of deleting the item outright (which doesn't claw back points) —
+  avoids having to track which specific day's counter to decrement if a
+  task gets un-checked later, and stays consistent with this app's general
+  "never take points away" philosophy.
+- **Finance-topic mastery is per-topic, not the overall rank.** Each of the
+  five finance topics in Education climbs its *own* Wall Street title
+  ladder (`MASTERY_TITLES`, driven by that topic's lifetime study points),
+  completely separate from the account-wide Grom→ZERV Legend rank shown on
+  HQ. Reaching "Managing Director" in Valuation doesn't affect your overall
+  rank directly — it only does so through the points you earned logging
+  the study sessions, same as any other sector.
+- **HQ is the one place for the full rank/board/gear widget.** It used to
+  appear on the Lineup/Entity page; now that Entity is one of four equal
+  sectors, the overall-system profile card lives only on HQ, and sector
+  pages show the shared Scoreboard (Today/Week/All-Time) plus their own
+  content, to avoid a confusing "is this the Entity rank or the whole
+  system's rank" ambiguity.
+- **Entrepreneur keeps the original ZERV color system and beach scene
+  as-is** (no `body.theme-*` override) since that sector *is* ZERV's own
+  brand — reusing it there isn't a placeholder, it's correct. The other
+  three sectors each got a full palette override (`body.theme-entity` /
+  `-education` / `-elixir` in `style.css`) that redefines the exact same
+  CSS variable names every existing component already uses, so no
+  component CSS had to change — panels, buttons, chips, and score tiles
+  all re-theme automatically.
+- **DeskGenie was pre-seeded alongside ZERV** as a second starter business
+  (per "ZERV, DeskGenie and all other businesses"), with an "Add a
+  business" flow for anything added later — nothing else about DeskGenie
+  was assumed beyond its name.
+- **File names were kept where the old content just got re-themed**
+  (`chronicle.html`, `honors.html`) so nothing already bookmarked or linked
+  breaks; genuinely new pages got sector-specific names
+  (`entity-arena.html`, `entrepreneur.html`, `education.html`,
+  `elixir.html`).
 
 ## Original rework: medieval build -> ZERV LEVEL UP
 
