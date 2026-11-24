@@ -7,6 +7,9 @@ Hotspots wired in beach-explore.js:
   HS_goal           weekly business goal                   (flagpole)
   HS_journal        notes across all businesses            (picnic table logbook)
   HS_rack           your rank, shown as 7 surfboards       (KEEP_board_0..6 are dimmed until earned)
+  HS_revenue        revenue stand at the pier: income log + monthly target
+  KEEP_buoy_0..3    pier buoys that light at 25/50/75/100% of this month's target
+  KEEP_lighthouse_lamp  lights when the month's target is hit
 The ocean, foam, sun and sky are live in JS.
 """
 import math
@@ -387,6 +390,63 @@ def build(out):
     for (x, z) in ((-27, -26), (30, -28), (36, -24), (-38, -28), (14, -29)):
         for k in range(4):
             sph(rnd.uniform(.5, 1.1), (x + rnd.uniform(-1.5, 1.5), .2, z + rnd.uniform(-1.5, 1.5)), rock, scale=(1, .65, 1), seg=8, name='rock')
+
+    # ------------------------------------------------------------ revenue stand, milestone buoys, lighthouse
+    greenled = M('greenled', 0x6CFFA8, .3, emit=0x14E070, strength=4.0)
+    bill = M('bill', 0x6FAF7A, .8)
+    sack = M('sack', 0xB89B6A, .9)
+    with group('HS_revenue', at=(-19.2, 0, -23.0), ry=.64):
+        box((2.6, .9, 1.0), (0, .45, 0), plank, name='counter')
+        box((2.9, .09, 1.2), (0, .94, 0), dark_wood, name='countertop')
+        for sx in (-1.3, 1.3):
+            cyl(.07, 2.8, (sx, 1.4, .5), white, seg=8, name='stallpost')
+        for i in range(8):
+            with group('slat', at=(-1.4 + i * .4 + .2, 2.78, -.05), rot=(.2, 0, 0)):
+                box((.4, .05, 1.5), (0, 0, 0), stripe_a if i % 2 else stripe_b, name='stallroof')
+        box((2.4, .6, .08), (0, 2.4, .55), dark_wood, name='stallsign')
+        text('REVENUE', .34, (0, 2.4, .6), M('signgold', 0xFFD36B, .5, emit=0xFFB000, strength=1.2), extrude=.03, name='signtxt')
+        # vintage register
+        box((.7, .38, .5), (-.5, 1.18, -.05), gold, name='register')
+        box((.6, .2, .4), (-.5, 1.42, -.1), metal, rot=(-.4, 0, 0), name='regtop')
+        quad(.34, .13, (-.5, 1.62, -.04), greenled, name='regscreen')
+        for r in range(2):
+            for c in range(4):
+                box((.1, .04, .1), (-.72 + c * .15, 1.4, .1 + r * .12), white, name='regkey')
+        box((.62, .12, .04), (-.5, 1.04, .22), dark_wood, name='regdrawer')
+        # coin stacks, sack, bills
+        for k, (cx, cz, n) in enumerate(((.3, .1, 6), (.55, .2, 9), (.8, .05, 4), (.5, -.2, 12))):
+            for q in range(n):
+                cyl(.14, .045, (cx, .98 + q * .047, cz), gold, seg=14, name='coin')
+        sph(.3, (1.05, 1.22, -.15), sack, scale=(1, 1.1, 1), seg=12, name='sack')
+        text('$', .3, (1.05, 1.22, .13), dark_wood, extrude=.02, name='sacktxt')
+        for k in range(3):
+            box((.3, .01, .15), (.1 + k * .05, .985 + k * .011, .3 - k * .04), bill, rot=(0, .3 * k - .3, 0), name='bill')
+        box((.7, .9, .06), (2.0, .65, .4), dark_wood, rot=(-.15, 0, 0), name='easel')
+        text('THIS', .16, (2.0, .9, .43), white, extrude=.005, name='easeltxt')
+        text('MONTH', .16, (2.0, .68, .43), white, extrude=.005, name='easeltxt')
+
+    for i, (pct, bz) in enumerate(((25, -33.0), (50, -38.5), (75, -44.0), (100, -49.5))):
+        bx = -27.2
+        sph(.5, (bx, .15, bz), M('buoy%d' % i, 0xC9C9CF, .5), seg=14, name='KEEP_buoy_%d' % i)
+        cyl(.1, .35, (bx, .75, bz), white, seg=10, name='buoytop')
+        seg((bx, .3, bz), (bx, 1.5, bz), .03, white, sides=6, name='buoypole')
+        text('%d%%' % pct, .42, (bx + .05, 1.85, bz), white, ry=PI / 2, extrude=.04, name='buoytxt')
+
+    lx, lz = -23.0, -66.0
+    sph(1, (lx, .2, lz), rock, scale=(5.5, 1.3, 5.5), seg=14, name='lhrock')
+    lh_w = M('lhwhite', 0xF1EDE3, .6)
+    lh_r = M('lhred', 0xC8302E, .6)
+    bands = ((0.0, 3.0, lh_w), (3.0, 6.0, lh_r), (6.0, 9.0, lh_w), (9.0, 11.5, lh_r))
+    def lr(hh):
+        return 2.3 - (hh / 11.5) * 1.0
+    for (h0, h1, mm) in bands:
+        lathe([(lr(h0), 0.8 + h0), (lr(h1), 0.8 + h1)], (lx, 0, lz), mm, seg=20, name='lhband')
+    tor(1.6, .09, (lx, 12.3, lz), black, seg=24, rseg=6, name='lhgallery')
+    cyl(1.55, .15, (lx, 12.2, lz), black, seg=24, name='lhdeck')
+    cyl(.95, 1.5, (lx, 13.1, lz), M('lhglass', 0xFFF2C8, .2), seg=18, name='KEEP_lighthouse_lamp')
+    cyl(1.15, .2, (lx, 14.0, lz), black, seg=18, name='lhcap')
+    cyl(1.1, 1.1, (lx, 14.7, lz), lh_r, seg=18, r2=.05, name='lhroof')
+    box((1.0, 1.6, .1), (lx, 2.0, lz + 1.9), black, name='lhdoor')
 
     export(os.path.join(out, 'beach.glb'))
 

@@ -42,6 +42,10 @@ glow(2.6, 2.6, 24, 0xff9a00, 3, 8);
 glow(-6.3, 1.6, -1.2, 0xff4fa3, 3, 7);        // IG ring light
 glow(6.3, 1.6, -1.2, 0x6ff5ff, 3, 7);         // TikTok ring light
 
+const lampLight = new THREE.PointLight(0xffe6a0, 0, 70, 1.3);
+lampLight.position.set(-23, 13.1, -66);
+scene.add(lampLight);
+
 /* ---------- sun disc + glow on the horizon ---------- */
 const sunDisc = new THREE.Mesh(new THREE.CircleGeometry(15, 48), new THREE.MeshBasicMaterial({ color: 0xffe08a, fog: false }));
 sunDisc.position.set(-60, 12, -230);
@@ -82,6 +86,7 @@ const collidables = [
   { x: -6.3, z: -1.6, radius: 1.4 }, { x: 6.3, z: -1.6, radius: 1.4 },
   { x: 9.5, z: 4, radius: 1.3 }, { x: -9.5, z: 5, radius: 2.2 },
   { x: 12.5, z: -3.8, radius: 2.8 }, { x: -16.5, z: -6.5, radius: 2.9 }, { x: 21, z: 3, radius: 2.3 },
+  { x: -19.2, z: -23, radius: 1.8 },
   ...PALMS.map(([x, z]) => ({ x, z, radius: 0.55 }))
 ];
 
@@ -122,6 +127,13 @@ function postSpot(id){
         ui.muted("ZERV's daily priority: one post on each platform, every day."));
     }
   };
+}
+
+let revBiz = null;
+const money = (n) => "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+function curBiz(){
+  if(!state.businesses.some((b) => b.id === revBiz)) revBiz = state.businesses[0] ? state.businesses[0].id : null;
+  return revBiz;
 }
 
 const SPOTS = {
@@ -198,6 +210,73 @@ const SPOTS = {
     }
   },
 
+  HS_revenue: {
+    title: "Revenue Stand", icon: "💰", sub: "Income, monthly targets & milestone bonuses",
+    status: () => {
+      if(!state.businesses.length) return "info";
+      if(!state.businesses.some((b) => state.revenueGoals[b.id] > 0)) return "todo";
+      return state.businesses.every((b) => !(state.revenueGoals[b.id] > 0) || revenueMilestoneEarned(b.id, 100)) ? "done" : "info";
+    },
+    link: { href: "entrepreneur.html", label: "Open the Surf Shack →" },
+    render(body, api){
+      if(!state.businesses.length){ body.append(ui.muted("Add a business on the Surf Shack page first, then log its revenue here.")); return; }
+      const id = curBiz();
+      const biz = state.businesses.find((b) => b.id === id);
+      const sel = h("select", { class: "ix-in", onchange: () => { revBiz = sel.value; api.changed(); } },
+        ...state.businesses.map((b) => h("option", { value: b.id }, b.name)));
+      sel.value = id;
+      body.append(sel);
+
+      const month = monthKeyOf(todayStr());
+      const rev = bizMonthRevenue(id, month);
+      const target = state.revenueGoals[id] || 0;
+      body.append(h("div", { style: "height:8px" }), ui.big(money(rev)), ui.muted(`earned in ${month}`));
+      if(target > 0){
+        body.append(ui.bar((rev / target) * 100, rev >= target ? `Target of ${money(target)} hit! 🎉` : `${money(target - rev)} to go of ${money(target)}`));
+      } else body.append(ui.muted("Set a monthly target below to start earning milestone bonuses."));
+
+      body.append(ui.sec("Milestone bonuses"));
+      for(const m of REVENUE_MILESTONES){
+        const got = revenueMilestoneEarned(id, m.pct, month);
+        body.append(ui.row(target > 0 ? `${m.pct}% · ${money(target * m.pct / 100)}` : `${m.pct}% of your target`, `+${m.points} pts`,
+          got ? h("b", null, "✓ paid") : (target > 0 ? h("span", { class: "ix-muted" }, "🔒") : null), got));
+      }
+
+      const amt = h("input", { class: "ix-in", type: "number", step: "0.01", min: "0", placeholder: "Amount earned ($)" });
+      const note = h("input", { class: "ix-in", type: "text", placeholder: "Note (optional) — client, product, source" });
+      body.append(ui.sec("Log revenue"), amt, h("div", { style: "height:6px" }), note,
+        ui.btns(ui.btn("💰 Log revenue", () => {
+          const r = logRevenue(id, amt.value, note.value);
+          if(!r){ toast("Enter an amount above 0."); return; }
+          toast(`💰 ${money(r.entry.amount)} logged for ${biz.name}`);
+          if(r.earned.length){
+            const pts = r.earned.reduce((x, m) => x + m.points, 0);
+            toast(`🏆 ${r.earned[r.earned.length - 1].pct}% of ${biz.name}'s target! +${pts}`);
+            pop("+" + pts, true);
+          }
+          afterAction(); api.changed();
+        })));
+
+      const tgt = h("input", { class: "ix-in", type: "number", step: "1", min: "0", placeholder: "Monthly revenue target ($)", value: target || "" });
+      body.append(ui.sec("Monthly target"), tgt,
+        ui.btns(ui.btn("Save target", () => {
+          const earned = setRevenueGoal(id, tgt.value);
+          toast(Number(tgt.value) > 0 ? `🎯 ${biz.name} target set to ${money(Number(tgt.value))}` : "Target cleared.");
+          if(earned.length){ const pts = earned.reduce((x, m) => x + m.points, 0); toast(`🏆 Milestones already reached! +${pts}`); pop("+" + pts, true); }
+          afterAction(); api.changed();
+        })));
+
+      const recent = getRevenue(id).slice().sort((a, b) => b.ts - a.ts).slice(0, 5);
+      body.append(ui.sec(`Recent · lifetime ${money(bizLifetimeRevenue(id))}`));
+      if(!recent.length) body.append(ui.muted("No revenue logged yet — your first dollar earns a medal."));
+      for(const e of recent){
+        body.append(ui.row(money(e.amount), `${e.date}${e.note ? " · " + e.note : ""}`,
+          ui.btn("×", () => { deleteRevenue(id, e.id); toast("Entry removed. Milestone bonuses already paid stay."); api.changed(); }, { alt: true })));
+      }
+      body.append(ui.muted("The pier buoys and lighthouse show all businesses combined."));
+    }
+  },
+
   HS_rack: {
     title: "Rank Boards", icon: "🏆", sub: "Every board you earn joins the rack",
     status: () => "info",
@@ -234,10 +313,32 @@ function tintBoards(){
   }
 }
 
+function lightWorld(){
+  if(!named) return;
+  let rev = 0, tgt = 0;
+  for(const b of state.businesses){
+    const t = state.revenueGoals[b.id] || 0;
+    if(t > 0){ tgt += t; rev += bizMonthRevenue(b.id); }
+  }
+  const progress = tgt > 0 ? rev / tgt : 0;
+  [25, 50, 75, 100].forEach((pct, i) => {
+    const m = named["KEEP_buoy_" + i];
+    if(!m) return;
+    const on = progress * 100 >= pct;
+    m.material.color.set(on ? 0xffd36b : 0xc9c9cf);
+    m.material.emissive.set(on ? 0xffb000 : 0x000000);
+    m.material.emissiveIntensity = on ? 1.4 : 0;
+  });
+  const lamp = named.KEEP_lighthouse_lamp;
+  const full = progress >= 1;
+  if(lamp){ lamp.material.emissive.set(full ? 0xfff0b0 : 0x000000); lamp.material.emissiveIntensity = full ? 3 : 0; }
+  lampLight.intensity = full ? 60 : 0;
+}
+
 loadGLB("models/beach.glb").then((gltf) => {
   scene.add(gltf.scene);
   named = prepareModel(gltf.scene);
-  ix = createInteraction({ scene, camera, canvas, uiRoot: document.getElementById("explore-ui"), statFn, onChange: tintBoards });
+  ix = createInteraction({ scene, camera, canvas, uiRoot: document.getElementById("explore-ui"), statFn, onChange: () => { tintBoards(); lightWorld(); } });
   for(const name in SPOTS) ix.register(named[name], SPOTS[name]);
   ix.changed();
   window.__ex = { camera, controls, ix, scene };
