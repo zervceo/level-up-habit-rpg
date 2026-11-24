@@ -6,6 +6,7 @@
    ========================================================================= */
 import { THREE, createRenderer, createCamera, hookResize, createSkyDome, createControls, stepCamera, revealUI,
          loadGLB, applyRoomEnvironment, prepareModel, failUI } from "./explore-shared.js";
+import { KNOWLEDGE } from "./knowledge.js";
 import { h, ui, createInteraction, afterAction, pop, toast, rankCard, weeklyGoalRow } from "./explore-interact.js";
 
 const canvas = document.getElementById("three-canvas");
@@ -219,7 +220,7 @@ loadGLB("models/education.glb").then((gltf) => {
   const named = prepareModel(gltf.scene);
   ticker = named.KEEP_ticker || null;
   ix = createInteraction({ scene, camera, canvas, uiRoot: document.getElementById("explore-ui"), statFn, onChange: paintTicker });
-  for(const name in SPOTS) ix.register(named[name], SPOTS[name]);
+  for(const name in SPOTS) ix.register(named[name], { ...SPOTS[name], learn: KNOWLEDGE[name] });
   ix.changed();
   window.__ex = { camera, controls, ix, scene };
   revealUI();

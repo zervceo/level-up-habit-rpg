@@ -6,6 +6,7 @@
    ========================================================================= */
 import { THREE, createRenderer, createCamera, hookResize, createSkyDome, createControls, stepCamera, revealUI,
          loadGLB, applyRoomEnvironment, prepareModel, failUI } from "./explore-shared.js";
+import { KNOWLEDGE } from "./knowledge.js";
 import { h, ui, createInteraction, afterAction, pop, toast, rankCard } from "./explore-interact.js";
 
 const canvas = document.getElementById("three-canvas");
@@ -235,7 +236,7 @@ loadGLB("models/elixir.glb").then((gltf) => {
   if(named.KEEP_screen_code_2) screens.code2 = setScreen(named.KEEP_screen_code_2, drawTerminal);
   if(named.KEEP_screen_scope) screens.scope = setScreen(named.KEEP_screen_scope, drawScope, 256, 192);
   ix = createInteraction({ scene, camera, canvas, uiRoot: document.getElementById("explore-ui"), statFn, onChange: refreshScreens });
-  for(const name in SPOTS) ix.register(named[name], SPOTS[name]);
+  for(const name in SPOTS) ix.register(named[name], { ...SPOTS[name], learn: KNOWLEDGE[name] });
   ix.changed();
   window.__ex = { camera, controls, ix, scene };
   revealUI();

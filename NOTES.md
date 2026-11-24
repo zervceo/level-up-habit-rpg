@@ -1,5 +1,24 @@
 # Build notes / judgment calls
 
+## Knowledge layer (Learn cards + in-world signage)
+
+Every interactive hotspot now teaches something about what it tracks.
+
+- **`knowledge.js`** holds 2-5 short "Learn" cards per hotspot (Vitruvian
+  proportions, sprint and strength basics, OKRs and revenue/profit/cash,
+  the accounting equation, PV/NPV/WACC, Rule of 72, DCF, surfboard anatomy,
+  Ohm's law, colour theory...). They show as collapsible items under each
+  panel and stay open while you use the panel. The content is deliberately
+  conservative: established facts and rules of thumb, no statistics that
+  would need a citation.
+- **In the world**, the same ideas are authored into the Blender models so
+  you learn by walking past them: a stele at the Vitruvian dais, a
+  "Founder's Formulas" chalkboard on the beach, a formula under each Wall
+  Street pavilion sign, and posters in the workshop (surfboard anatomy,
+  Ohm's law, colour wheel, "work -> right -> fast"). The default Blender
+  font has no maths symbols, so the signs use plain ASCII (`>=`, `x`, `-`).
+- Phones are unaffected: this is all inside the desktop 3D scenes.
+
 ## Revenue targets (Entrepreneur)
 
 Growing a business needs an outcome number, not only effort, so the beach

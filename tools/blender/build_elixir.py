@@ -158,6 +158,16 @@ def build(out):
             sph(.13, (rnd.uniform(-1.4, 1.4), .06, rnd.uniform(-.4, .6)), foam, scale=(1.3, .45, 1), seg=6, name='shave')
         box((1.6, .45, .3), (3.2, .22, -1.7), foam, name='blankstack')
         box((1.5, .4, .28), (3.2, .67, -1.7), foam, name='blankstack')
+        # anatomy poster
+        box((2.2, 1.6, .05), (3.0, 2.5, -2.4), white, name='poster')
+        sph(1, (3.0, 2.45, -2.36), M('posterboard', 0xFF8C42, .6), scale=(.85, .1, .02), seg=20, name='posterboard')
+        box((1.7, .02, .02), (3.0, 2.45, -2.34), black, name='posterline')
+        text('SURFBOARD ANATOMY', .13, (3.0, 3.12, -2.35), black, extrude=.004, name='pt0')
+        text('NOSE', .09, (3.95, 2.72, -2.35), black, extrude=.004, name='pt1')
+        text('TAIL', .09, (2.05, 2.72, -2.35), black, extrude=.004, name='pt2')
+        text('RAIL', .09, (3.0, 2.16, -2.35), black, extrude=.004, name='pt3')
+        text('STRINGER', .09, (3.0, 2.62, -2.35), black, extrude=.004, name='pt4')
+        text('ROCKER = BOTTOM CURVE', .09, (3.0, 1.9, -2.35), black, extrude=.004, name='pt5')
         text('SHAPING BAY', .32, (0, 3.4, -2.4), orange, extrude=.03, name='baylabel')
 
     # ------------------------------------------------------------ CODING BAY (NE)
@@ -196,6 +206,7 @@ def build(out):
             seg((a[0], a[1], -2.15), (b[0], b[1], -2.15), .012, black, sides=4, name='boardline')
         for k in range(6):
             box((.18, .18, .01), (-2.4 + (k % 3) * .22, 2.9 - (k // 3) * .22, -2.15), [yellow, orange, green][k % 3], rot=(0, 0, .1 * k), name='sticky')
+        text('WORK -> RIGHT -> FAST', .16, (-3.9, 1.7, -2.15), black, extrude=.004, name='boardmotto')
         text('</> CODE', .5, (0, 3.6, -2.35), neon_c, extrude=.04, name='baylabel')
 
     # ------------------------------------------------------------ ELECTRICAL BAY (W wall, faces +x)
@@ -232,6 +243,15 @@ def build(out):
                 box((.16, .04, .04), (-2.1 + c * .6, 1.05 + r * .4 + .4, -2.08), black, name='drawerhandle')
         for k in range(3):   # wire spools
             cyl(.2, .14, (-1.6 + k * .5, 3.8, -2.3), [red, blue, yellow][k], rot=(PI / 2, 0, 0), seg=14, name='spool')
+        # Ohm's law poster
+        box((1.7, 2.1, .05), (3.45, 3.0, -2.38), white, name='poster')
+        prism([(-.5, -.42), (.5, -.42), (0, .5)], .03, (3.45, 3.25, -2.34), M('triangle', 0x3A86FF, .6), name='ohmtri')
+        text('V', .26, (3.45, 3.48, -2.31), white, extrude=.01, name='ohmV')
+        text('I', .2, (3.2, 3.05, -2.31), white, extrude=.01, name='ohmI')
+        text('R', .2, (3.7, 3.05, -2.31), white, extrude=.01, name='ohmR')
+        text("OHM'S LAW", .13, (3.45, 3.92, -2.35), black, extrude=.004, name='ohmT')
+        text('V = I x R', .15, (3.45, 2.55, -2.35), black, extrude=.004, name='ohm1')
+        text('P = V x I', .15, (3.45, 2.3, -2.35), black, extrude=.004, name='ohm2')
         text('CIRCUIT LAB', .32, (0, 3.5, -2.35), neon_c, extrude=.03, name='baylabel')
 
     # ------------------------------------------------------------ ART BAY (E wall, faces -x)
@@ -291,6 +311,9 @@ def build(out):
             a = k * PI / 6
             prism([(0, 0), (.62 * math.cos(-PI / 12), .62 * math.sin(-PI / 12)), (.62 * math.cos(PI / 12), .62 * math.sin(PI / 12))], .04,
                   (3.2, 3.9, -2.34), paints[k % 8], rot=(0, 0, a), name='wheel')
+        text('COLOR WHEEL', .16, (3.2, 3.12, -2.34), black, extrude=.005, name='wheeltxt')
+        text('OPPOSITES = COMPLEMENTS', .1, (3.2, 2.9, -2.34), black, extrude=.005, name='wheeltxt2')
+        text('SQUINT TO SEE VALUES', .15, (-1.5, 3.05, -2.4), black, extrude=.005, name='valuetxt')
         text('ART STUDIO', .32, (0, 5.1, -2.4), neon_o, extrude=.03, name='baylabel')
 
     # ------------------------------------------------------------ central island (hub)

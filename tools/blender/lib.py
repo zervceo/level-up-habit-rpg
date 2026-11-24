@@ -196,6 +196,7 @@ def text(body, size, at, m, ry=0.0, extrude=0.03, align='CENTER', name='text'):
     cu.body = body
     cu.size = size
     cu.extrude = extrude
+    cu.resolution_u = 3          # glyph curve detail; the default is far more than a sign needs
     cu.align_x = align
     cu.align_y = 'CENTER'
     o = bpy.data.objects.new(name, cu)

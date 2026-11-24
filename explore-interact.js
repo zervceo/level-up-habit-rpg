@@ -47,6 +47,14 @@ const CSS = `
 .ix-big{font:400 26px 'Bungee',sans-serif;color:var(--zerv-heading);line-height:1.1}
 .ix-in{width:100%;box-sizing:border-box;padding:8px 10px;border-radius:12px;border:2px solid var(--input-border);background:var(--input-bg);color:var(--input-text);font:400 13px 'Poppins',sans-serif}
 .ix-lock{margin:8px 0;padding:7px 10px;border-radius:12px;background:rgba(255,77,77,.16);border:1px solid rgba(255,77,77,.5);font-size:12px}
+.ix-learn{margin-top:14px;border-top:1px solid rgba(255,255,255,.14);padding-top:8px}
+.ix-learn>.ix-sec{margin-top:4px}
+.ix-learn details{border-bottom:1px solid rgba(255,255,255,.09);padding:4px 0}
+.ix-learn summary{cursor:pointer;font:600 12px 'Poppins',sans-serif;padding:5px 0;color:var(--zerv-text);list-style:none}
+.ix-learn summary::-webkit-details-marker{display:none}
+.ix-learn summary::before{content:'\\25B8';display:inline-block;width:14px;color:var(--zerv-heading)}
+.ix-learn details[open]>summary::before{content:'\\25BE'}
+.ix-learn details p{margin:2px 0 8px 14px;font-size:12px;opacity:.88;line-height:1.5}
 .ix-link{display:inline-block;margin-top:12px;font:700 11px 'Poppins',sans-serif;color:var(--zerv-link);text-decoration:none}
 .ix-link:hover{color:var(--zerv-link-hover)}
 `;
@@ -80,6 +88,14 @@ export const ui = {
   btns: (...b) => h("div", { class: "ix-btns" }, b),
   row: (label, sub, right, done) => h("div", { class: "ix-row" + (done ? " done" : "") },
     h("div", { class: "ix-lbl" }, label, sub ? h("small", null, sub) : null), right || null),
+  learn: (cards, openSet) => h("div", { class: "ix-learn" },
+    h("div", { class: "ix-sec" }, "📚 Learn"),
+    cards.map((c) => {
+      const d = h("details", { open: openSet ? openSet.has(c.t) : false },
+        h("summary", null, c.t), h("p", null, c.b));
+      d.addEventListener("toggle", () => { if(openSet){ d.open ? openSet.add(c.t) : openSet.delete(c.t); } });
+      return d;
+    })),
   lock: () => h("div", { class: "ix-lock" }, "🔒 Today is sealed (locked in the Practice Log) — it's read-only until tomorrow."),
   link2D: (href, label) => h("a", { class: "ix-link", href, onclick: () => {
     if(MAIN_2D_PAGES.includes(href)){ try{ sessionStorage.setItem("gameoflife:prefer2D", "1"); }catch(e){} }
@@ -235,6 +251,10 @@ export function createInteraction({ scene, camera, canvas, uiRoot, statFn, onCha
     head.sub.textContent = d.sub ? (typeof d.sub === "function" ? d.sub() : d.sub) : "";
     body.replaceChildren();
     d.render(body, api);
+    if(d.learn && d.learn.length){
+      active.learnOpen = active.learnOpen || new Set();
+      body.append(ui.learn(d.learn, active.learnOpen));
+    }
     if(d.link) body.append(ui.link2D(d.link.href, d.link.label));
   }
   function open(s){

@@ -174,10 +174,11 @@ def build(out):
             cyl(.19, .16, (lx, by + .08, lz + (.95 if ph else -.6)), bronze_dk, seg=10, name='hoof')
         seg((0, by + 1.7, -2.5), (0, by + 1.2, -3.4), .12, bronze, r2=.05, sides=8, name='tail')
         seg((0, by + 1.2, -3.4), (.15, by + .5, -3.5), .05, bronze, r2=.14, sides=8, name='tail2')
-        text('CHARGING BULL', .32, (0, .5, 4.32), gold, extrude=.02, name='bplaque')
+        text('CHARGING BULL', .34, (0, .6, 4.32), gold, extrude=.02, name='bplaque')
+        text('Arturo Di Modica, 1989', .2, (0, .32, 4.32), white, extrude=.01, name='bplaque2')
 
     # ------------------------------------------------------------ five topic pavilions (hotspots)
-    def pavilion(topic, side, zc, label, props):
+    def pavilion(topic, side, zc, label, props, formula=''):
         with group('HS_topic_' + topic, at=(side * (SIDE - 2.5), 0, zc), ry=(PI / 2 if side < 0 else -PI / 2)):
             box((4.8, .16, 4.4), (0, .26, 0), curb, name='pbase')
             for sx in (-2.15, 2.15):
@@ -185,7 +186,9 @@ def build(out):
             box((4.6, 1.0, .16), (0, 4.0, -1.8), navy, name='psign')
             box((4.8, .12, .22), (0, 4.55, -1.8), gold, name='psigntrim')
             box((4.8, .12, .22), (0, 3.45, -1.8), gold, name='psigntrim')
-            text(label, .34, (0, 4.0, -1.7), gold, extrude=.03, name='plabel')
+            text(label, .34, (0, 4.14, -1.7), gold, extrude=.03, name='plabel')
+            if formula:
+                text(formula, .17, (0, 3.74, -1.7), white, extrude=.01, name='pformula')
             props()
 
     def accounting_props():
@@ -277,11 +280,11 @@ def build(out):
             cyl(.18, .06, (1.4, 2.12 + k * .065, -.3), gold, seg=14, name='coin')
         text('$', .5, (0, 1.0, .35), gold, extrude=.06, name='vdollar')
 
-    pavilion('accounting', -1, 20, 'ACCOUNTING', accounting_props)
-    pavilion('statements', 1, 6, 'STATEMENTS', statements_props)
-    pavilion('corp_finance', -1, -8, 'CORP FINANCE', corp_props)
-    pavilion('investing', 1, -20, 'MARKETS', markets_props)
-    pavilion('valuation', -1, -30, 'VALUATION', valuation_props)
+    pavilion('accounting', -1, 20, 'ACCOUNTING', accounting_props, 'ASSETS = LIABILITIES + EQUITY')
+    pavilion('statements', 1, 6, 'STATEMENTS', statements_props, 'INCOME  |  BALANCE  |  CASH FLOW')
+    pavilion('corp_finance', -1, -8, 'CORP FINANCE', corp_props, 'PV = FV / (1 + r)^n')
+    pavilion('investing', 1, -20, 'MARKETS', markets_props, 'RULE OF 72: YEARS = 72 / RATE')
+    pavilion('valuation', -1, -30, 'VALUATION', valuation_props, 'EV = MKT CAP + DEBT - CASH')
 
     # ------------------------------------------------------------ street furniture
     def lamppost(x, z, side):
