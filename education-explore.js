@@ -205,6 +205,7 @@ function paintTicker(){
   if(tickerTex) tickerTex.dispose();
   tickerTex = new THREE.CanvasTexture(c);
   tickerTex.colorSpace = THREE.SRGBColorSpace;
+  tickerTex.flipY = false;
   tickerTex.wrapS = THREE.RepeatWrapping;
   tickerTex.repeat.set(TICK_VISIBLE / c.width, 1);
   tickerTex.userData.period = P / c.width;

@@ -147,6 +147,7 @@ function setScreen(mesh, draw, w = 512, hgt = 300){
   c.width = w; c.height = hgt;
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
+  tex.flipY = false;
   mesh.material = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false });
   const ctx = c.getContext("2d");
   const s = { ctx, tex, draw, w, h: hgt };

@@ -396,13 +396,14 @@ def build(out):
     with group('formulas', at=(-4.6, 0, 29.0), ry=.85):
         for sx in (-.75, .75):
             seg((sx, 0, -.5), (sx * .9, 1.55, 0), .04, dark_wood, sides=6, name='fleg')
-        box((2.0, 1.6, .09), (0, 1.15, 0), dark_wood, rot=(-.1, 0, 0), name='fframe')
-        box((1.84, 1.44, .02), (0, 1.15, .06), chalk_bd, rot=(-.1, 0, 0), name='fboard')
-        text("FOUNDER'S FORMULAS", .14, (0, 1.72, .1), white, extrude=.005, name='ft0')
-        text('REVENUE - COSTS = PROFIT', .115, (0, 1.42, .09), white, extrude=.005, name='ft1')
-        text('PROFIT IS NOT CASH', .115, (0, 1.15, .09), white, extrude=.005, name='ft2')
-        text('LTV >= 3 x CAC', .115, (0, .88, .09), white, extrude=.005, name='ft3')
-        text('PRICE ON VALUE, NOT COST', .095, (0, .62, .09), white, extrude=.005, name='ft4')
+        with group('fboardtilt', at=(0, 1.15, 0), rot=(-.1, 0, 0)):
+            box((2.0, 1.6, .09), (0, 0, 0), dark_wood, name='fframe')
+            box((1.84, 1.44, .02), (0, 0, .06), chalk_bd, name='fboard')
+            text("FOUNDER'S FORMULAS", .14, (0, .57, .09), white, extrude=.005, name='ft0')
+            text('REVENUE - COSTS = PROFIT', .115, (0, .28, .09), white, extrude=.005, name='ft1')
+            text('PROFIT IS NOT CASH', .115, (0, 0, .09), white, extrude=.005, name='ft2')
+            text('LTV >= 3 x CAC', .115, (0, -.28, .09), white, extrude=.005, name='ft3')
+            text('PRICE ON VALUE, NOT COST', .095, (0, -.54, .09), white, extrude=.005, name='ft4')
 
     # ------------------------------------------------------------ revenue stand, milestone buoys, lighthouse
     greenled = M('greenled', 0x6CFFA8, .3, emit=0x14E070, strength=4.0)

@@ -174,8 +174,9 @@ def build(out):
             cyl(.19, .16, (lx, by + .08, lz + (.95 if ph else -.6)), bronze_dk, seg=10, name='hoof')
         seg((0, by + 1.7, -2.5), (0, by + 1.2, -3.4), .12, bronze, r2=.05, sides=8, name='tail')
         seg((0, by + 1.2, -3.4), (.15, by + .5, -3.5), .05, bronze, r2=.14, sides=8, name='tail2')
-        text('CHARGING BULL', .34, (0, .6, 4.32), gold, extrude=.02, name='bplaque')
-        text('Arturo Di Modica, 1989', .2, (0, .32, 4.32), white, extrude=.01, name='bplaque2')
+        plaque_gold = M('plaquegold', 0xF2D27A, .5, emit=0xC9A227, strength=.8)
+        text('CHARGING BULL', .3, (0, .5, 4.33), plaque_gold, extrude=.02, name='bplaque')
+        text('Arturo Di Modica, 1989', .17, (0, .24, 4.33), white, extrude=.01, name='bplaque2')
 
     # ------------------------------------------------------------ five topic pavilions (hotspots)
     def pavilion(topic, side, zc, label, props, formula=''):
