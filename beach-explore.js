@@ -5,6 +5,7 @@
    ========================================================================= */
 import { THREE, createRenderer, createCamera, hookResize, createSkyDome, createControls, stepCamera, revealUI,
          loadGLB, applyRoomEnvironment, prepareModel, failUI } from "./explore-shared.js";
+import { KNOWLEDGE } from "./knowledge.js";
 import { h, ui, createInteraction, afterAction, pop, toast, rankCard, weeklyGoalRow } from "./explore-interact.js";
 
 const canvas = document.getElementById("three-canvas");
@@ -339,7 +340,7 @@ loadGLB("models/beach.glb").then((gltf) => {
   scene.add(gltf.scene);
   named = prepareModel(gltf.scene);
   ix = createInteraction({ scene, camera, canvas, uiRoot: document.getElementById("explore-ui"), statFn, onChange: () => { tintBoards(); lightWorld(); } });
-  for(const name in SPOTS) ix.register(named[name], SPOTS[name]);
+  for(const name in SPOTS) ix.register(named[name], { ...SPOTS[name], learn: KNOWLEDGE[name] });
   ix.changed();
   window.__ex = { camera, controls, ix, scene };
   revealUI();

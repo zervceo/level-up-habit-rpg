@@ -143,6 +143,13 @@ def build(out):
         for a, b in (((-sq, cy - sq, 0), (sq, cy - sq, 0)), ((-sq, cy + sq, 0), (sq, cy + sq, 0)),
                      ((-sq, cy - sq, 0), (-sq, cy + sq, 0)), ((sq, cy - sq, 0), (sq, cy + sq, 0))):
             seg(a, b, .035, brass, sides=6, name='vsq')
+        # knowledge stele: what the figure shows
+        box((3.6, 1.35, .14), (0, .68, 3.35), stone, name='stele')
+        box((3.8, .08, .22), (0, 1.38, 3.35), brass, name='stele_cap')
+        text('VITRUVIAN MAN', .30, (0, 1.08, 3.45), black, extrude=.01, name='stele_t1')
+        text('after Leonardo da Vinci, c. 1490', .15, (0, .78, 3.45), black, extrude=.01, name='stele_t2')
+        text('Arms outstretched fit a square.', .13, (0, .55, 3.45), black, extrude=.01, name='stele_t3')
+        text('Limbs spread fit a circle at the navel.', .13, (0, .36, 3.45), black, extrude=.01, name='stele_t4')
 
     # ------------------------------------------------------------ deed plinths
     def plinth(deed_id, label, ang_deg, props):
