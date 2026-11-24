@@ -42,6 +42,8 @@ set of components, four color themes layered on top via CSS variables.
 
 ## Explore in 3D
 
+Entrepreneur also has a **Sales Pipeline** board by the shack: track leads from new to contacted, call booked and client won, earn points for daily outreach and for closing, and turn a won deal into revenue.
+
 Entrepreneur has a **Revenue Stand** on the pier: log income per business, set a monthly target, and earn bonus points at 25/50/75/100% of it (pier buoys and a lighthouse light up as you go).
 
 The scenes are modelled in Blender (`tools/blender/`, exported to `models/`)

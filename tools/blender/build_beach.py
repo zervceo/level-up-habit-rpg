@@ -6,6 +6,7 @@ Hotspots wired in beach-explore.js:
   HS_post_tiktok    daily ZERV post — TikTok               (ring-light station)
   HS_goal           weekly business goal                   (flagpole)
   HS_journal        notes across all businesses            (picnic table logbook)
+  HS_pipeline       sales pipeline: leads, outreach, clients won (KEEP_pipeline_board is painted live in JS)
   HS_rack           your rank, shown as 7 surfboards       (KEEP_board_0..6 are dimmed until earned)
   HS_revenue        revenue stand at the pier: income log + monthly target
   KEEP_buoy_0..3    pier buoys that light at 25/50/75/100% of this month's target
@@ -390,6 +391,24 @@ def build(out):
     for (x, z) in ((-27, -26), (30, -28), (36, -24), (-38, -28), (14, -29)):
         for k in range(4):
             sph(rnd.uniform(.5, 1.1), (x + rnd.uniform(-1.5, 1.5), .2, z + rnd.uniform(-1.5, 1.5)), rock, scale=(1, .65, 1), seg=8, name='rock')
+
+    # ------------------------------------------------------------ sales pipeline board (hotspot)
+    pipe_bd = M('pipeblank', 0x1E2A26, .9)
+    with group('HS_pipeline', at=(-3.1, 0, -0.6), ry=.25):
+        box((3.8, .12, 1.3), (0, .06, 0), plank, name='pbase')
+        for sx in (-1.75, 1.75):
+            cyl(.08, 3.3, (sx, 1.65, 0), dark_wood, seg=8, name='ppost')
+            sph(.16, (sx, 3.05, .1), bulb, seg=10, name='plantern')
+        box((3.2, 1.8, .1), (0, 1.5, 0), dark_wood, name='pframe')
+        quad(3.0, 1.6, (0, 1.5, .07), pipe_bd, name='KEEP_pipeline_board')
+        box((3.6, .5, .1), (0, 2.95, .03), dark_wood, name='pheader')
+        text('SALES PIPELINE', .27, (0, 2.95, .1), M('signgold', 0xFFD36B, .5, emit=0xFFB000, strength=1.2), extrude=.03, name='pheadtxt')
+        box((3.9, .1, 1.0), (0, 3.4, -.05), teal, rot=(.16, 0, 0), name='proof')
+        # signal bell: ring it when you win a client
+        seg((1.75, 2.55, 0), (2.35, 2.55, .25), .035, dark_wood, sides=6, name='bellarm')
+        lathe([(.28, 0), (.26, .05), (.18, .3), (.1, .42), (.0, .44)], (2.35, 2.05, .25), gold, seg=16, name='bell')
+        sph(.06, (2.35, 2.0, .25), dark_wood, seg=8, name='clapper')
+        text('WON', .14, (2.35, 1.6, .26), white, extrude=.01, name='belltxt')
 
     # ------------------------------------------------------------ founder's formulas chalkboard (knowledge)
     chalk_bd = M('chalkbd', 0x1E2A26, .9)

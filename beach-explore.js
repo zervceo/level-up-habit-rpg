@@ -88,6 +88,7 @@ const collidables = [
   { x: 9.5, z: 4, radius: 1.3 }, { x: -9.5, z: 5, radius: 2.2 },
   { x: 12.5, z: -3.8, radius: 2.8 }, { x: -16.5, z: -6.5, radius: 2.9 }, { x: 21, z: 3, radius: 2.3 },
   { x: -19.2, z: -23, radius: 1.8 },
+  { x: -3.1, z: -0.6, radius: 1.9 },
   ...PALMS.map(([x, z]) => ({ x, z, radius: 0.55 }))
 ];
 
@@ -130,7 +131,30 @@ function postSpot(id){
   };
 }
 
-let revBiz = null;
+let revBiz = null, pipeBiz = null;
+function curPipeBiz(){
+  if(!state.businesses.some((b) => b.id === pipeBiz)) pipeBiz = state.businesses[0] ? state.businesses[0].id : null;
+  return pipeBiz;
+}
+function announceRevenue(r, bizName){
+  toast(`💰 ${money(r.entry.amount)} logged for ${bizName}`);
+  if(r.earned.length){
+    const pts = r.earned.reduce((x, m) => x + m.points, 0);
+    toast(`🏆 ${r.earned[r.earned.length - 1].pct}% of ${bizName}'s target! +${pts}`);
+    pop("+" + pts, true);
+  }
+}
+const NEXT_STAGE = { lead: ["contacted", "Contacted ▸"], contacted: ["call", "Call booked ▸"], call: ["won", "Won 🎉"] };
+function announceMove(res){
+  if(!res) return;
+  let pts = 0;
+  for(const e of res.earned){
+    pts += e.points;
+    toast(`🎯 ${res.lead.name}: ${e.label}${e.points ? " +" + e.points : ""}`);
+  }
+  if(pts > 0) pop("+" + pts, true);
+  if(res.lead.stage === "won" && res.earned.some((e) => e.kind === "won")) toast("🔔 Client won! Ring the bell.");
+}
 const money = (n) => "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
 function curBiz(){
   if(!state.businesses.some((b) => b.id === revBiz)) revBiz = state.businesses[0] ? state.businesses[0].id : null;
@@ -208,6 +232,81 @@ const SPOTS = {
       body.append(ui.sec("Recent"));
       if(!all.length) body.append(ui.muted("No journal entries yet."));
       for(const j of all.slice(0, 6)) body.append(ui.row(j.text, `${j.biz} · ${new Date(j.ts).toLocaleString()}`));
+    }
+  },
+
+  HS_pipeline: {
+    title: "Sales Pipeline", icon: "📞", sub: "Leads, outreach and clients won",
+    status: () => (outreachToday() >= 1 ? "done" : "todo"),
+    link: { href: "entrepreneur.html", label: "Open the Surf Shack →" },
+    render(body, api){
+      if(!state.businesses.length){ body.append(ui.muted("Add a business on the Surf Shack page first, then track its leads here.")); return; }
+      const id = curPipeBiz();
+      const biz = state.businesses.find((b) => b.id === id);
+      const sel = h("select", { class: "ix-in", onchange: () => { pipeBiz = sel.value; api.changed(); } },
+        ...state.businesses.map((b) => h("option", { value: b.id }, b.name)));
+      sel.value = id;
+      body.append(sel);
+
+      const sum = pipelineSummary(id);
+      const n = outreachToday();
+      body.append(h("div", { style: "height:6px" }),
+        ui.row("Pipeline", `new · contacted · call booked · won — ${money(sum.openValue)} open, ${money(sum.wonValue)} won`,
+          h("b", null, `${sum.lead} · ${sum.contacted} · ${sum.call} · ${sum.won}`)),
+        ui.bar(Math.min(n, OUTREACH_DAILY_CAP) / OUTREACH_DAILY_CAP * 100,
+          `Outreach today: ${n} (+${OUTREACH_POINTS} each, up to ${OUTREACH_DAILY_CAP} a day = ${outreachPay(n)} / ${OUTREACH_DAILY_CAP * OUTREACH_POINTS} pts)`));
+
+      const name = h("input", { class: "ix-in", type: "text", placeholder: "Lead name (person or company)" });
+      const val = h("input", { class: "ix-in", type: "number", step: "1", min: "0", placeholder: "Deal value ($, optional)" });
+      const note = h("input", { class: "ix-in", type: "text", placeholder: "Note (optional)" });
+      const add = () => {
+        const l = addLead(id, name.value, val.value, note.value);
+        if(!l){ toast("Give the lead a name."); return; }
+        toast(`📞 Lead added: ${l.name}`);
+        api.changed();
+      };
+      name.addEventListener("keydown", (e) => { if(e.key === "Enter") add(); });
+      body.append(ui.sec("Add a lead"), name, h("div", { style: "height:6px" }), val, h("div", { style: "height:6px" }), note, ui.btns(ui.btn("Add lead", add)));
+
+      const open = getLeads(id).filter((l) => l.stage !== "won" && l.stage !== "lost")
+        .sort((a, b) => PIPELINE_RANK[b.stage] - PIPELINE_RANK[a.stage]);
+      body.append(ui.sec(`Open leads · ${open.length}`));
+      if(!open.length) body.append(ui.muted("No open leads. Add one above, then move it forward as the conversation does."));
+      for(const l of open.slice(0, 8)){
+        const [next, nextLabel] = NEXT_STAGE[l.stage];
+        const sub = [pipelineStageDef(l.stage).label, l.value ? money(l.value) : "", l.note, l.touches ? `${l.touches} follow-up${l.touches === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ");
+        const btns = [ui.btn(nextLabel, () => { announceMove(moveLead(id, l.id, next)); afterAction(); api.changed(); })];
+        if(l.stage !== "lead") btns.push(ui.btn("↻", () => {
+          const r = logFollowUp(id, l.id);
+          if(r){
+            toast(r.points > 0 ? `↻ Follow-up logged +${r.points}` : "↻ Follow-up logged (daily outreach cap reached)");
+            if(r.points > 0) pop("+" + r.points, true);
+          }
+          afterAction(); api.changed();
+        }, { alt: true }));
+        btns.push(ui.btn("Lost", () => { moveLead(id, l.id, "lost"); api.changed(); }, { alt: true }));
+        body.append(ui.row(l.name, sub, h("div", { class: "ix-btns", style: "margin:0;flex-wrap:nowrap" }, btns)));
+      }
+      if(open.length > 8) body.append(ui.muted(`+${open.length - 8} more open leads (they're on the board; close some out to see them here)`));
+
+      const closed = getLeads(id).filter((l) => l.stage === "won" || l.stage === "lost")
+        .sort((a, b) => (a.stage === "won" ? 0 : 1) - (b.stage === "won" ? 0 : 1)).slice(0, 5);
+      if(closed.length){
+        body.append(ui.sec("Closed"));
+        for(const l of closed){
+          const btns = [];
+          if(l.stage === "won" && l.value > 0 && !l.revenueLogged){
+            btns.push(ui.btn(`💰 Log ${money(l.value)}`, () => {
+              const r = logLeadRevenue(id, l.id);
+              if(r) announceRevenue(r, biz.name);
+              afterAction(); api.changed();
+            }));
+          }
+          btns.push(ui.btn("×", () => { deleteLead(id, l.id); toast("Lead removed. Points already earned stay."); api.changed(); }, { alt: true }));
+          body.append(ui.row(l.name, `${l.stage === "won" ? "Client won 🎉" : "Lost"}${l.value ? " · " + money(l.value) : ""}${l.revenueLogged ? " · revenue logged" : ""}`,
+            h("div", { class: "ix-btns", style: "margin:0;flex-wrap:nowrap" }, btns), l.stage === "lost"));
+        }
+      }
     }
   },
 
@@ -314,6 +413,56 @@ function tintBoards(){
   }
 }
 
+let pipeCtx = null, pipeTex = null;
+function initPipelineBoard(){
+  const mesh = named && named.KEEP_pipeline_board;
+  if(!mesh) return;
+  const c = document.createElement("canvas");
+  c.width = 1024; c.height = 546;
+  pipeCtx = c.getContext("2d");
+  pipeTex = new THREE.CanvasTexture(c);
+  pipeTex.colorSpace = THREE.SRGBColorSpace;
+  pipeTex.flipY = false;
+  mesh.material = new THREE.MeshBasicMaterial({ map: pipeTex, toneMapped: false });
+}
+function fitText(ctx, text, maxW){
+  if(ctx.measureText(text).width <= maxW) return text;
+  while(text.length > 1 && ctx.measureText(text + "…").width > maxW) text = text.slice(0, -1);
+  return text + "…";
+}
+function paintPipeline(){
+  if(!pipeCtx) return;
+  const ctx = pipeCtx, W = 1024, H = 546;
+  ctx.fillStyle = "#1E2A26"; ctx.fillRect(0, 0, W, H);
+  const all = [];
+  for(const b of state.businesses) for(const l of getLeads(b.id)) all.push(l);
+  const cols = [["lead", "NEW"], ["contacted", "CONTACTED"], ["call", "CALL BOOKED"], ["won", "WON"]];
+  const colW = W / 4, notes = ["#FFE27A", "#FFB3C7", "#9BE7F2"];
+  ctx.textAlign = "center";
+  cols.forEach(([id, label], i) => {
+    const x = i * colW, list = all.filter((l) => l.stage === id).reverse();
+    ctx.fillStyle = id === "won" ? "#1F6B3A" : "#2C3B35"; ctx.fillRect(x + 6, 8, colW - 12, 72);
+    ctx.fillStyle = "#F4EFE2"; ctx.font = "700 24px 'Poppins', sans-serif"; ctx.fillText(label, x + colW / 2, 38);
+    ctx.fillStyle = "#FFD36B"; ctx.font = "700 30px 'Poppins', sans-serif"; ctx.fillText(String(list.length), x + colW / 2, 70);
+    list.slice(0, 3).forEach((l, k) => {
+      const y = 94 + k * 82;
+      ctx.fillStyle = notes[(i + k) % 3]; ctx.fillRect(x + 14, y, colW - 28, 70);
+      ctx.fillStyle = "#1A1A1A"; ctx.font = "700 24px 'Poppins', sans-serif";
+      ctx.fillText(fitText(ctx, l.name, colW - 48), x + colW / 2, y + 30);
+      if(l.value > 0){ ctx.font = "600 20px 'Poppins', sans-serif"; ctx.fillText(money(l.value), x + colW / 2, y + 56); }
+    });
+    if(list.length > 3){ ctx.fillStyle = "#cfd8d3"; ctx.font = "600 20px 'Poppins', sans-serif"; ctx.fillText(`+${list.length - 3} more`, x + colW / 2, 94 + 3 * 82 + 14); }
+  });
+  const sum = pipelineSummary(null), n = outreachToday();
+  ctx.textAlign = "left"; ctx.fillStyle = "#F4EFE2"; ctx.font = "700 24px 'Poppins', sans-serif";
+  ctx.fillText(`Outreach today: ${Math.min(n, OUTREACH_DAILY_CAP)} / ${OUTREACH_DAILY_CAP}${n > OUTREACH_DAILY_CAP ? " (cap)" : ""}`, 20, H - 28);
+  ctx.fillStyle = "#3A4A43"; ctx.fillRect(330, H - 46, 250, 22);
+  ctx.fillStyle = "#FFD36B"; ctx.fillRect(330, H - 46, 250 * Math.min(n, OUTREACH_DAILY_CAP) / OUTREACH_DAILY_CAP, 22);
+  ctx.textAlign = "right"; ctx.fillStyle = "#6CFFA8";
+  ctx.fillText(`Open pipeline: ${money(sum.openValue)}`, W - 20, H - 28);
+  pipeTex.needsUpdate = true;
+}
+
 function lightWorld(){
   if(!named) return;
   let rev = 0, tgt = 0;
@@ -339,7 +488,8 @@ function lightWorld(){
 loadGLB("models/beach.glb").then((gltf) => {
   scene.add(gltf.scene);
   named = prepareModel(gltf.scene);
-  ix = createInteraction({ scene, camera, canvas, uiRoot: document.getElementById("explore-ui"), statFn, onChange: () => { tintBoards(); lightWorld(); } });
+  initPipelineBoard();
+  ix = createInteraction({ scene, camera, canvas, uiRoot: document.getElementById("explore-ui"), statFn, onChange: () => { tintBoards(); lightWorld(); paintPipeline(); } });
   for(const name in SPOTS) ix.register(named[name], { ...SPOTS[name], learn: KNOWLEDGE[name] });
   ix.changed();
   window.__ex = { camera, controls, ix, scene };
