@@ -79,6 +79,14 @@ export const KNOWLEDGE = {
     { t: "Rank is momentum", b: "Every board is earned by consistent points across all four sectors. Rank doesn't reward one big day; it rewards showing up." },
     { t: "Surfboard sizes", b: "More volume (a longboard) is stable and easy to catch waves with. Less volume (a shortboard) is faster to turn and harder to ride, so skill, not just gear, unlocks the next board." }
   ],
+  HS_pipeline: [
+    { t: "Pipeline stages", b: "Leads move from new, to contacted, to a booked call, to a won client (or lost). Moving every lead forward, or closing it out, keeps the pipeline honest. Stale leads hide how healthy it really is." },
+    { t: "Follow up", b: "Many replies and deals come after more than one touch. A short, polite follow-up a few days later is normal, and it's where many sales are won." },
+    { t: "Conversion rate", b: "Won ÷ contacted is your conversion rate. Track it: raising either the rate or the number of contacts raises revenue." },
+    { t: "Qualify early", b: "Check quickly whether the person has the problem, the budget and the authority to buy. Time spent on poor fits is the most common leak." },
+    { t: "Always ask for the next step", b: "End each conversation with a specific next step and date: a call, a trial, a decision. Open endings turn into silence." },
+    { t: "Activity vs outcome", b: "Outreach is a leading measure you control; wins are a lagging result. That's why touches pay a little every day and wins pay a bonus." }
+  ],
   HS_revenue: [
     { t: "Revenue − costs = profit", b: "Revenue is what comes in, profit is what's left after costs. A business can have rising revenue and still lose money, so track both." },
     { t: "Profit isn't cash", b: "You can be profitable and still run short of cash (customers pay late, stock is paid up front). Watch the bank balance, not just the P&L." },

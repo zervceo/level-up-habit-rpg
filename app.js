@@ -93,6 +93,23 @@ const REVENUE_MILESTONES = [
   { pct:100, points:1000 }
 ];
 
+/* Sales pipeline: leads per business move New -> Contacted -> Call booked ->
+   Client won (or Lost). Every outreach touch pays a little (capped per day so
+   it can't be farmed), and each lead pays a one-time bonus at Call booked and
+   Client won. Nothing is ever clawed back (no moving a lead backwards or
+   deleting it takes points away), and Lost costs nothing. */
+const PIPELINE_STAGES = [
+  { id:"lead",      label:"New lead" },
+  { id:"contacted", label:"Contacted" },
+  { id:"call",      label:"Call booked" },
+  { id:"won",       label:"Client won" },
+  { id:"lost",      label:"Lost" }
+];
+const PIPELINE_RANK = { lead:0, contacted:1, call:2, won:3 };
+const OUTREACH_POINTS = 25;      /* per outreach touch */
+const OUTREACH_DAILY_CAP = 10;   /* touches per day that pay */
+const PIPELINE_BONUS = { call:150, won:500 };
+
 /* =========================================================================
    EDUCATION — Wall Street Trading Floor. Classes, deadlines, mastery.
    ========================================================================= */
@@ -216,6 +233,12 @@ const ACHIEVEMENTS = [
     check:a => a.revenueEntries >= 1 },
   { id:"revenue_goal", name:"Goal Getter", icon:"📈", desc:"Hit 100% of a monthly revenue target.",
     check:a => a.revenueGoalsHit >= 1 },
+  { id:"first_client", name:"First Client", icon:"🤝", desc:"Win your first client from the sales pipeline.",
+    check:a => a.leadsWon >= 1 },
+  { id:"five_clients", name:"Rainmaker", icon:"🌧️", desc:"Win 5 clients from the sales pipeline.",
+    check:a => a.leadsWon >= 5 },
+  { id:"outreach_50", name:"Hustler", icon:"📞", desc:"Make 50 outreach touches, lifetime.",
+    check:a => a.outreachLifetime >= 50 },
   { id:"deadline_crusher", name:"Deadline Crusher", icon:"⏰", desc:"Complete 10 assignments, lifetime.",
     check:a => a.assignmentsDone >= 10 },
   { id:"wall_street_bound", name:"Wall Street Bound", icon:"🏙️", desc:"Reach Managing Director mastery in any finance topic.",
@@ -255,6 +278,7 @@ const SPRINT_GOAL_KEY = "gameoflife:entity:sprintGoal";
 const REVENUE_PREFIX = "gameoflife:business:revenue:";
 const REVENUE_GOALS_KEY = "gameoflife:business:revenueGoals";
 const REVENUE_AWARDS_KEY = "gameoflife:business:revenueAwards";
+const LEADS_PREFIX = "gameoflife:business:leads:";
 
 function defaultDay(){ return { deeds:{}, vices:{}, biz:{}, study:{}, craft:{}, locked:false }; }
 function defaultWeek(){ return { schoolwork:false, personalGoal:false, spiritualGoal:false, businessGoal:false }; }
@@ -265,7 +289,8 @@ const state = {
   classes: [], assignments: [],
   elixirMilestones: {},
   sprintGoal: null,
-  revenue: {}, revenueGoals: {}, revenueAwards: {}
+  revenue: {}, revenueGoals: {}, revenueAwards: {},
+  leads: {}
 };
 
 function loadAll(){
@@ -285,6 +310,8 @@ function loadAll(){
       try{ state.bizJournal[key.slice(BIZ_JOURNAL_PREFIX.length)] = JSON.parse(localStorage.getItem(key)) || []; }catch(e){}
     } else if(key.startsWith(REVENUE_PREFIX)){
       try{ state.revenue[key.slice(REVENUE_PREFIX.length)] = JSON.parse(localStorage.getItem(key)) || []; }catch(e){}
+    } else if(key.startsWith(LEADS_PREFIX)){
+      try{ state.leads[key.slice(LEADS_PREFIX.length)] = JSON.parse(localStorage.getItem(key)) || []; }catch(e){}
     }
   }
   try{ state.achievements = JSON.parse(localStorage.getItem(ACH_KEY)) || {}; }catch(e){ state.achievements = {}; }
@@ -318,6 +345,7 @@ function saveElixirMilestones(){ localStorage.setItem(ELIXIR_MILESTONES_KEY, JSO
 function saveSprintGoal(){ localStorage.setItem(SPRINT_GOAL_KEY, JSON.stringify(state.sprintGoal)); }
 function saveRevenue(bizId){ localStorage.setItem(REVENUE_PREFIX + bizId, JSON.stringify(state.revenue[bizId] || [])); }
 function saveRevenueGoals(){ localStorage.setItem(REVENUE_GOALS_KEY, JSON.stringify(state.revenueGoals)); }
+function saveLeads(bizId){ localStorage.setItem(LEADS_PREFIX + bizId, JSON.stringify(state.leads[bizId] || [])); }
 function saveRevenueAwards(){ localStorage.setItem(REVENUE_AWARDS_KEY, JSON.stringify(state.revenueAwards)); }
 
 function getDay(date){ if(!state.days[date]) state.days[date] = defaultDay(); return state.days[date]; }
@@ -392,6 +420,8 @@ function dayBizTotal(day){
   total += (day.biz._tasksDone || 0) * BUSINESS_TASK_POINTS;
   total += (day.biz._journalEntries || 0) * BUSINESS_JOURNAL_POINTS;
   total += day.biz._revenuePoints || 0;
+  total += Math.min(day.biz._outreach || 0, OUTREACH_DAILY_CAP) * OUTREACH_POINTS;
+  total += day.biz._pipelinePoints || 0;
   return total;
 }
 
@@ -564,6 +594,95 @@ function setRevenueGoal(bizId, target){
 }
 
 /* =========================================================================
+   SALES PIPELINE HELPERS
+   ========================================================================= */
+function getLeads(bizId){ if(!state.leads[bizId]) state.leads[bizId] = []; return state.leads[bizId]; }
+function pipelineStageDef(id){ return PIPELINE_STAGES.find(s => s.id === id); }
+function outreachToday(){ const d = state.days[todayStr()]; return (d && d.biz && d.biz._outreach) || 0; }
+function outreachPay(count){ return Math.min(count, OUTREACH_DAILY_CAP) * OUTREACH_POINTS; }
+function addLead(bizId, name, value, note){
+  name = (name || "").trim();
+  if(!name) return null;
+  const v = Math.round(Number(value) * 100) / 100;
+  const lead = { id:"l"+Date.now()+Math.random().toString(36).slice(2,6), name, value: v > 0 ? v : 0,
+    note: (note || "").trim(), stage:"lead", createdAt: todayStr(), touches:0, awarded:{}, revenueLogged:false };
+  getLeads(bizId).push(lead);
+  saveLeads(bizId);
+  return lead;
+}
+/* Moves a lead and pays any not-yet-paid steps up to that stage (a lead that
+   jumps straight to Won is paid for the contact and the call as well). */
+function moveLead(bizId, leadId, stage){
+  const lead = getLeads(bizId).find(l => l.id === leadId);
+  if(!lead || !pipelineStageDef(stage)) return null;
+  lead.stage = stage;
+  lead.awarded = lead.awarded || {};
+  const day = getDay(todayStr());
+  const earned = [];
+  const rank = PIPELINE_RANK[stage];
+  if(rank !== undefined){
+    if(rank >= 1 && !lead.awarded.contacted){
+      lead.awarded.contacted = true;
+      const before = outreachPay(day.biz._outreach || 0);
+      day.biz._outreach = (day.biz._outreach || 0) + 1;
+      earned.push({ kind:"outreach", label:"Outreach", points: outreachPay(day.biz._outreach) - before });
+    }
+    if(rank >= 2 && !lead.awarded.call){
+      lead.awarded.call = true;
+      day.biz._pipelinePoints = (day.biz._pipelinePoints || 0) + PIPELINE_BONUS.call;
+      earned.push({ kind:"call", label:"Call booked", points: PIPELINE_BONUS.call });
+    }
+    if(rank >= 3 && !lead.awarded.won){
+      lead.awarded.won = true;
+      day.biz._pipelinePoints = (day.biz._pipelinePoints || 0) + PIPELINE_BONUS.won;
+      earned.push({ kind:"won", label:"Client won", points: PIPELINE_BONUS.won });
+    }
+  }
+  saveLeads(bizId);
+  saveDay(todayStr());
+  return { lead, earned };
+}
+function logFollowUp(bizId, leadId){
+  const lead = getLeads(bizId).find(l => l.id === leadId);
+  if(!lead || lead.stage === "won" || lead.stage === "lost") return null;
+  const day = getDay(todayStr());
+  const before = outreachPay(day.biz._outreach || 0);
+  day.biz._outreach = (day.biz._outreach || 0) + 1;
+  lead.touches = (lead.touches || 0) + 1;
+  lead.lastTouch = todayStr();
+  saveLeads(bizId);
+  saveDay(todayStr());
+  return { points: outreachPay(day.biz._outreach) - before, count: day.biz._outreach };
+}
+function deleteLead(bizId, leadId){
+  state.leads[bizId] = getLeads(bizId).filter(l => l.id !== leadId);
+  saveLeads(bizId);
+}
+/* Logs a won lead's deal value as revenue (once), so it counts toward the
+   monthly revenue target. */
+function logLeadRevenue(bizId, leadId){
+  const lead = getLeads(bizId).find(l => l.id === leadId);
+  if(!lead || lead.stage !== "won" || !(lead.value > 0) || lead.revenueLogged) return null;
+  const r = logRevenue(bizId, lead.value, "Won: " + lead.name);
+  if(r){ lead.revenueLogged = true; saveLeads(bizId); }
+  return r;
+}
+/* bizId omitted = all businesses */
+function pipelineSummary(bizId){
+  const out = { lead:0, contacted:0, call:0, won:0, lost:0, total:0, openValue:0, wonValue:0 };
+  const lists = bizId ? [getLeads(bizId)] : Object.values(state.leads);
+  for(const arr of lists){
+    for(const l of arr){
+      out[l.stage] = (out[l.stage] || 0) + 1;
+      out.total++;
+      if(l.stage === "won") out.wonValue += l.value || 0;
+      else if(l.stage !== "lost") out.openValue += l.value || 0;
+    }
+  }
+  return out;
+}
+
+/* =========================================================================
    ACHIEVEMENT AGGREGATES — scans the entire stored history every call.
    ========================================================================= */
 function computeAggregates(){
@@ -580,6 +699,8 @@ function computeAggregates(){
     schoolworkStreak: computeWeeklyGoalStreak("schoolwork", weekStartOf(todayStr())),
     businessCount: state.businesses.length,
     businessTasksDone: Object.values(state.bizTasks).reduce((s,arr)=>s + arr.filter(t=>t.done).length, 0),
+    leadsWon: Object.values(state.leads).reduce((s,arr)=>s + arr.filter(l => l.awarded && l.awarded.won).length, 0),
+    outreachLifetime: Object.values(state.days).reduce((s,d)=>s + ((d.biz && d.biz._outreach) || 0), 0),
     revenueEntries: Object.values(state.revenue).reduce((s,arr)=>s + arr.length, 0),
     revenueGoalsHit: Object.keys(state.revenueAwards).filter(k => k.endsWith("|100")).length,
     assignmentsDone: state.assignments.filter(a=>a.done).length,

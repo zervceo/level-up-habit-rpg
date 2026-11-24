@@ -1,5 +1,37 @@
 # Build notes / judgment calls
 
+## Sales pipeline (Entrepreneur)
+
+The next outcome after revenue is customers, so the beach now has a
+**Sales Pipeline board** beside the shack (click it or press E).
+
+- **Data** (`app.js`, new key only): `gameoflife:business:leads:<bizId>`,
+  an array of leads `{ name, value, note, stage, awarded, touches,
+  revenueLogged }`. Stages: New lead, Contacted, Call booked, Client won,
+  Lost.
+- **Scoring** (all through `dayBizTotal`, so the never-negative daily floor
+  still applies): every outreach touch pays **+25, capped at 10 a day**
+  (250), where a touch is a lead's first move to Contacted or a logged
+  follow-up. Each lead pays a one-time **+150 at Call booked** and **+500 at
+  Client won**; a lead that jumps straight to Won is paid for the steps it
+  skipped. Adding a lead pays nothing, Lost costs nothing, and moving a lead
+  backwards or deleting it never claws points back (paid steps are remembered
+  per lead). That keeps the loop honest without letting daily touches be
+  farmed. Three medals: First Client, Rainmaker (5 clients) and Hustler (50
+  touches).
+- **Links to revenue**: a won lead with a deal value gets a "Log $X" button
+  that records it as revenue once, so it counts toward the monthly target.
+  It is deliberately a button, not automatic, so income is never counted
+  twice.
+- **World**: the board face is a canvas painted live with every business's
+  leads as sticky notes in four columns, today's outreach bar and the open
+  pipeline value; the brass bell is for ringing when you win a client. The
+  panel works per business and has Learn cards on stages, follow-ups,
+  conversion rate, qualifying and asking for the next step.
+- **Phone is untouched**: like revenue, leads are managed in the 3D (desktop)
+  scene; the 2D Entrepreneur page's layout is unchanged. The bonuses and
+  medals do count in the shared score everywhere.
+
 ## Knowledge layer (Learn cards + in-world signage)
 
 Every interactive hotspot now teaches something about what it tracks.
